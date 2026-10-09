@@ -25,6 +25,8 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 - Demo sin conexión: abrir `web/index.html?demo`.
 
 ## Reglas
+- MCP Supabase: cancela (pide confirmación) SQL con DELETE/DROP o UPDATE sin WHERE; poner siempre WHERE y evitar DELETE.
+- 9-oct 22:57: limpieza de pruebas (todos los pedidos a cortar, contador a 0, sin GLS/otros/entregas/asignaciones; evento reset_pruebas).
 - Commits: autor `titocostaBcn <300454408+titocostaBcn@users.noreply.github.com>` y SIN trailer Co-Authored-By. Netlify (plan gratis, repo privado) bloquea despliegues de autores/coautores no reconocidos.
 - Diagnóstico antes de actuar; autorización explícita de Tito antes de escribir en Supabase o Shopify.
 - Probar con un pedido antes de activar nada para todos.
