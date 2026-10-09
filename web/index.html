@@ -180,8 +180,8 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"
 // Cada prenda avanza: pendiente → (sin_stock) → cortar → estampar → empaquetar. El pedido pasa a producido al empaquetar (etiqueta GLS).
 const ETAPA = {
   pendiente:  { label: "Pendiente",     plural: "Pendientes",    sig: "cortar",     sigTxt: "A cortar vinilo →",      ant: null },
-  sin_stock:  { label: "Sin stock",     plural: "Sin stock",     sig: "cortar",     sigTxt: "Stock OK · a cortar →",   ant: "pendiente" },
-  cortar:     { label: "Cortar vinilo", plural: "Cortar vinilo", sig: "estampar",   sigTxt: "Cortado · a estampar →",  ant: "pendiente" },
+  sin_stock:  { label: "Sin stock",     plural: "Sin stock",     sig: "cortar",     sigTxt: "Stock OK · a cortar →",   ant: null },
+  cortar:     { label: "Cortar vinilo", plural: "Cortar vinilo", sig: "estampar",   sigTxt: "Cortado · a estampar →",  ant: null },
   estampar:   { label: "Estampar",      plural: "Estampar",      sig: "empaquetar", sigTxt: "Estampado · a empaquetar →", ant: "cortar" },
   empaquetar: { label: "Empaquetar",    plural: "Empaquetar",    sig: "producido",  sigTxt: "✔ Empaquetado · etiqueta", ant: "estampar" },
   producido:  { label: "Producido",     plural: "Producidos",    sig: null,         sigTxt: null,                       ant: null },
@@ -197,7 +197,7 @@ function estadoPedido(p){ // el de la prenda más atrasada
 const urgente = (p) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t) => /urgent/i.test(t));
 const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_shopify) - new Date(b.creado_shopify));
 
-let vista = "pedidos", tab = "pendiente", etapaR = "pendiente";
+let vista = "pedidos", tab = "cortar", etapaR = "cortar";
 let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set();
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
@@ -233,7 +233,7 @@ const Demo = (() => {
       const [titulo, tallas, pk] = MODELOS[rnd(MODELOS.length)];
       const pers = pk && rnd(2) ? [{ key: pk, value: pk.startsWith("Inicial ") ? "ABCDEFGHLMNPS"[rnd(13)] : "ABCDEFGHLMNPS"[rnd(13)] + "ABCDEFGHLMNPS"[rnd(13)] }] : [];
       lineas.push({ line_id: lid++, titulo, variante: tallas[rnd(tallas.length)], cantidad: rnd(6) === 0 ? 2 : 1, personalizacion: pers, imagen_url: null,
-        estado: i < 8 ? ["cortar","estampar","estampar","empaquetar","cortar","empaquetar","estampar","sin_stock"][i] : "pendiente" });
+        estado: i < 8 ? ["estampar","estampar","estampar","empaquetar","estampar","empaquetar","estampar","sin_stock"][i] : "cortar" });
     }
     const [ciudad, cp] = CIUDADES[rnd(CIUDADES.length)];
     pedidos.push({ order_id: 1000 + i, order_name: "#9" + String(1000 + i).padStart(4, "0"), creado_shopify: hace(h), estado: "pendiente", estado_at: hace(h),
@@ -267,7 +267,7 @@ const Demo = (() => {
     if (b.accion === "reimprimir") return { ok: true, pdf: PDF };
     if (b.accion === "importar"){
       pedidos.push({ ...JSON.parse(JSON.stringify(pedidos[25])), order_id: n, order_name: "#9" + n, creado_shopify: new Date().toISOString(),
-        fab_lineas: [{ line_id: lid++, titulo: "Camisa “Why not?” blanca", variante: "M", cantidad: 1, personalizacion: [], estado: "pendiente" }] });
+        fab_lineas: [{ line_id: lid++, titulo: "Camisa “Why not?” blanca", variante: "M", cantidad: 1, personalizacion: [], estado: "cortar" }] });
       n++; return { ok: true, nuevos: 1 };
     }
     return { ok: false, error: "acción desconocida" };
@@ -387,6 +387,7 @@ function pintarPedidos(){
   const filtrados = pedidos.filter((p) => !q || p.order_name.toLowerCase().includes(q) || (p.cliente_nombre ?? "").toLowerCase().includes(q));
   $("#tabs").innerHTML = TABS.map((t) => {
     const ps = filtrados.filter(t.f); const u = ps.filter((p) => p._urg).length;
+    if (t.id === "pendiente" && !ps.length && tab !== "pendiente") return "";
     return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && t.id !== "todos" && t.id !== "producido" ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
   let lista = filtrados.filter(TABS.find((t) => t.id === tab).f);
@@ -433,7 +434,7 @@ function card(p){
     const id = p.order_id, busy = ocupado.has(id);
     const btns = [];
     if (E.ant) btns.push(`<button class="atras" title="Volver a ${ETAPA[E.ant].label}" data-mover="${id}" data-desde="${e}" data-hacia="${E.ant}">↶</button>`);
-    if (e === "pendiente") btns.push(`<button class="sec" data-mover="${id}" data-desde="pendiente" data-hacia="sin_stock">Sin stock</button>`);
+    if (e === "pendiente" || e === "cortar") btns.push(`<button class="sec" data-mover="${id}" data-desde="${e}" data-hacia="sin_stock">Sin stock</button>`);
     const sigC = colorVars(E.sig === "producido" ? "producido" : E.sig);
     if (e === "empaquetar") btns.push(`<button class="go" style="${sigC}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Generando etiqueta…" : E.sigTxt}</button>`);
     else btns.push(`<button class="go" style="${sigC}" data-mover="${id}" data-desde="${e}" data-hacia="${E.sig}">${E.sigTxt}</button>`);
@@ -464,6 +465,7 @@ function pintarResumen(){
   const R = ["pendiente", "sin_stock", "cortar", "estampar"];
   $("#tabs").innerHTML = R.map((e) => {
     const ls = lineasEnEtapa(e); const uds = ls.reduce((s, l) => s + l.cantidad, 0); const u = ls.filter((l) => l.p._urg).reduce((s, l) => s + l.cantidad, 0);
+    if (e === "pendiente" && !uds && etapaR !== "pendiente") return "";
     return `<button class="tab ${e === etapaR ? "on" : ""}" data-etapar="${e}">${ETAPA[e].plural} <b>${uds}</b>${u ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
 
@@ -511,7 +513,7 @@ function pintarBarra(){
   b.innerHTML = `<span class="sel">${uds} prenda${uds > 1 ? "s" : ""} seleccionada${uds > 1 ? "s" : ""}</span>
     <button class="sec" data-bclear>Quitar selección</button>
     ${E.ant ? `<button class="sec" data-bmover="${E.ant}">↶ ${ETAPA[E.ant].label}</button>` : ""}
-    ${etapaR === "pendiente" ? `<button class="sec" data-bmover="sin_stock">Sin stock</button>` : ""}
+    ${etapaR === "pendiente" || etapaR === "cortar" ? `<button class="sec" data-bmover="sin_stock">Sin stock</button>` : ""}
     <button class="go" data-bmover="${E.sig}">${E.sigTxt}</button>`;
 }
 
