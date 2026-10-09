@@ -91,6 +91,25 @@
   .acciones .otrosb{flex:1}
   .hecho .entregar{background:var(--producido);border-color:var(--producido);color:#fff;padding:12px 16px;font-weight:800}
   .card.entregado{opacity:.6}
+  .card.ajeno{opacity:.55;filter:grayscale(.6)}
+  .badge.b-yo{background:#1b7f4b;color:#fff}
+  .badge.b-otra{background:#555;color:#fff}
+  #subbar{padding:10px 16px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  #subbar.hidden{display:none}
+  #subbar button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 14px;font-weight:600}
+  #subbar button.on{background:#1f1f1f;color:#fff;border-color:#1f1f1f}
+  #subbar button.coger{background:#1b7f4b;color:#fff;border-color:#1b7f4b;margin-left:auto}
+  .asig{display:flex;gap:8px;align-items:center;font-size:14px}
+  .asig b{flex:1}
+  .asig button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 12px;font-weight:600}
+  .acciones button.coger{background:#1b7f4b;border-color:#1b7f4b;color:#fff;flex:2;font-size:16px}
+  #quien{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  #quien.hidden{display:none}
+  #quien .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:420px;width:100%;display:grid;gap:12px}
+  #quien .nombres{display:flex;flex-wrap:wrap;gap:8px}
+  #quien .nombres button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:12px 18px;font-weight:700;font-size:16px}
+  #quien form{display:flex;gap:8px} #quien input{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px}
+  #quien form button{border:0;background:#1b7f4b;color:#fff;border-radius:10px;padding:10px 16px;font-weight:700}
   .hecho{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
   .check{font-weight:700;color:var(--producido)}
   .nocheck{font-weight:700;color:var(--pendiente)}
@@ -145,7 +164,7 @@
     body.imp-etiqueta #zonaImpresion,body.imp-etiqueta #zonaImpresion *{visibility:visible}
     body.imp-etiqueta #zonaImpresion{display:block;position:absolute;inset:0}
     body.imp-etiqueta #zonaImpresion img{width:100%;display:block;page-break-after:always}
-    body.imp-lista header,body.imp-lista #aviso,body.imp-lista #avisoError,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
+    body.imp-lista header,body.imp-lista #subbar,body.imp-lista #aviso,body.imp-lista #avisoError,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
     body.imp-lista{background:#fff}
     body.imp-lista .rrow{grid-template-columns:minmax(150px,auto) 1fr auto}
     body.imp-lista .rhacer{display:none!important}
@@ -179,6 +198,7 @@
     <div class="fila">
       <div class="marca">Singular Wardrobe · Fábrica</div>
       <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button></div>
+      <button class="btn-sec" id="bYo" title="Quién está usando este dispositivo">👤 ¿Quién eres?</button>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec" id="bSalir">Salir</button>
     </div>
@@ -192,11 +212,19 @@
       </select>
     </div>
   </header>
+  <div id="subbar" class="hidden"></div>
   <main id="lista"></main>
   <main id="resumen" class="hidden"></main>
   <div id="barra" class="hidden"></div>
 </section>
 
+<div id="quien" class="hidden"><div class="caja">
+  <h3 style="margin:0">¿Quién eres?</h3>
+  <div style="font-size:14px;opacity:.75">Se recuerda en este ordenador o móvil. Sirve para repartir los pedidos.</div>
+  <div class="nombres" id="quienLista"></div>
+  <form id="quienForm"><input id="quienOtro" placeholder="Otro nombre" maxlength="30"><button>OK</button></form>
+  <button class="btn-sec" id="quienCerrar" type="button">Cancelar</button>
+</div></div>
 <div id="zonaImpresion"></div>
 <div id="toast" class="hidden"></div>
 
@@ -255,6 +283,12 @@ const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_s
 
 let vista = "pedidos", tab = "cortar", etapaR = "cortar";
 let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null;
+// Reparto: cada dispositivo dice quién es (mismo login para todas). Se puede coger un pedido en cualquier etapa.
+let yo = (() => { try { return localStorage.getItem("fab_nombre") || ""; } catch { return ""; } })();
+let filtroAsig = (() => { try { return localStorage.getItem("fab_filtro_asig") || "todos"; } catch { return "todos"; } })();
+let forzarPend = null, trasElegir = null;
+const ajeno = (p) => !!p.asignado_a && p.asignado_a !== yo;
+const ETAPAS_REPARTO = ["pendiente", "sin_stock", "cortar", "empaquetar"];
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
 // Destino → tipo de envío automático: UE (península, Baleares y países UE) = etiqueta GLS; Canarias, Ceuta, Melilla, Reino Unido y todo lo que no sea UE (Suiza, Noruega, Andorra…) = Otros envíos.
@@ -350,6 +384,15 @@ const Demo = (() => {
       return { ok: true };
     }
     if (b.accion === "reimprimir") return { ok: true, pdf: PDF };
+    if (b.accion === "asignar"){
+      const hechos = [];
+      for (const id of b.ids){
+        const p = pedidos.find((x) => x.order_id === id); if (!p || estadoPedido(p) === "producido") continue;
+        if (b.nombre){ if (!p.asignado_a || p.asignado_a === b.nombre || b.forzar){ p.asignado_a = b.nombre; p.asignado_at = new Date().toISOString(); hechos.push(id); } }
+        else if (p.asignado_a === b.soltar || b.forzar){ p.asignado_a = null; p.asignado_at = null; hechos.push(id); }
+      }
+      return { ok: true, ids: hechos };
+    }
     if (b.accion === "importar"){
       pedidos.push({ ...JSON.parse(JSON.stringify(pedidos[25])), order_id: n, order_name: "#9" + n, creado_shopify: new Date().toISOString(),
         fab_lineas: [{ line_id: lid++, titulo: "Camisa “Why not?” blanca", variante: "M", cantidad: 1, personalizacion: [], estado: "cortar" }] });
@@ -453,6 +496,52 @@ async function empaquetado(id){
   finally { ocupado.delete(id); await cargar(); }
 }
 
+async function asignar(ids, nombre, { soltar = null, forzar = false } = {}){
+  let r;
+  if (DEMO) r = await Demo.fn({ accion: "asignar", ids, nombre, soltar, forzar });
+  else { const { data, error } = await sb.rpc("fab_asignar", { p_order_ids: ids, p_nombre: nombre, p_soltar_de: soltar, p_forzar: forzar }); r = error ? { ok: false, error: error.message } : { ok: true, ids: (data ?? []).map(Number) }; }
+  if (!r.ok){ toast(r.error, true); return []; }
+  return r.ids;
+}
+function conNombre(accion){ if (yo) return accion(); trasElegir = accion; abrirQuien(); }
+async function coger(id, forzar = false){
+  conNombre(async () => {
+    const p = pedidos.find((x) => x.order_id === id);
+    const ok = await asignar([id], yo, { forzar });
+    toast(ok.length ? `${p?.order_name ?? ""} es tuyo, ${yo}` : `${p?.order_name ?? ""}: ya lo ha cogido otra persona`, !ok.length);
+    forzarPend = null; await cargar();
+  });
+}
+async function soltar(id){
+  const p = pedidos.find((x) => x.order_id === id);
+  const ok = await asignar([id], null, { soltar: yo });
+  toast(ok.length ? `${p?.order_name ?? ""} vuelve a estar libre` : "No se ha podido soltar", !ok.length); await cargar();
+}
+async function cogerSiguientes(n){
+  conNombre(async () => {
+    const libres = listaActual().filter((p) => !p.asignado_a && activo(p)).slice(0, n).map((p) => p.order_id);
+    if (!libres.length){ toast("No quedan pedidos libres aquí", true); return; }
+    const ok = await asignar(libres, yo);
+    toast(`${yo}: has cogido ${ok.length} pedido${ok.length === 1 ? "" : "s"}`); filtroAsig = "mios"; guardarFiltro(); await cargar();
+  });
+}
+function guardarFiltro(){ try { localStorage.setItem("fab_filtro_asig", filtroAsig); } catch {} }
+function nombresEquipo(){ return (cfg.empaquetadoras ?? "").split(",").map((x) => x.trim()).filter(Boolean); }
+function abrirQuien(){
+  const usados = [...new Set(pedidos.map((p) => p.asignado_a).filter(Boolean))];
+  const lista = [...new Set([...nombresEquipo(), ...usados])];
+  $("#quienLista").innerHTML = lista.map((n) => `<button type="button" data-soy="${esc(n)}" ${n === yo ? 'style="background:#1b7f4b;color:#fff"' : ""}>${esc(n)}</button>`).join("") || `<div style="opacity:.7">Escribe tu nombre:</div>`;
+  $("#quienOtro").value = "";
+  $("#quien").classList.remove("hidden");
+}
+function elegirNombre(n){
+  n = (n ?? "").trim().slice(0, 30); if (!n) return;
+  yo = n; try { localStorage.setItem("fab_nombre", n); } catch {}
+  $("#quien").classList.add("hidden"); pintarYo();
+  const f = trasElegir; trasElegir = null; f ? f() : pintar();
+}
+function pintarYo(){ $("#bYo").textContent = yo ? `👤 ${yo}` : "👤 ¿Quién eres?"; }
+
 async function entregar(id, valor){
   let error = null;
   if (DEMO){ const p = Demo.pedidos.find((x) => x.order_id === id); p.entregado_at = valor ? new Date().toISOString() : null; }
@@ -509,13 +598,40 @@ function imprimir(modo){
 function pintar(){
   $("#lista").classList.toggle("hidden", vista !== "pedidos");
   $("#resumen").classList.toggle("hidden", vista !== "resumen");
+  if (vista !== "pedidos") $("#subbar").classList.add("hidden");
   $("#buscar").classList.toggle("hidden", vista !== "pedidos");
   $("#fFecha").classList.toggle("hidden", vista !== "resumen");
   document.querySelectorAll(".vistas button").forEach((b) => b.classList.toggle("on", b.dataset.vista === vista));
   vista === "pedidos" ? pintarPedidos() : pintarResumen();
 }
 
+// Pedidos de la pestaña actual; en etapas de producción aplica el filtro Todos / Mis pedidos / Libres
+function listaActual(base = null, conFiltro = false){
+  const q = $("#buscar").value.trim().toLowerCase();
+  base = base ?? pedidos.filter((p) => !q || p.order_name.toLowerCase().includes(q) || (p.cliente_nombre ?? "").toLowerCase().includes(q));
+  let l = base.filter(TABS.find((t) => t.id === tab).f);
+  if (ETAPAS_REPARTO.includes(tab)){
+    if (conFiltro && filtroAsig === "mios") l = l.filter((p) => yo && p.asignado_a === yo);
+    if (conFiltro && filtroAsig === "libres") l = l.filter((p) => !p.asignado_a);
+    const rango = (p) => !p.asignado_a ? 1 : p.asignado_a === yo ? 0 : 2;
+    l = l.slice().sort((a, b) => rango(a) - rango(b) || porPrioridad(a, b));
+  }
+  return l;
+}
+function pintarSubbar(){
+  const el = $("#subbar");
+  if (vista !== "pedidos" || !ETAPAS_REPARTO.includes(tab)){ el.classList.add("hidden"); return; }
+  const l = listaActual();
+  const n = { todos: l.length, mios: l.filter((p) => yo && p.asignado_a === yo).length, libres: l.filter((p) => !p.asignado_a).length };
+  const quien = [...new Set(l.map((p) => p.asignado_a).filter(Boolean))].map((x) => `${esc(x)} ${l.filter((p) => p.asignado_a === x).length}`).join(" · ");
+  el.innerHTML = [["todos", "Todos"], ["mios", yo ? `Mis pedidos` : "Mis pedidos (¿quién eres?)"], ["libres", "Libres"]]
+    .map(([k, t]) => `<button data-fasig="${k}" class="${filtroAsig === k ? "on" : ""}">${t} <b>${n[k]}</b></button>`).join("")
+    + (quien ? `<span style="font-size:13px;opacity:.7">👤 ${quien}</span>` : "")
+    + `<button class="coger" data-cogern="5">✋ Coger 5 siguientes</button>`;
+  el.classList.remove("hidden");
+}
 function pintarPedidos(){
+  pintarSubbar();
   $("#barra").classList.add("hidden");
   const q = $("#buscar").value.trim().toLowerCase();
   const filtrados = pedidos.filter((p) => !q || p.order_name.toLowerCase().includes(q) || (p.cliente_nombre ?? "").toLowerCase().includes(q));
@@ -524,7 +640,7 @@ function pintarPedidos(){
     if (t.id === "pendiente" && !ps.length && tab !== "pendiente") return "";
     return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta", "recogida", "listos", "recogidos"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
-  let lista = filtrados.filter(TABS.find((t) => t.id === tab).f);
+  let lista = listaActual(filtrados, true);
   if (tab === "producido") lista = lista.slice().reverse();
   const rangoRec = (p) => p.entregado_at ? 2 : p._estado === "producido" ? 0 : 1;
   if (tab === "recogida") lista = lista.slice().sort((a, b) => rangoRec(a) - rangoRec(b) || (rangoRec(a) === 2 ? new Date(b.entregado_at) - new Date(a.entregado_at) : porPrioridad(a, b)));
@@ -534,7 +650,7 @@ function pintarPedidos(){
 
 function card(p){
   const e = p._estado, E = ETAPA[e];
-  const cls = ["card", p._urg ? "urgente" : "", p.cancelado ? "cancelado" : "", p.enviado_fuera ? "fuera" : "", p.entregado_at ? "entregado" : ""].join(" ");
+  const cls = ["card", p._urg ? "urgente" : "", p.cancelado ? "cancelado" : "", p.enviado_fuera ? "fuera" : "", p.entregado_at ? "entregado" : "", activo(p) && p._estado !== "producido" && ajeno(p) ? "ajeno" : ""].join(" ");
   const d = diasDesde(p.creado_shopify);
   const badges = [
     p._urg ? `<span class="badge b-urg">Urgente</span>` : "",
@@ -542,6 +658,7 @@ function card(p){
     p.recogida ? `<span class="badge">Recogida taller</span>` : "",
     p.pais && p.pais !== "ES" ? `<span class="badge">${esc(p.pais)}</span>` : "",
     destinoOtros(p) && p._estado !== "producido" ? `<span class="badge">📦 ${esc(destinoOtros(p))}</span>` : "",
+    p.asignado_a ? `<span class="badge ${p.asignado_a === yo ? "b-yo" : "b-otra"}">👤 ${esc(p.asignado_a)}</span>` : "",
     p.cancelado ? `<span class="badge b-err">Cancelado</span>` : "",
     p.enviado_fuera ? `<span class="badge">Enviado fuera</span>` : "",
   ].join("");
@@ -591,6 +708,16 @@ function card(p){
       ? `<div class="otros"><div class="otros-f"><input data-otrosinfo="${id}" placeholder="¿Cómo sale? Transportista, nº seguimiento, entregado en mano…" autofocus>
            <button class="go" style="${colorVars("producido")}" data-otrosok="${id}">✔ Confirmar otros envíos</button><button data-otroscancel>Cancelar</button></div></div>`
       : `<div class="acciones">${btns.join("")}</div>`;
+    // Reparto: libre → cualquiera puede trabajarlo o cogerlo; mío → puedo soltarlo; de otra → bloqueado (se puede quitar confirmando)
+    if (ajeno(p)){
+      pie = `<div class="asig"><b>👤 ${esc(p.asignado_a)} lo está haciendo</b>${forzarPend === id
+        ? `<button data-forzar="${id}" style="background:#c62828;color:#fff;border-color:#c62828">¿Seguro? Quitárselo</button><button data-forzarno>No</button>`
+        : `<button data-forzarpre="${id}">Cogerlo yo</button>`}</div>`;
+    } else if (p.asignado_a){
+      pie = `<div class="asig"><b style="color:#1b7f4b">👤 Tuyo, ${esc(yo)}</b><button data-soltar="${id}">Soltar</button></div>` + pie;
+    } else {
+      pie = `<div class="asig"><b style="opacity:.6">Libre</b><button data-coger="${id}" style="background:#1b7f4b;color:#fff;border-color:#1b7f4b">✋ Lo cojo yo</button></div>` + pie;
+    }
   }
   return `<article class="${cls}" style="${colorVars(e)}">
     <div class="top"><span class="num">${esc(p.order_name)}</span><span class="fecha">${fecha(p.creado_shopify)}</span>${d >= 2 && e !== "producido" ? `<span class="dias">hace ${d} días</span>` : ""}<div class="badges">${badges}</div></div>
@@ -817,6 +944,16 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
   else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
   else if (b.dataset.mover) moverPedido(Number(b.dataset.mover), b.dataset.desde, b.dataset.hacia);
+  else if (b.dataset.coger) coger(Number(b.dataset.coger));
+  else if (b.dataset.soltar) soltar(Number(b.dataset.soltar));
+  else if (b.dataset.forzarpre){ forzarPend = Number(b.dataset.forzarpre); pintar(); }
+  else if (b.dataset.forzarno !== undefined){ forzarPend = null; pintar(); }
+  else if (b.dataset.forzar) coger(Number(b.dataset.forzar), true);
+  else if (b.dataset.fasig){ if (b.dataset.fasig === "mios" && !yo){ trasElegir = () => { filtroAsig = "mios"; guardarFiltro(); pintar(); }; abrirQuien(); } else { filtroAsig = b.dataset.fasig; guardarFiltro(); pintar(); } }
+  else if (b.dataset.cogern) cogerSiguientes(Number(b.dataset.cogern));
+  else if (b.dataset.soy) elegirNombre(b.dataset.soy);
+  else if (b.id === "bYo") abrirQuien();
+  else if (b.id === "quienCerrar"){ trasElegir = null; $("#quien").classList.add("hidden"); }
   else if (b.dataset.empaq) empaquetado(Number(b.dataset.empaq));
   else if (b.dataset.entregar) entregar(Number(b.dataset.entregar), b.dataset.valor === "1");
   else if (b.dataset.otros){ otrosAbierto = Number(b.dataset.otros); pintar(); document.querySelector(`input[data-otrosinfo="${otrosAbierto}"]`)?.focus(); }
@@ -841,6 +978,8 @@ $("#buscar").addEventListener("input", pintar);
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.otrosinfo){ e.preventDefault(); const id = Number(e.target.dataset.otrosinfo); otroEnvio(id, e.target.value, otrosAbierto === id); return; } });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.hecho){ e.preventDefault(); hacerUnidades(e.target.dataset.hecho, e.target.value); } });
 $("#bImportar").onclick = async () => { toast("Importando de Shopify…"); const j = await fn({ accion: "importar" }); j.ok ? toast(`${j.nuevos} pedidos nuevos`) : toast(j.error, true); cargar(); };
+$("#quienForm").onsubmit = (e) => { e.preventDefault(); elegirNombre($("#quienOtro").value); };
+pintarYo();
 $("#bSalir").onclick = async () => { await sb.auth.signOut(); location.reload(); };
 $("#fLogin").onsubmit = async (e) => {
   e.preventDefault();
