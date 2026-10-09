@@ -254,6 +254,18 @@ let vista = "pedidos", tab = "cortar", etapaR = "cortar";
 let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null;
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
+// Destino → tipo de envío automático: Europa = etiqueta GLS; Canarias, Ceuta, Melilla, Reino Unido y resto del mundo = Otros envíos.
+const EUROPA_GLS = new Set("ES PT FR DE IT NL BE LU AT IE DK SE FI PL CZ SK SI HU HR RO BG GR CY MT EE LV LT CH NO IS LI AD MC SM VA".split(" "));
+function destinoOtros(p){
+  if (p.recogida) return null;
+  const pais = (p.pais ?? "ES").toUpperCase(), cp = String(p.cp ?? "").trim(), prov = (p.provincia ?? "").toLowerCase();
+  if (["GB", "GG", "JE", "IM", "GI"].includes(pais)) return "Reino Unido";
+  if (pais === "IC" || (pais === "ES" && (/^3[58]/.test(cp) || /palmas|tenerife|canari/.test(prov)))) return "Canarias";
+  if (pais === "EA" || (pais === "ES" && (/^51/.test(cp) || prov.includes("ceuta")))) return "Ceuta";
+  if (pais === "ES" && (/^52/.test(cp) || prov.includes("melilla"))) return "Melilla";
+  if (!EUROPA_GLS.has(pais)) return "Fuera de Europa";
+  return null;
+}
 const esHoy = (t) => t && new Date(t).toDateString() === new Date().toDateString();
 const fecha = (t) => new Date(t).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 const diasDesde = (t) => Math.floor((new Date().setHours(0,0,0,0) - new Date(new Date(t).setHours(0,0,0,0))) / 864e5);
@@ -300,6 +312,8 @@ const Demo = (() => {
       cancelado: false, enviado_fuera: false, nota: i === 12 ? "Envolver para regalo, por favor" : i === 17 ? "Las iniciales en dorado, por favor" : null, fab_lineas: lineas });
   }
   Object.assign(pedidos[20], { direccion1: null, pais: null, metodo_envio: "Terrassa. Taller" });
+  Object.assign(pedidos[3], { ciudad: "Las Palmas de Gran Canaria", cp: "35001", provincia: "Las Palmas" });
+  Object.assign(pedidos[5], { ciudad: "London", cp: "SW1A 1AA", pais: "GB" });
   const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no" };
   const PDF = "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyODMgNDI1XSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4gPj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA2NTUgPj4Kc3RyZWFtCkJUIC9GMSAyNiBUZiAzMCAzNzAgVGQgKEdMUyAgREVNTykgVGogRVQKQlQgL0YxIDEyIFRmIDMwIDM0MCBUZCAoRVRJUVVFVEEgREUgUFJVRUJBIC0gTk8gVkFMSURBKSBUaiBFVApCVCAvRjEgMTQgVGYgMzAgMzAwIFRkIChEZXN0aW5hdGFyaW86IENsaWVudGUgRGVtbykgVGogRVQKQlQgL0YxIDE0IFRmIDMwIDI4MCBUZCAoQ2FsbGUgTWF5b3IgMSwgMjgwMTMgTWFkcmlkKSBUaiBFVAowIDAgMCByZyAzMCAxMjAgbSAzMCAyMzAgbCAzNCAyMzAgbCAzNCAxMjAgbCBmCjQwIDEyMCA2IDExMCByZSBmIDUyIDEyMCAyIDExMCByZSBmIDYwIDEyMCA4IDExMCByZSBmIDc0IDEyMCAzIDExMCByZSBmIDgyIDEyMCA1IDExMCByZSBmIDk0IDEyMCAyIDExMCByZSBmIDEwMCAxMjAgNyAxMTAgcmUgZiAxMTIgMTIwIDMgMTEwIHJlIGYgMTIwIDEyMCA2IDExMCByZSBmIDEzMiAxMjAgMiAxMTAgcmUgZiAxNDAgMTIwIDggMTEwIHJlIGYgMTU0IDEyMCA0IDExMCByZSBmIDE2NCAxMjAgMiAxMTAgcmUgZiAxNzIgMTIwIDYgMTEwIHJlIGYgMTg0IDEyMCAzIDExMCByZSBmIDE5MiAxMjAgNyAxMTAgcmUgZiAyMDQgMTIwIDIgMTEwIHJlIGYgMjEyIDEyMCA1IDExMCByZSBmIDIyNCAxMjAgNCAxMTAgcmUgZiAyMzQgMTIwIDYgMTEwIHJlIGYgMjQ2IDEyMCAzIDExMCByZSBmCkJUIC9GMSAxNCBUZiA2MCA5NSBUZCAoNjE3NzEzMTUzMDk1MDIpIFRqIEVUCgplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MyAwMDAwMCBuIAowMDAwMDAwOTUwIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKMTAyNgolJUVPRgo=";
   let cb = 61771315309503, n = 2000;
@@ -400,6 +414,8 @@ function moverPedido(id, desde, hacia){
 
 async function empaquetado(id){
   if (ocupado.has(id)) return;
+  const pz = pedidos.find((x) => x.order_id === id);
+  if (pz && destinoOtros(pz)){ toast(`${destinoOtros(pz)}: va por Otros envíos, no por GLS`); return; }
   ocupado.add(id); pintar();
   try {
     const j = await fn({ accion: "producido", order_id: id });
@@ -501,6 +517,7 @@ function card(p){
     `<span class="chip" style="${colorVars(e)}">${E.label}</span>`,
     p.recogida ? `<span class="badge">Recogida taller</span>` : "",
     p.pais && p.pais !== "ES" ? `<span class="badge">${esc(p.pais)}</span>` : "",
+    destinoOtros(p) && p._estado !== "producido" ? `<span class="badge">📦 ${esc(destinoOtros(p))}</span>` : "",
     p.cancelado ? `<span class="badge b-err">Cancelado</span>` : "",
     p.enviado_fuera ? `<span class="badge">Enviado fuera</span>` : "",
   ].join("");
@@ -541,8 +558,9 @@ function card(p){
     if (e === "pendiente" || e === "cortar") btns.push(`<button class="sec" data-mover="${id}" data-desde="${e}" data-hacia="sin_stock">Sin stock</button>`);
     const sigC = colorVars(E.sig === "producido" ? "producido" : E.sig);
     if (e === "empaquetar"){
-      btns.push(`<button class="go" style="${sigC}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Generando etiqueta…" : p.recogida ? "✔ Listo para recoger" : E.sigTxt}</button>`);
-      if (!p.recogida) btns.push(`<button class="sec otrosb" data-otros="${id}">Otros envíos</button>`);
+      const zona = destinoOtros(p);
+      if (zona) btns.push(`<button class="go" style="${sigC}" data-otros="${id}">📦 Otros envíos · ${esc(zona)}</button>`);
+      else btns.push(`<button class="go" style="${sigC}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Generando etiqueta…" : p.recogida ? "✔ Listo para recoger" : E.sigTxt}</button>`);
     }
     else btns.push(`<button class="go" style="${sigC}" data-mover="${id}" data-desde="${e}" data-hacia="${E.sig}">${E.sigTxt}</button>`);
     pie = otrosAbierto === id
