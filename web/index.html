@@ -842,7 +842,7 @@ async function hacerUnidades(k, n){
     await moverLineas(f.ids, E.sig, `✔ ${f.pers} (${f.pedidosOrd[0]?.order_name ?? ""}) → ${ETAPA[E.sig].label}`);
     return;
   }
-  // genérica: solo contador de vinilos cortados; los pedidos se pasan a mano
+  // genérica: suma al contador; la BD (fab_autoasignar) pasa sola a Empaquetar los pedidos que quedan completos (urgentes y antiguos primero)
   n = Math.floor(Number(n));
   if (!n || n < 1){ toast("Escribe cuántos vinilos has cortado", true); return; }
   if (n > f.quedan) n = f.quedan;
