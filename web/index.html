@@ -671,7 +671,7 @@ async function exportarExcel(){
     wd.getRow(1).eachCell((c) => { c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); });
     for (const l of [...ls].sort((a, b) => porPrioridad(a.p, b.p))){
       const v = partes(l.variante);
-      const r = wd.addRow({ pedido: l.p.order_name, fecha: new Date(l.p.creado_shopify), urg: l.p._urg ? "Sí" : "", modelo: l.titulo, talla: v.talla ?? "Sin talla", resto: v.resto, pers: textoPers(l), uds: l.cantidad, envio: l.p.metodo_envio ?? "" });
+      const r = wd.addRow({ pedido: l.p.order_name, fecha: ((d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000))(new Date(l.p.creado_shopify)), urg: l.p._urg ? "Sí" : "", modelo: l.titulo, talla: v.talla ?? "Sin talla", resto: v.resto, pers: textoPers(l), uds: l.cantidad, envio: l.p.metodo_envio ?? "" });
       r.getCell("fecha").numFmt = "dd/mm/yyyy hh:mm";
       if (l.p._urg) r.eachCell((c) => { c.fill = fill("FFF0EE"); });
       r.getCell("pers").font = { bold: true };
