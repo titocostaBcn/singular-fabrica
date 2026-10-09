@@ -1,0 +1,3 @@
+-- YA APLICADA el 9-oct-2026 (registro). Tablas fab_pedidos, fab_lineas, fab_eventos, fab_config, bucket fab-etiquetas.
+-- También aplicado: revoke execute de public.read_secret y public.trigger_sync a anon/authenticated (fallo de seguridad cerrado).
+-- Ver definición actual en Supabase (proyecto hgvsrmywsfnmvenkfynb).

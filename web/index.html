@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fábrica · Singular Wardrobe</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f1ec; --panel:#ffffff; --ink:#1d1b18; --muted:#6f6a62; --line:#e3ddd3;
+    --pendiente:#c47f17; --pendiente-bg:#fdf3e1;
+    --sin_stock:#8a8a8a; --sin_stock-bg:#eeeeee;
+    --cortar:#2563a8; --cortar-bg:#e6effa;
+    --estampar:#7a4fb3; --estampar-bg:#f1eafb;
+    --empaquetar:#0f7f86; --empaquetar-bg:#e0f3f4;
+    --producido:#1f7a4d; --producido-bg:#e3f4ea;
+    --urg:#d12f2f; --urg-bg:#fff0ee;
+    --err:#b3261e; --err-bg:#fbe9e7; --accent:#1d1b18;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  button{font:inherit;cursor:pointer}
+  .hidden{display:none!important}
+
+  #login{min-height:100vh;display:grid;place-items:center;padding:16px}
+  #login form{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;width:min(380px,100%);display:grid;gap:12px}
+  #login h1{margin:0 0 4px;font-size:22px}
+  #login input{font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
+  #login button{padding:14px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600}
+  #loginErr{color:var(--err);min-height:1.2em;font-size:14px}
+
+  #aviso{background:#fff4c2;border-bottom:1px solid #e6d27a;padding:8px 16px;font-weight:600;font-size:14px}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;display:grid;gap:10px}
+  .fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .marca{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px;margin-right:auto}
+  .vistas{display:flex;background:var(--line);border-radius:12px;padding:3px}
+  .vistas button{border:0;background:none;border-radius:9px;padding:9px 16px;font-weight:700;color:var(--muted)}
+  .vistas button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px #0002}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 14px;font-weight:600;display:flex;gap:8px;align-items:center}
+  .tab b{background:var(--line);border-radius:999px;padding:1px 9px;font-size:13px}
+  .tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tab.on b{background:#ffffff33}
+  .tab .u{background:var(--urg);color:#fff;border-radius:999px;padding:1px 7px;font-size:12px}
+  #buscar,#fFecha{padding:9px 14px;border:1px solid var(--line);border-radius:999px;font:inherit;background:var(--panel)}
+  #buscar{width:190px}
+  .btn-sec{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 14px}
+
+  /* tarjetas */
+  #lista{padding:16px;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));align-items:start}
+  .vacio{grid-column:1/-1;text-align:center;color:var(--muted);padding:60px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px;border-left:6px solid var(--c,var(--pendiente))}
+  .card.urgente{background:var(--urg-bg);border-color:#f3b8b0;border-left-color:var(--urg)}
+  .card.cancelado,.card.fuera{opacity:.55}
+  .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .num{font-size:22px;font-weight:800}
+  .fecha{color:var(--muted);font-size:14px}
+  .dias{font-size:12px;font-weight:700;color:var(--err)}
+  .badges{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .badge{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-radius:6px;padding:3px 8px;background:var(--line)}
+  .b-urg{background:var(--urg);color:#fff}
+  .b-err{background:var(--err-bg);color:var(--err)}
+  .chip{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;border-radius:5px;padding:2px 6px;color:var(--c);background:var(--cb);white-space:nowrap}
+  .cliente{font-size:14px;color:var(--muted)}
+  .lineas{display:grid;gap:8px}
+  .linea{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:start}
+  .linea img,.linea .ph{width:52px;height:64px;object-fit:cover;border-radius:8px;background:var(--line)}
+  .linea .t{font-weight:600;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+  .linea .v{color:var(--muted);font-size:14px}
+  .pers{margin-top:4px;background:#1d1b18;color:#fff;border-radius:8px;padding:6px 10px;font-size:17px;font-weight:700;display:inline-block}
+  .pers span{opacity:.7;font-weight:500;font-size:13px;margin-right:6px}
+  .nota{background:#fff8e6;border:1px dashed #e0c27a;border-radius:8px;padding:8px 10px;font-size:14px}
+  .err{background:var(--err-bg);color:var(--err);border-radius:8px;padding:8px 10px;font-size:14px}
+  .acciones{display:flex;gap:8px}
+  .acciones button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:14px 10px;font-weight:700;flex:1}
+  .acciones button.atras{flex:0 0 52px;font-size:18px}
+  .acciones button.sec{flex:0.8}
+  .acciones button.go{background:var(--c);border-color:var(--c);color:#fff;flex:1.6;font-size:16px}
+  .acciones button[disabled]{opacity:.6;cursor:wait}
+  .hecho{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
+  .check{font-weight:700;color:var(--producido)}
+  .nocheck{font-weight:700;color:var(--pendiente)}
+  .hecho button{margin-left:auto;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 14px;font-weight:600}
+
+  /* resumen */
+  #resumen{padding:16px 16px 110px;display:grid;gap:12px;max-width:1100px}
+  .rtitulo{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .rtitulo h2{margin:0;font-size:22px}
+  .rtitulo .tot{color:var(--muted)}
+  .grupo{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .grupo.urgente{border-color:#f3b8b0}
+  .ghead{display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);background:#faf8f5}
+  .grupo.urgente .ghead{background:var(--urg-bg)}
+  .ghead .gn{font-size:18px;font-weight:800;flex:1}
+  .ghead .gq{font-size:26px;font-weight:800;min-width:60px;text-align:right}
+  .ghead .gq small{font-size:13px;color:var(--muted);font-weight:600}
+  .rrow{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+  .rrow:first-of-type{border-top:0}
+  .rrow.urg{background:var(--urg-bg)}
+  .rrow .rv{font-weight:700}
+  .rrow .rp{font-size:13px;color:var(--muted)}
+  .rrow .rq{font-size:20px;font-weight:800;min-width:48px;text-align:right}
+  input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+  #barra{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--ink);color:#fff;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  #barra .sel{font-weight:700;margin-right:auto}
+  #barra button{border:0;border-radius:10px;padding:12px 16px;font-weight:700}
+  #barra .go{background:#fff;color:var(--ink)}
+  #barra .sec{background:#ffffff22;color:#fff}
+
+  #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-weight:600;max-width:90vw;z-index:20;box-shadow:0 4px 16px #0003}
+  #toast.e{background:var(--err)}
+
+  #zonaImpresion{display:none}
+  @media print{
+    @page{margin:8mm}
+    body.imp-etiqueta *{visibility:hidden}
+    body.imp-etiqueta #zonaImpresion,body.imp-etiqueta #zonaImpresion *{visibility:visible}
+    body.imp-etiqueta #zonaImpresion{display:block;position:absolute;inset:0}
+    body.imp-etiqueta #zonaImpresion img{width:100%;display:block;page-break-after:always}
+    body.imp-lista header,body.imp-lista #aviso,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
+    body.imp-lista{background:#fff}
+    body.imp-lista .rrow{grid-template-columns:1fr auto}
+    body.imp-lista .grupo{break-inside:avoid}
+  }
+  @media (max-width:440px){ #lista{grid-template-columns:1fr;padding:12px} #buscar{width:100%} #resumen{padding:12px 12px 130px} }
+</style>
+</head>
+<body>
+
+<section id="login" class="hidden">
+  <form id="fLogin">
+    <h1>Fábrica · Singular Wardrobe</h1>
+    <input id="email" type="email" placeholder="Email" autocomplete="username" required>
+    <input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password" required>
+    <button type="submit">Entrar</button>
+    <div id="loginErr"></div>
+  </form>
+</section>
+
+<section id="app" class="hidden">
+  <div id="aviso" class="hidden"></div>
+  <header>
+    <div class="fila">
+      <div class="marca">Singular Wardrobe · Fábrica</div>
+      <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button></div>
+      <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
+      <button class="btn-sec" id="bSalir">Salir</button>
+    </div>
+    <div class="fila">
+      <div class="tabs" id="tabs"></div>
+      <input id="buscar" placeholder="Buscar nº pedido o nombre">
+      <select id="fFecha" class="hidden" title="Filtrar por fecha de entrada">
+        <option value="todos">Todos los días</option>
+        <option value="atrasados">Hasta ayer (atrasados)</option>
+        <option value="hoy">Solo entrados hoy</option>
+      </select>
+    </div>
+  </header>
+  <main id="lista"></main>
+  <main id="resumen" class="hidden"></main>
+  <div id="barra" class="hidden"></div>
+</section>
+
+<div id="zonaImpresion"></div>
+<div id="toast" class="hidden"></div>
+
+<script>
+const SUPABASE_URL = "https://hgvsrmywsfnmvenkfynb.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Kf5d0a1bA9sObsJb4MWtuA_UYAHut4h";
+const FN = SUPABASE_URL + "/functions/v1/fab";
+// Modo demostración: añade ?demo a la dirección. No se conecta a Supabase, GLS ni Shopify.
+const DEMO = new URLSearchParams(location.search).has("demo") || window.FAB_DEMO === true;
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// ───── flujo de producción ─────
+// Cada prenda avanza: pendiente → (sin_stock) → cortar → estampar → empaquetar. El pedido pasa a producido al empaquetar (etiqueta GLS).
+const ETAPA = {
+  pendiente:  { label: "Pendiente",     plural: "Pendientes",    sig: "cortar",     sigTxt: "A cortar vinilo →",      ant: null },
+  sin_stock:  { label: "Sin stock",     plural: "Sin stock",     sig: "cortar",     sigTxt: "Stock OK · a cortar →",   ant: "pendiente" },
+  cortar:     { label: "Cortar vinilo", plural: "Cortar vinilo", sig: "estampar",   sigTxt: "Cortado · a estampar →",  ant: "pendiente" },
+  estampar:   { label: "Estampar",      plural: "Estampar",      sig: "empaquetar", sigTxt: "Estampado · a empaquetar →", ant: "cortar" },
+  empaquetar: { label: "Empaquetar",    plural: "Empaquetar",    sig: "producido",  sigTxt: "✔ Empaquetado · etiqueta", ant: "estampar" },
+  producido:  { label: "Producido",     plural: "Producidos",    sig: null,         sigTxt: null,                       ant: null },
+};
+const ORDEN_LINEA = ["pendiente", "sin_stock", "cortar", "estampar", "empaquetar"];
+const colorVars = (e) => `--c:var(--${e});--cb:var(--${e}-bg)`;
+function estadoPedido(p){ // el de la prenda más atrasada
+  if (p.estado === "producido") return "producido";
+  const ls = (p.fab_lineas ?? []).map((l) => l.estado ?? "pendiente");
+  if (!ls.length) return p.estado;
+  return ORDEN_LINEA[Math.min(...ls.map((e) => ORDEN_LINEA.indexOf(e)))];
+}
+const urgente = (p) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t) => /urgent/i.test(t));
+const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_shopify) - new Date(b.creado_shopify));
+
+let vista = "pedidos", tab = "pendiente", etapaR = "pendiente";
+let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set();
+
+const activo = (p) => !p.cancelado && !p.enviado_fuera;
+const esHoy = (t) => t && new Date(t).toDateString() === new Date().toDateString();
+const fecha = (t) => new Date(t).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const diasDesde = (t) => Math.floor((new Date().setHours(0,0,0,0) - new Date(new Date(t).setHours(0,0,0,0))) / 864e5);
+function toast(msg, err = false){ const t = $("#toast"); t.textContent = msg; t.className = err ? "e" : ""; clearTimeout(toast.h); toast.h = setTimeout(() => t.className = "hidden", err ? 7000 : 3000); }
+
+const TABS = [
+  ...["pendiente", "sin_stock", "cortar", "estampar", "empaquetar"].map((e) => ({ id: e, label: ETAPA[e].plural, f: (p) => p._estado === e && activo(p) })),
+  { id: "producido",    label: "Producidos hoy", f: (p) => p._estado === "producido" && esHoy(p.estado_at) },
+  { id: "sin_etiqueta", label: "Sin etiqueta",   f: (p) => p._estado === "producido" && !p.recogida && !p.etiqueta_impresa && !p.cancelado },
+  { id: "todos",        label: "Todos",          f: () => true },
+];
+
+// ───── datos de demostración (ficticios) ─────
+const Demo = (() => {
+  const hace = (h) => new Date(Date.now() - h * 3600e3).toISOString();
+  const MODELOS = [
+    ["Camisa “Why not?” blanca", ["XS","S","M","L"]], ["Camisa “Why not?” azul", ["S","M","L"]],
+    ["Blazer “Calavera” azul", ["S","M","L"]], ["Blazer \"Army” black", ["XS","S","M"]],
+    ["Sudadera \"A star is born\"", ["S","M","L"], "Inicial (solo una)"], ["Blazer “estudio 54”", ["S","M"], "Iniciales (2 Max.)"],
+    ["Pantalón “cupido” crema", ["36","38","40"]], ["Jersey “volume”", ["Única"]],
+  ];
+  const NOMBRES = ["Laura","Marta","Anna","Sara","Clara","Giulia","Elena","Nuria","Paula","Irene","Lucía","Carmen","Alba","Julia"];
+  const CIUDADES = [["Madrid","28013"],["Valencia","46001"],["Girona","17001"],["Sevilla","41001"],["Bilbao","48001"],["Zaragoza","50001"],["Málaga","29001"]];
+  let seed = 7; const rnd = (n) => (seed = (seed * 16807) % 2147483647) % n;
+  const pedidos = []; let lid = 1;
+  for (let i = 0; i < 30; i++){
+    const h = 120 - i * 4; const nl = 1 + rnd(3) % 2 + (rnd(5) === 0 ? 1 : 0);
+    const lineas = [];
+    for (let k = 0; k < nl; k++){
+      const [titulo, tallas, pk] = MODELOS[rnd(MODELOS.length)];
+      const pers = pk && rnd(2) ? [{ key: pk, value: pk.startsWith("Inicial ") ? "ABCDEFGHLMNPS"[rnd(13)] : "ABCDEFGHLMNPS"[rnd(13)] + "ABCDEFGHLMNPS"[rnd(13)] }] : [];
+      lineas.push({ line_id: lid++, titulo, variante: tallas[rnd(tallas.length)], cantidad: rnd(6) === 0 ? 2 : 1, personalizacion: pers, imagen_url: null,
+        estado: i < 8 ? ["cortar","estampar","estampar","empaquetar","cortar","empaquetar","estampar","sin_stock"][i] : "pendiente" });
+    }
+    const [ciudad, cp] = CIUDADES[rnd(CIUDADES.length)];
+    pedidos.push({ order_id: 1000 + i, order_name: "#9" + String(1000 + i).padStart(4, "0"), creado_shopify: hace(h), estado: "pendiente", estado_at: hace(h),
+      cliente_nombre: NOMBRES[rnd(NOMBRES.length)] + " Demo", ciudad, cp, pais: "ES", direccion1: "Calle Ejemplo 1",
+      metodo_envio: [5, 17, 26].includes(i) ? "Exprés" : "ENVÍO STANDARD (Entrega 5-7 días hábiles)", tags: [],
+      etiqueta_impresa: false, gls_codbarras: null, gls_modo: null, gls_error: null, shopify_error: null, shopify_fulfillment_id: null,
+      cancelado: false, enviado_fuera: false, nota: i === 12 ? "Envolver para regalo, por favor" : null, fab_lineas: lineas });
+  }
+  Object.assign(pedidos[20], { direccion1: null, pais: null, metodo_envio: "Terrassa. Taller" });
+  const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no" };
+  const PDF = "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyODMgNDI1XSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4gPj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA2NTUgPj4Kc3RyZWFtCkJUIC9GMSAyNiBUZiAzMCAzNzAgVGQgKEdMUyAgREVNTykgVGogRVQKQlQgL0YxIDEyIFRmIDMwIDM0MCBUZCAoRVRJUVVFVEEgREUgUFJVRUJBIC0gTk8gVkFMSURBKSBUaiBFVApCVCAvRjEgMTQgVGYgMzAgMzAwIFRkIChEZXN0aW5hdGFyaW86IENsaWVudGUgRGVtbykgVGogRVQKQlQgL0YxIDE0IFRmIDMwIDI4MCBUZCAoQ2FsbGUgTWF5b3IgMSwgMjgwMTMgTWFkcmlkKSBUaiBFVAowIDAgMCByZyAzMCAxMjAgbSAzMCAyMzAgbCAzNCAyMzAgbCAzNCAxMjAgbCBmCjQwIDEyMCA2IDExMCByZSBmIDUyIDEyMCAyIDExMCByZSBmIDYwIDEyMCA4IDExMCByZSBmIDc0IDEyMCAzIDExMCByZSBmIDgyIDEyMCA1IDExMCByZSBmIDk0IDEyMCAyIDExMCByZSBmIDEwMCAxMjAgNyAxMTAgcmUgZiAxMTIgMTIwIDMgMTEwIHJlIGYgMTIwIDEyMCA2IDExMCByZSBmIDEzMiAxMjAgMiAxMTAgcmUgZiAxNDAgMTIwIDggMTEwIHJlIGYgMTU0IDEyMCA0IDExMCByZSBmIDE2NCAxMjAgMiAxMTAgcmUgZiAxNzIgMTIwIDYgMTEwIHJlIGYgMTg0IDEyMCAzIDExMCByZSBmIDE5MiAxMjAgNyAxMTAgcmUgZiAyMDQgMTIwIDIgMTEwIHJlIGYgMjEyIDEyMCA1IDExMCByZSBmIDIyNCAxMjAgNCAxMTAgcmUgZiAyMzQgMTIwIDYgMTEwIHJlIGYgMjQ2IDEyMCAzIDExMCByZSBmCkJUIC9GMSAxNCBUZiA2MCA5NSBUZCAoNjE3NzEzMTUzMDk1MDIpIFRqIEVUCgplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MyAwMDAwMCBuIAowMDAwMDAwOTUwIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKMTAyNgolJUVPRgo=";
+  let cb = 61771315309503, n = 2000;
+  const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+  const lineasDe = (ids) => pedidos.flatMap((p) => p.fab_lineas.filter((l) => ids.includes(l.line_id)).map((l) => [p, l]));
+  async function fn(b){
+    await espera(250);
+    if (b.accion === "lineas"){
+      for (const [p, l] of lineasDe(b.line_ids)) if (p.estado !== "producido") l.estado = b.estado;
+      return { ok: true, n: b.line_ids.length };
+    }
+    const p = pedidos.find((x) => x.order_id === b.order_id);
+    if (b.accion === "producido"){
+      await espera(800);
+      if (estadoPedido(p) !== "empaquetar") return { ok: false, error: "Faltan prendas por pasar a Empaquetar" };
+      p.estado = "producido"; p.estado_at = new Date().toISOString();
+      if (!p.direccion1) return { ok: true, recogida: true };
+      p.gls_codbarras = String(cb++); p.gls_modo = "pruebas";
+      return { ok: true, codbarras: p.gls_codbarras, modo: "pruebas", pdf: PDF, shopify: "desactivado" };
+    }
+    if (b.accion === "impresa"){ p.etiqueta_impresa = true; return { ok: true }; }
+    if (b.accion === "reimprimir") return { ok: true, pdf: PDF };
+    if (b.accion === "importar"){
+      pedidos.push({ ...JSON.parse(JSON.stringify(pedidos[25])), order_id: n, order_name: "#9" + n, creado_shopify: new Date().toISOString(),
+        fab_lineas: [{ line_id: lid++, titulo: "Camisa “Why not?” blanca", variante: "M", cantidad: 1, personalizacion: [], estado: "pendiente" }] });
+      n++; return { ok: true, nuevos: 1 };
+    }
+    return { ok: false, error: "acción desconocida" };
+  }
+  return { pedidos, cfg, fn };
+})();
+
+// ───── datos ─────
+async function cargar(){
+  let data, c;
+  if (DEMO){
+    data = JSON.parse(JSON.stringify(Demo.pedidos));
+    c = { data: Object.entries(Demo.cfg).map(([clave, valor]) => ({ clave, valor })) };
+  } else {
+    const [r, cc] = await Promise.all([
+      sb.from("fab_pedidos").select("*, fab_lineas(*)").order("creado_shopify", { ascending: true }).limit(2000),
+      sb.from("fab_config").select("clave,valor"),
+    ]);
+    if (r.error){ toast("Error cargando pedidos: " + r.error.message, true); return; }
+    data = r.data; c = cc;
+  }
+  pedidos = data.map((p) => ({ ...p, recogida: p.recogida ?? !p.direccion1 }));
+  for (const p of pedidos){ p._estado = estadoPedido(p); p._urg = urgente(p); }
+  pedidos.sort(porPrioridad);
+  cfg = Object.fromEntries((c.data ?? []).map((r) => [r.clave, r.valor]));
+  const avisos = [];
+  if (DEMO) avisos.push("DEMOSTRACIÓN con pedidos ficticios: no se conecta a Shopify ni a GLS.");
+  else {
+    if (cfg.gls_modo !== "real") avisos.push("MODO PRUEBAS: las etiquetas GLS son de prueba y no sirven para enviar.");
+    if (cfg.shopify_crear_envio !== "si") avisos.push("Shopify no se actualiza todavía (envío al cliente desactivado).");
+  }
+  $("#aviso").textContent = avisos.join("  ·  ");
+  $("#aviso").classList.toggle("hidden", !avisos.length);
+  pintar();
+}
+
+async function fn(body){
+  if (DEMO) return Demo.fn(body);
+  const { data: { session } } = await sb.auth.getSession();
+  const r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_KEY }, body: JSON.stringify(body) });
+  return r.json().catch(() => ({ ok: false, error: "Respuesta no válida (" + r.status + ")" }));
+}
+
+// ───── acciones ─────
+async function moverLineas(ids, estado){
+  if (!ids.length) return;
+  const set = new Set(ids);
+  const uds = pedidos.flatMap((p) => p.fab_lineas ?? []).filter((l) => set.has(l.line_id)).reduce((s, l) => s + (l.cantidad ?? 1), 0);
+  const j = await fn({ accion: "lineas", line_ids: ids, estado });
+  if (!j.ok) toast(j.error || "Error", true); else toast(`${uds} prenda${uds > 1 ? "s" : ""} → ${ETAPA[estado].label}`);
+  sel.clear(); await cargar();
+}
+function moverPedido(id, desde, hacia){
+  const p = pedidos.find((x) => x.order_id === id);
+  return moverLineas(p.fab_lineas.filter((l) => (l.estado ?? "pendiente") === desde).map((l) => l.line_id), hacia);
+}
+
+async function empaquetado(id){
+  if (ocupado.has(id)) return;
+  ocupado.add(id); pintar();
+  try {
+    const j = await fn({ accion: "producido", order_id: id });
+    if (!j.ok){ toast(j.error || "Error", true); return; }
+    if (j.recogida){ toast("Listo para recoger en taller"); return; }
+    if (!j.pdf){ toast("Etiqueta creada en GLS pero sin PDF. Usa Reimprimir.", true); return; }
+    await imprimirPdf(j.pdf);
+    await fn({ accion: "impresa", order_id: id });
+    toast("Etiqueta impresa · GLS " + j.codbarras + (j.shopify && j.shopify.startsWith("error") ? " · ⚠ Shopify: " + j.shopify : ""));
+  } catch (e){ toast(String(e.message || e), true); }
+  finally { ocupado.delete(id); await cargar(); }
+}
+
+async function reimprimir(id){
+  const j = await fn({ accion: "reimprimir", order_id: id });
+  if (!j.ok){ toast(j.error, true); return; }
+  await imprimirPdf(j.pdf);
+  await fn({ accion: "impresa", order_id: id });
+  await cargar();
+}
+
+// PDF de GLS → imágenes → impresión. En el PC de fábrica: Chrome con --kiosk-printing para imprimir sin diálogo.
+async function imprimirPdf(b64){
+  const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+  const zona = $("#zonaImpresion"); zona.innerHTML = "";
+  for (let i = 1; i <= pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({ scale: 3 });
+    const canvas = document.createElement("canvas");
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+    const img = new Image(); img.src = canvas.toDataURL("image/png"); await img.decode();
+    zona.appendChild(img);
+  }
+  imprimir("imp-etiqueta");
+}
+function imprimir(modo){
+  document.body.classList.add(modo);
+  const fin = () => { document.body.classList.remove(modo); window.removeEventListener("afterprint", fin); };
+  window.addEventListener("afterprint", fin);
+  window.print(); setTimeout(fin, 1000);
+}
+
+// ───── pintar ─────
+function pintar(){
+  $("#lista").classList.toggle("hidden", vista !== "pedidos");
+  $("#resumen").classList.toggle("hidden", vista !== "resumen");
+  $("#buscar").classList.toggle("hidden", vista !== "pedidos");
+  $("#fFecha").classList.toggle("hidden", vista !== "resumen");
+  document.querySelectorAll(".vistas button").forEach((b) => b.classList.toggle("on", b.dataset.vista === vista));
+  vista === "pedidos" ? pintarPedidos() : pintarResumen();
+}
+
+function pintarPedidos(){
+  $("#barra").classList.add("hidden");
+  const q = $("#buscar").value.trim().toLowerCase();
+  const filtrados = pedidos.filter((p) => !q || p.order_name.toLowerCase().includes(q) || (p.cliente_nombre ?? "").toLowerCase().includes(q));
+  $("#tabs").innerHTML = TABS.map((t) => {
+    const ps = filtrados.filter(t.f); const u = ps.filter((p) => p._urg).length;
+    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && t.id !== "todos" && t.id !== "producido" ? `<span class="u">${u} urg</span>` : ""}</button>`;
+  }).join("");
+  let lista = filtrados.filter(TABS.find((t) => t.id === tab).f);
+  if (tab === "producido") lista = lista.slice().reverse();
+  $("#lista").innerHTML = lista.length ? lista.map(card).join("") : `<div class="vacio">No hay pedidos aquí.</div>`;
+}
+
+function card(p){
+  const e = p._estado, E = ETAPA[e];
+  const cls = ["card", p._urg ? "urgente" : "", p.cancelado ? "cancelado" : "", p.enviado_fuera ? "fuera" : ""].join(" ");
+  const d = diasDesde(p.creado_shopify);
+  const badges = [
+    p._urg ? `<span class="badge b-urg">Urgente</span>` : "",
+    `<span class="chip" style="${colorVars(e)}">${E.label}</span>`,
+    p.recogida ? `<span class="badge">Recogida taller</span>` : "",
+    p.pais && p.pais !== "ES" ? `<span class="badge">${esc(p.pais)}</span>` : "",
+    p.cancelado ? `<span class="badge b-err">Cancelado</span>` : "",
+    p.enviado_fuera ? `<span class="badge">Enviado fuera</span>` : "",
+  ].join("");
+  const mixto = new Set((p.fab_lineas ?? []).map((l) => l.estado ?? "pendiente")).size > 1;
+  const lineas = (p.fab_lineas ?? []).map((l) => {
+    const le = l.estado ?? "pendiente";
+    return `<div class="linea">
+      ${l.imagen_url ? `<img src="${esc(l.imagen_url)}&width=120" alt="" loading="lazy">` : `<div class="ph"></div>`}
+      <div>
+        <div class="t">${l.cantidad > 1 ? `<b>${l.cantidad}×</b>` : ""}${esc(l.titulo)} ${mixto && e !== "producido" ? `<span class="chip" style="${colorVars(le)}">${ETAPA[le].label}</span>` : ""}</div>
+        ${l.variante ? `<div class="v">${esc(l.variante)}</div>` : ""}
+        ${(l.personalizacion ?? []).map((x) => `<div class="pers"><span>${esc(x.key)}</span>${esc(x.value)}</div>`).join(" ")}
+      </div>
+    </div>`;
+  }).join("");
+  const errores = [p.gls_error && `GLS: ${esc(p.gls_error)}`, p.shopify_error && `Shopify: ${esc(p.shopify_error)}`].filter(Boolean);
+  let pie = "";
+  if (e === "producido"){
+    pie = p.recogida
+      ? `<div class="hecho"><span class="check">✔ Listo para recoger</span></div>`
+      : `<div class="hecho">
+          <span class="${p.etiqueta_impresa ? "check" : "nocheck"}">${p.etiqueta_impresa ? "✔ Etiqueta impresa" : "✖ Etiqueta no impresa"}</span>
+          <span>GLS ${esc(p.gls_codbarras ?? "—")}${p.gls_modo === "pruebas" ? " (prueba)" : ""}</span>
+          ${p.shopify_fulfillment_id ? `<span class="check">✔ Shopify</span>` : ""}
+          ${p.gls_codbarras ? `<button data-reimp="${p.order_id}">Reimprimir</button>` : ""}
+        </div>`;
+  } else if (activo(p)){
+    const id = p.order_id, busy = ocupado.has(id);
+    const btns = [];
+    if (E.ant) btns.push(`<button class="atras" title="Volver a ${ETAPA[E.ant].label}" data-mover="${id}" data-desde="${e}" data-hacia="${E.ant}">↶</button>`);
+    if (e === "pendiente") btns.push(`<button class="sec" data-mover="${id}" data-desde="pendiente" data-hacia="sin_stock">Sin stock</button>`);
+    const sigC = colorVars(E.sig === "producido" ? "producido" : E.sig);
+    if (e === "empaquetar") btns.push(`<button class="go" style="${sigC}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Generando etiqueta…" : E.sigTxt}</button>`);
+    else btns.push(`<button class="go" style="${sigC}" data-mover="${id}" data-desde="${e}" data-hacia="${E.sig}">${E.sigTxt}</button>`);
+    pie = `<div class="acciones">${btns.join("")}</div>`;
+  }
+  return `<article class="${cls}" style="${colorVars(e)}">
+    <div class="top"><span class="num">${esc(p.order_name)}</span><span class="fecha">${fecha(p.creado_shopify)}</span>${d >= 2 && e !== "producido" ? `<span class="dias">hace ${d} días</span>` : ""}<div class="badges">${badges}</div></div>
+    <div class="cliente">${esc(p.cliente_nombre ?? "")}${p.ciudad ? " · " + esc(p.ciudad) : ""}${p.cp ? " (" + esc(p.cp) + ")" : ""}${p._urg ? " · <b>" + esc(p.metodo_envio) + "</b>" : ""}</div>
+    <div class="lineas">${lineas}</div>
+    ${p.nota ? `<div class="nota">📝 ${esc(p.nota)}</div>` : ""}
+    ${errores.length ? `<div class="err">${errores.join("<br>")}</div>` : ""}
+    ${pie}
+  </article>`;
+}
+
+// Resumen: prendas en una etapa, agrupadas por modelo → talla. Las personalizadas van una a una con su texto.
+function lineasEnEtapa(etapa){
+  const f = $("#fFecha").value, out = [];
+  for (const p of pedidos){
+    if (!activo(p) || p._estado === "producido") continue;
+    if (f === "hoy" && !esHoy(p.creado_shopify)) continue;
+    if (f === "atrasados" && esHoy(p.creado_shopify)) continue;
+    for (const l of p.fab_lineas ?? []) if ((l.estado ?? "pendiente") === etapa) out.push({ ...l, p });
+  }
+  return out;
+}
+function pintarResumen(){
+  const R = ["pendiente", "sin_stock", "cortar", "estampar"];
+  $("#tabs").innerHTML = R.map((e) => {
+    const ls = lineasEnEtapa(e); const uds = ls.reduce((s, l) => s + l.cantidad, 0); const u = ls.filter((l) => l.p._urg).reduce((s, l) => s + l.cantidad, 0);
+    return `<button class="tab ${e === etapaR ? "on" : ""}" data-etapar="${e}">${ETAPA[e].plural} <b>${uds}</b>${u ? `<span class="u">${u} urg</span>` : ""}</button>`;
+  }).join("");
+
+  const ls = lineasEnEtapa(etapaR);
+  const grupos = new Map();
+  for (const l of ls){
+    if (!grupos.has(l.titulo)) grupos.set(l.titulo, { titulo: l.titulo, filas: new Map(), uds: 0, urg: 0, antiguo: l.p.creado_shopify });
+    const g = grupos.get(l.titulo); g.uds += l.cantidad; if (l.p._urg) g.urg += l.cantidad;
+    if (l.p.creado_shopify < g.antiguo) g.antiguo = l.p.creado_shopify;
+    const pers = (l.personalizacion ?? []).map((x) => x.value).join(" · ");
+    const key = pers ? `p:${l.line_id}` : `v:${l.variante ?? ""}`;
+    if (!g.filas.has(key)) g.filas.set(key, { variante: l.variante, pers, ids: [], uds: 0, urg: false, pedidos: [] });
+    const fl = g.filas.get(key); fl.ids.push(l.line_id); fl.uds += l.cantidad; fl.urg ||= l.p._urg; fl.pedidos.push(l.p);
+  }
+  const lista = [...grupos.values()].sort((a, b) => (b.urg > 0) - (a.urg > 0) || b.uds - a.uds);
+  const total = ls.reduce((s, l) => s + l.cantidad, 0);
+  const fTxt = { todos: "", atrasados: " · entrados hasta ayer", hoy: " · entrados hoy" }[$("#fFecha").value];
+  const hoyTxt = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+  $("#resumen").innerHTML = `
+    <div class="rtitulo"><h2>${ETAPA[etapaR].plural}</h2><span class="tot">${total} prendas · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
+      <button class="btn-sec" id="bImprLista" style="margin-left:auto">🖨 Imprimir listado</button></div>
+    ${lista.length ? lista.map((g) => {
+      const ids = [...g.filas.values()].flatMap((f) => f.ids);
+      const todos = ids.every((i) => sel.has(i));
+      const filas = [...g.filas.values()].sort((a, b) => (b.urg - a.urg) || (a.pers ? 1 : 0) - (b.pers ? 1 : 0) || String(a.variante).localeCompare(String(b.variante), "es", { numeric: true }));
+      return `<section class="grupo ${g.urg ? "urgente" : ""}">
+        <div class="ghead"><input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>
+          <div class="gn">${esc(g.titulo)} ${g.urg ? `<span class="badge b-urg">${g.urg} urgente${g.urg > 1 ? "s" : ""}</span>` : ""}</div>
+          <div class="gq">${g.uds}<small> uds</small></div></div>
+        ${filas.map((f) => `<label class="rrow ${f.urg ? "urg" : ""}">
+          <input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>
+          <div><div class="rv">${esc(f.variante ?? "—")}${f.pers ? ` · <span class="pers" style="font-size:15px;padding:2px 8px">${esc(f.pers)}</span>` : ""}</div>
+            <div class="rp">${[...new Set(f.pedidos)].sort(porPrioridad).map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</div></div>
+          <div class="rq">${f.uds}</div></label>`).join("")}
+      </section>`;
+    }).join("") : `<div class="vacio">No hay prendas en esta etapa.</div>`}`;
+  pintarBarra();
+}
+function pintarBarra(){
+  const n = [...sel].length;
+  const b = $("#barra"); b.classList.toggle("hidden", vista !== "resumen" || !n);
+  if (!n) return;
+  const E = ETAPA[etapaR];
+  const uds = lineasEnEtapa(etapaR).filter((l) => sel.has(l.line_id)).reduce((s, l) => s + l.cantidad, 0);
+  b.innerHTML = `<span class="sel">${uds} prenda${uds > 1 ? "s" : ""} seleccionada${uds > 1 ? "s" : ""}</span>
+    <button class="sec" data-bclear>Quitar selección</button>
+    ${E.ant ? `<button class="sec" data-bmover="${E.ant}">↶ ${ETAPA[E.ant].label}</button>` : ""}
+    ${etapaR === "pendiente" ? `<button class="sec" data-bmover="sin_stock">Sin stock</button>` : ""}
+    <button class="go" data-bmover="${E.sig}">${E.sigTxt}</button>`;
+}
+
+// ───── eventos ─────
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.vista){ vista = b.dataset.vista; sel.clear(); pintar(); }
+  else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
+  else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
+  else if (b.dataset.mover) moverPedido(Number(b.dataset.mover), b.dataset.desde, b.dataset.hacia);
+  else if (b.dataset.empaq) empaquetado(Number(b.dataset.empaq));
+  else if (b.dataset.reimp) reimprimir(Number(b.dataset.reimp));
+  else if (b.dataset.bmover) moverLineas([...sel], b.dataset.bmover);
+  else if (b.dataset.bclear !== undefined){ sel.clear(); pintar(); }
+  else if (b.id === "bImprLista") imprimir("imp-lista");
+});
+document.addEventListener("change", (e) => {
+  const c = e.target;
+  const ids = (c.dataset.selg || c.dataset.self || "").split(",").filter(Boolean).map(Number);
+  if (ids.length){ ids.forEach((i) => c.checked ? sel.add(i) : sel.delete(i)); pintarResumen(); }
+  if (c.id === "fFecha"){ sel.clear(); pintar(); }
+});
+$("#buscar").addEventListener("input", pintar);
+$("#bImportar").onclick = async () => { toast("Importando de Shopify…"); const j = await fn({ accion: "importar" }); j.ok ? toast(`${j.nuevos} pedidos nuevos`) : toast(j.error, true); cargar(); };
+$("#bSalir").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+$("#fLogin").onsubmit = async (e) => {
+  e.preventDefault();
+  const { error } = await sb.auth.signInWithPassword({ email: $("#email").value, password: $("#pass").value });
+  if (error){ $("#loginErr").textContent = "Email o contraseña incorrectos"; return; }
+  iniciar();
+};
+
+async function iniciar(){
+  if (DEMO){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); await cargar(); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  $("#login").classList.toggle("hidden", !!session);
+  $("#app").classList.toggle("hidden", !session);
+  if (!session) return;
+  await cargar();
+  const refrescar = () => { clearTimeout(iniciar.t); iniciar.t = setTimeout(cargar, 400); };
+  sb.channel("fab")
+    .on("postgres_changes", { event: "*", schema: "public", table: "fab_pedidos" }, refrescar)
+    .on("postgres_changes", { event: "*", schema: "public", table: "fab_lineas" }, refrescar)
+    .subscribe();
+  setInterval(cargar, 60000);
+}
+iniciar();
+</script>
+</body>
+</html>

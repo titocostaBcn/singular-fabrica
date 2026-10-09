@@ -1,0 +1,10 @@
+# Publicación de la pantalla de fábrica (Netlify, desde GitHub). Cada cambio subido a "main" se publica solo.
+[build]
+  publish = "web"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "no-referrer"
+    X-Robots-Tag = "noindex, nofollow"
