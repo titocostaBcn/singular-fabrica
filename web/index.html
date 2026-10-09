@@ -104,6 +104,8 @@
   .rhacer input:focus{outline:none;border-color:var(--ink)}
   .rhacer button{border:0;border-radius:9px;padding:10px 14px;font-weight:800;background:var(--c,var(--ink));color:#fff;white-space:nowrap}
   .rhacer button[disabled]{opacity:.5}
+  .retapas{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:320px}
+  .retapas .chip{font-size:12px;padding:4px 8px}
   .rhacer .todos{background:#fff;color:var(--cortar);border:2px solid var(--cortar);padding:9px 12px}
   .rhacer .menos{background:#fff;color:var(--ink);border:1px solid var(--line);padding:10px 10px}
   .rq .rqd{font-size:11px;font-weight:600;color:var(--muted);line-height:1.2;text-align:right}
@@ -207,6 +209,7 @@ const ETAPA = {
   estampar:   { label: "Estampar",      plural: "Estampar",      sig: "empaquetar", sigTxt: "Estampado · a empaquetar →", ant: "cortar" },
   empaquetar: { label: "Empaquetar",    plural: "Empaquetar",    sig: "producido",  sigTxt: "✔ Empaquetado · etiqueta", ant: "estampar" },
   producido:  { label: "Producido",     plural: "Producidos",    sig: null,         sigTxt: null,                       ant: null },
+  todos:      { label: "Todos",         plural: "Todos",         sig: null,         sigTxt: null,                       ant: null }, // pseudo-etapa del Resumen
 };
 const ORDEN_LINEA = ["pendiente", "sin_stock", "cortar", "estampar", "empaquetar"];
 const colorVars = (e) => `--c:var(--${e});--cb:var(--${e}-bg)`;
@@ -508,12 +511,12 @@ function lineasEnEtapa(etapa){
     if (!activo(p) || p._estado === "producido") continue;
     if (f === "hoy" && !esHoy(p.creado_shopify)) continue;
     if (f === "atrasados" && esHoy(p.creado_shopify)) continue;
-    for (const l of p.fab_lineas ?? []) if ((l.estado ?? "pendiente") === etapa) out.push({ ...l, p });
+    for (const l of p.fab_lineas ?? []) if (etapa === "todos" || (l.estado ?? "pendiente") === etapa) out.push({ ...l, p });
   }
   return out;
 }
 function pintarResumen(){
-  const R = ["pendiente", "sin_stock", "cortar", "estampar"];
+  const R = ["pendiente", "sin_stock", "cortar", "estampar", "todos"];
   $("#tabs").innerHTML = R.map((e) => {
     const ls = lineasEnEtapa(e); const u = ls.filter((l) => l.p._urg).reduce((s, l) => s + l.cantidad, 0);
     const uds = e === "cortar" ? construirResumen("cortar").quedan : ls.reduce((s, l) => s + l.cantidad, 0);
@@ -527,22 +530,24 @@ function pintarResumen(){
   const hoyTxt = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
   const E = ETAPA[etapaR];
   $("#resumen").innerHTML = `
-    <div class="rtitulo"><h2>${E.plural}</h2><span class="tot">${contador ? `<b>${quedan} por cortar</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
+    <div class="rtitulo"><h2>${etapaR === "todos" ? "Todo lo pendiente de producir" : E.plural}</h2><span class="tot">${contador ? `<b>${quedan} por cortar</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
       <span style="margin-left:auto;display:flex;gap:8px"><button class="btn-sec" id="bExcel">⬇ Excel</button><button class="btn-sec" id="bImprLista">🖨 Imprimir listado</button></span></div>
     ${lista.length ? lista.map((g, gi) => {
       const ids = g.filas.flatMap((f) => f.ids);
       const todos = ids.every((i) => sel.has(i));
       return `<section class="grupo ${g.urg ? "urgente" : ""}">
-        <div class="ghead"><input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>
+        <div class="ghead">${etapaR === "todos" ? `<span></span>` : `<input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>`}
           <div class="gn">${esc(g.titulo)} ${g.urg ? `<span class="badge b-urg">${g.urg} urgente${g.urg > 1 ? "s" : ""}</span>` : ""}</div>
           <div class="gq">${contador ? g.quedan : g.uds}<small> ${contador ? "por cortar" : "uds"}</small></div></div>
         ${g.filas.map((f, fi) => { const k = gi + "-" + fi; filasR.set(k, f); return `<div class="rrow ${f.urg ? "urg" : ""}">
-          <input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>
+          ${etapaR === "todos" ? `<span></span>` : `<input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>`}
           <div><div class="rv">${f.talla ? `<span class="talla">Talla ${esc(f.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}</div>${f.resto ? `<div class="resto" style="margin:4px 0 0">${esc(f.resto)}</div>` : ""}</div>
           <div>${f.pers ? `<div class="rpers"><small>${esc(f.persKey || "Personalización")}${f.unidad ? " · " + f.unidad : ""}</small>${esc(f.pers)}</div>` : (g.conPers ? `<div class="rpers vacia">Sin personalización</div>` : "")}
             <div class="rp">${f.pedidosOrd.map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</div>
             ${f.pers && f.nota ? `<div class="nota" style="margin-top:6px;font-size:14px"><b>📝 Nota del cliente:</b> ${esc(f.nota)}</div>` : ""}</div>
-          ${f.pers
+          ${etapaR === "todos"
+            ? `<div class="retapas">${ORDEN_LINEA.filter((e) => f.porEtapa?.[e]).map((e) => `<span class="chip" style="${colorVars(e)}">${ETAPA[e].label} ${f.porEtapa[e]}</span>`).join(" ")}</div><div class="rq">${f.uds}</div>`
+            : f.pers
             ? `<div class="rhacer" style="${colorVars(E.sig === "producido" ? "producido" : E.sig)}" title="${esc(E.sigTxt)}"><button data-hacer="${k}">✔ Hecha</button></div><div class="rq">1</div>`
             : contador
               ? `<div class="rhacer" style="${colorVars("cortar")}">
@@ -569,12 +574,14 @@ function construirResumen(etapa){
     if (pers){ // una línea por prenda personalizada (si la línea trae 2 uds, salen 2 filas)
       for (let u = 1; u <= l.cantidad; u++)
         g.filas.set(`p:${l.line_id}:${u}`, { talla: v.talla, resto: v.resto, pers, persKey: (l.personalizacion ?? []).map((x) => x.key).join(" · "),
-          ids: [l.line_id], uds: 1, unidad: l.cantidad > 1 ? `${u} de ${l.cantidad}` : null, urg: l.p._urg, pedidos: [l.p], nota: l.p.nota ?? "" });
+          ids: [l.line_id], uds: 1, unidad: l.cantidad > 1 ? `${u} de ${l.cantidad}` : null, urg: l.p._urg, pedidos: [l.p], nota: l.p.nota ?? "",
+          porEtapa: { [l.estado ?? "pendiente"]: 1 } });
       continue;
     }
     const key = `v:${l.variante ?? ""}`;
     if (!g.filas.has(key)) g.filas.set(key, { talla: v.talla, resto: v.resto, pers: "", variante: l.variante ?? null, titulo: l.titulo, clave: l.titulo + "|" + (l.variante ?? ""), ids: [], uds: 0, urg: false, pedidos: [] });
     const fl = g.filas.get(key); fl.ids.push(l.line_id); fl.uds += l.cantidad; fl.urg ||= l.p._urg; fl.pedidos.push(l.p);
+    fl.porEtapa ??= {}; const le = l.estado ?? "pendiente"; fl.porEtapa[le] = (fl.porEtapa[le] ?? 0) + l.cantidad;
   }
   const lista = [...grupos.values()].sort((a, b) => (b.urg > 0) - (a.urg > 0) || b.uds - a.uds);
   const contador = etapa === "cortar"; // en Cortar vinilo las genéricas llevan contador de cortadas
@@ -635,14 +642,14 @@ async function exportarExcel(){
     // Hoja 1: Resumen
     const ws = wb.addWorksheet("Resumen", { views: [{ state: "frozen", ySplit: 4 }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
     ws.columns = [{ width: 38 }, { width: 14 }, { width: 28 }, { width: 26 }, { width: 11 }, { width: 60 }, { width: 10 }, { width: 11 }, { width: 10 }, { width: 40 }];
-    ws.mergeCells("A1:J1"); ws.getCell("A1").value = `Singular Wardrobe · ${E.plural} — pendiente`;
+    ws.mergeCells("A1:J1"); ws.getCell("A1").value = etapa === "todos" ? "Singular Wardrobe · Todo lo pendiente de producir" : `Singular Wardrobe · ${E.plural} — pendiente`;
     ws.getCell("A1").font = { size: 16, bold: true };
     ws.mergeCells("A2:J2");
     ws.getCell("A2").value = `Generado ${ahora.toLocaleString("es-ES")} · ${fTxt} · ${etapa === "cortar" ? construirResumen(etapa).quedan + " por cortar de " + total : total + " prendas"} · ${lista.length} modelos`;
     ws.getCell("A2").font = { size: 11, color: { argb: "FF6F6A62" } };
     const cab = ws.getRow(4);
     const { quedan, contador } = construirResumen(etapa);
-    cab.values = ["Modelo", "Talla", "Color / variante", "Personalización", contador ? "Por cortar" : "Uds", "Pedidos", "Urgente", contador ? "En pedidos" : "", contador ? "Cortadas" : "", "Nota del cliente"];
+    cab.values = ["Modelo", "Talla", "Color / variante", "Personalización", contador ? "Por cortar" : "Uds", "Pedidos", "Urgente", contador ? "En pedidos" : etapa === "todos" ? "Etapas" : "", contador ? "Cortadas" : "", "Nota del cliente"];
     cab.eachCell((c) => { c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); c.border = borde; c.alignment = { vertical: "middle" }; });
     cab.height = 20;
     for (const g of lista){
@@ -650,7 +657,7 @@ async function exportarExcel(){
       r.eachCell({ includeEmpty: true }, (c) => { c.font = { bold: true, size: 12 }; c.fill = fill(g.urg ? "FDE2DE" : "EFEBE4"); c.border = borde; });
       r.getCell(5).alignment = { horizontal: "center" };
       for (const f of g.filas){
-        const fr = ws.addRow(["", f.talla ?? "Sin talla", f.resto || "", f.pers || "", contador ? f.quedan : f.uds, f.pedidosOrd.map((p) => p.order_name).join(", "), f.urg ? "Sí" : "", contador ? f.uds : "", contador ? f.hechas : "", f.pers ? (f.nota || "") : ""]);
+        const fr = ws.addRow(["", f.talla ?? "Sin talla", f.resto || "", f.pers || "", contador ? f.quedan : f.uds, f.pedidosOrd.map((p) => p.order_name).join(", "), f.urg ? "Sí" : "", contador ? f.uds : etapa === "todos" ? ORDEN_LINEA.filter((e) => f.porEtapa?.[e]).map((e) => `${ETAPA[e].label} ${f.porEtapa[e]}`).join(" · ") : "", contador ? f.hechas : "", f.pers ? (f.nota || "") : ""]);
         fr.eachCell({ includeEmpty: true }, (c) => { c.border = borde; c.alignment = { vertical: "top", wrapText: true }; if (f.urg) c.fill = fill("FFF0EE"); });
         fr.getCell(2).font = { bold: true };
         fr.getCell(4).font = { bold: true, size: 13 };
@@ -692,6 +699,7 @@ async function exportarExcel(){
 }
 
 function pintarBarra(){
+  if (etapaR === "todos") sel.clear();
   const n = [...sel].length;
   const b = $("#barra"); b.classList.toggle("hidden", vista !== "resumen" || !n);
   if (!n) return;
