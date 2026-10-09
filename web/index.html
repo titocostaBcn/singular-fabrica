@@ -68,6 +68,9 @@
   .linea img,.linea .ph{width:52px;height:64px;object-fit:cover;border-radius:8px;background:var(--line)}
   .linea .t{font-weight:600;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
   .linea .v{color:var(--muted);font-size:14px}
+  .talla{display:inline-block;margin-top:4px;border:2px solid var(--ink);border-radius:7px;padding:2px 9px;font-weight:800;font-size:16px;letter-spacing:.02em}
+  .talla.sin{border-style:dashed;border-color:var(--line);color:var(--muted);font-weight:600;font-size:13px}
+  .resto{color:var(--muted);font-size:14px;margin-left:6px}
   .pers{margin-top:4px;background:#1d1b18;color:#fff;border-radius:8px;padding:6px 10px;font-size:17px;font-weight:700;display:inline-block}
   .pers span{opacity:.7;font-weight:500;font-size:13px;margin-right:6px}
   .nota{background:#fff8e6;border:1px dashed #e0c27a;border-radius:8px;padding:8px 10px;font-size:14px}
@@ -194,6 +197,25 @@ function estadoPedido(p){ // el de la prenda más atrasada
   if (!ls.length) return p.estado;
   return ORDEN_LINEA[Math.min(...ls.map((e) => ORDEN_LINEA.indexOf(e)))];
 }
+// "Talla L / Color rojo" → { talla: "L", resto: "Color rojo" }; "Talla única (medida en descripción)" → { talla: "Única" }
+const RE_TALLA = /^(?:talla\s+)?((?:\d?X{0,3}[SML]|\dXL|X{1,3}L|XXS|XS)(?:\s*\/\s*(?:\d?X{0,3}[SML]|\dXL|X{1,3}L))?|\d{2}(?:\s*-\s*\d{2})?|[úu]nica)(\s*\([^)]*\))?$/i;
+function partes(variante){
+  const out = { talla: null, resto: [] };
+  for (const raw of String(variante ?? "").split(" / ").map((x) => x.trim()).filter(Boolean)){
+    const m = !out.talla && raw.match(RE_TALLA);
+    if (m){
+      let t = m[1].replace(/^[úu]nica$/i, "Única");
+      const extra = (m[2] ?? "").trim();
+      if (extra && !/medida/i.test(extra)) t += " " + extra;
+      out.talla = t.toUpperCase().replace("ÚNICA", "Única");
+    } else out.resto.push(raw);
+  }
+  out.resto = out.resto.join(" · ");
+  return out;
+}
+const ORDEN_TALLAS = ["XXS","XS","S","S/M","M","M/L","L","L/XL","XL","2XL","XXL","3XL","Única"];
+const rangoTalla = (t) => { const i = ORDEN_TALLAS.indexOf(String(t ?? "").split(" ")[0]); return i < 0 ? 50 : i; };
+const textoPers = (l) => (l.personalizacion ?? []).map((x) => x.value).filter(Boolean).join(" · ");
 const urgente = (p) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t) => /urgent/i.test(t));
 const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_shopify) - new Date(b.creado_shopify));
 
@@ -414,7 +436,7 @@ function card(p){
       ${l.imagen_url ? `<img src="${esc(l.imagen_url)}&width=120" alt="" loading="lazy">` : `<div class="ph"></div>`}
       <div>
         <div class="t">${l.cantidad > 1 ? `<b>${l.cantidad}×</b>` : ""}${esc(l.titulo)} ${mixto && e !== "producido" ? `<span class="chip" style="${colorVars(le)}">${ETAPA[le].label}</span>` : ""}</div>
-        ${l.variante ? `<div class="v">${esc(l.variante)}</div>` : ""}
+        ${(() => { const v = partes(l.variante); return `<div>${v.talla ? `<span class="talla">Talla ${esc(v.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}${v.resto ? `<span class="resto">${esc(v.resto)}</span>` : ""}</div>`; })()}
         ${(l.personalizacion ?? []).map((x) => `<div class="pers"><span>${esc(x.key)}</span>${esc(x.value)}</div>`).join(" ")}
       </div>
     </div>`;
@@ -475,9 +497,10 @@ function pintarResumen(){
     if (!grupos.has(l.titulo)) grupos.set(l.titulo, { titulo: l.titulo, filas: new Map(), uds: 0, urg: 0, antiguo: l.p.creado_shopify });
     const g = grupos.get(l.titulo); g.uds += l.cantidad; if (l.p._urg) g.urg += l.cantidad;
     if (l.p.creado_shopify < g.antiguo) g.antiguo = l.p.creado_shopify;
-    const pers = (l.personalizacion ?? []).map((x) => x.value).join(" · ");
-    const key = pers ? `p:${l.line_id}` : `v:${l.variante ?? ""}`;
-    if (!g.filas.has(key)) g.filas.set(key, { variante: l.variante, pers, ids: [], uds: 0, urg: false, pedidos: [] });
+    const pers = textoPers(l);
+    const v = partes(l.variante);
+    const key = pers ? `p:${l.line_id}` : `v:${v.talla ?? ""}|${v.resto}`;
+    if (!g.filas.has(key)) g.filas.set(key, { talla: v.talla, resto: v.resto, pers, ids: [], uds: 0, urg: false, pedidos: [] });
     const fl = g.filas.get(key); fl.ids.push(l.line_id); fl.uds += l.cantidad; fl.urg ||= l.p._urg; fl.pedidos.push(l.p);
   }
   const lista = [...grupos.values()].sort((a, b) => (b.urg > 0) - (a.urg > 0) || b.uds - a.uds);
@@ -490,14 +513,15 @@ function pintarResumen(){
     ${lista.length ? lista.map((g) => {
       const ids = [...g.filas.values()].flatMap((f) => f.ids);
       const todos = ids.every((i) => sel.has(i));
-      const filas = [...g.filas.values()].sort((a, b) => (b.urg - a.urg) || (a.pers ? 1 : 0) - (b.pers ? 1 : 0) || String(a.variante).localeCompare(String(b.variante), "es", { numeric: true }));
+      const filas = [...g.filas.values()].sort((a, b) => (b.urg - a.urg) || (a.pers ? 1 : 0) - (b.pers ? 1 : 0) || rangoTalla(a.talla) - rangoTalla(b.talla) || String(a.resto).localeCompare(String(b.resto), "es"));
       return `<section class="grupo ${g.urg ? "urgente" : ""}">
         <div class="ghead"><input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>
           <div class="gn">${esc(g.titulo)} ${g.urg ? `<span class="badge b-urg">${g.urg} urgente${g.urg > 1 ? "s" : ""}</span>` : ""}</div>
           <div class="gq">${g.uds}<small> uds</small></div></div>
         ${filas.map((f) => `<label class="rrow ${f.urg ? "urg" : ""}">
           <input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>
-          <div><div class="rv">${esc(f.variante ?? "—")}${f.pers ? ` · <span class="pers" style="font-size:15px;padding:2px 8px">${esc(f.pers)}</span>` : ""}</div>
+          <div><div class="rv">${f.talla ? `<span class="talla">Talla ${esc(f.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}${f.resto ? `<span class="resto">${esc(f.resto)}</span>` : ""}</div>
+            ${f.pers ? `<div class="pers" style="font-size:15px;padding:3px 9px"><span>Personalización</span>${esc(f.pers)}</div>` : ""}
             <div class="rp">${[...new Set(f.pedidos)].sort(porPrioridad).map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</div></div>
           <div class="rq">${f.uds}</div></label>`).join("")}
       </section>`;
