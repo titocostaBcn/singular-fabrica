@@ -81,6 +81,12 @@
   .acciones button.sec{flex:0.8}
   .acciones button.go{background:var(--c);border-color:var(--c);color:#fff;flex:1.6;font-size:16px}
   .acciones button[disabled]{opacity:.6;cursor:wait}
+  .otros{display:grid;gap:8px}
+  .otros-f{display:flex;gap:8px;flex-wrap:wrap}
+  .otros-f input{flex:1;min-width:200px;font:inherit;padding:12px;border:2px solid var(--line);border-radius:10px}
+  .otros-f button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:12px 14px;font-weight:700}
+  .otros-f button.go{background:var(--c);border-color:var(--c);color:#fff}
+  .acciones .otrosb{flex:1}
   .hecho{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
   .check{font-weight:700;color:var(--producido)}
   .nocheck{font-weight:700;color:var(--pendiente)}
@@ -201,13 +207,14 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 // ───── flujo de producción ─────
-// Cada prenda avanza: pendiente → (sin_stock) → cortar → estampar → empaquetar. El pedido pasa a producido al empaquetar (etiqueta GLS).
+// Cada prenda avanza: cortar (vinilo y estampado) ⇄ sin_stock → empaquetar. El pedido pasa a producido al empaquetar: etiqueta GLS, otros envíos o recogida.
+// ('estampar' queda solo por compatibilidad: ya no se usa)
 const ETAPA = {
   pendiente:  { label: "Pendiente",     plural: "Pendientes",    sig: "cortar",     sigTxt: "A cortar vinilo →",      ant: null },
   sin_stock:  { label: "Sin stock",     plural: "Sin stock",     sig: "cortar",     sigTxt: "Stock OK · a cortar →",   ant: null },
-  cortar:     { label: "Cortar vinilo", plural: "Cortar vinilo", sig: "estampar",   sigTxt: "Cortado · a estampar →",  ant: null },
+  cortar:     { label: "Cortar y estampar", plural: "Cortar y estampar", sig: "empaquetar", sigTxt: "Hecho · a empaquetar →", ant: null },
   estampar:   { label: "Estampar",      plural: "Estampar",      sig: "empaquetar", sigTxt: "Estampado · a empaquetar →", ant: "cortar" },
-  empaquetar: { label: "Empaquetar",    plural: "Empaquetar",    sig: "producido",  sigTxt: "✔ Empaquetado · etiqueta", ant: "estampar" },
+  empaquetar: { label: "Empaquetar",    plural: "Empaquetar",    sig: "producido",  sigTxt: "✔ Etiqueta GLS", ant: "cortar" },
   producido:  { label: "Producido",     plural: "Producidos",    sig: null,         sigTxt: null,                       ant: null },
   todos:      { label: "Todos",         plural: "Todos",         sig: null,         sigTxt: null,                       ant: null }, // pseudo-etapa del Resumen
 };
@@ -242,7 +249,7 @@ const urgente = (p) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tag
 const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_shopify) - new Date(b.creado_shopify));
 
 let vista = "pedidos", tab = "cortar", etapaR = "cortar";
-let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map();
+let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null;
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
 const esHoy = (t) => t && new Date(t).toDateString() === new Date().toDateString();
@@ -251,9 +258,10 @@ const diasDesde = (t) => Math.floor((new Date().setHours(0,0,0,0) - new Date(new
 function toast(msg, err = false){ const t = $("#toast"); t.textContent = msg; t.className = err ? "e" : ""; clearTimeout(toast.h); toast.h = setTimeout(() => t.className = "hidden", err ? 7000 : 3000); }
 
 const TABS = [
-  ...["pendiente", "sin_stock", "cortar", "estampar", "empaquetar"].map((e) => ({ id: e, label: ETAPA[e].plural, f: (p) => p._estado === e && activo(p) })),
+  ...["pendiente", "sin_stock", "cortar", "empaquetar"].map((e) => ({ id: e, label: ETAPA[e].plural, f: (p) => p._estado === e && activo(p) })),
   { id: "producido",    label: "Producidos hoy", f: (p) => p._estado === "producido" && esHoy(p.estado_at) },
-  { id: "sin_etiqueta", label: "Sin etiqueta",   f: (p) => p._estado === "producido" && !p.recogida && !p.etiqueta_impresa && !p.cancelado },
+  { id: "otros",        label: "Otros envíos",   f: (p) => p._estado === "producido" && p.envio_tipo === "otros" },
+  { id: "sin_etiqueta", label: "Sin etiqueta",   f: (p) => p._estado === "producido" && !p.recogida && p.envio_tipo !== "otros" && !p.etiqueta_impresa && !p.cancelado },
   { id: "todos",        label: "Todos",          f: () => true },
 ];
 
@@ -277,7 +285,7 @@ const Demo = (() => {
       const [titulo, tallas, pk] = MODELOS[rnd(MODELOS.length)];
       const pers = pk && (pk === "Personalización" ? k % 2 === 0 || i % 3 === 0 : rnd(2)) ? [{ key: pk, value: pk === "Personalización" ? ["STAR","ROCK","1973","MSN","Singular","RT","LOVE"][rnd(7)] : pk.startsWith("Inicial ") ? "ABCDEFGHLMNPS"[rnd(13)] : "ABCDEFGHLMNPS"[rnd(13)] + "ABCDEFGHLMNPS"[rnd(13)] }] : [];
       lineas.push({ line_id: lid++, titulo, variante: tallas[rnd(tallas.length)], cantidad: rnd(6) === 0 ? 2 : 1, personalizacion: pers, imagen_url: null,
-        estado: i < 8 ? ["estampar","estampar","estampar","empaquetar","estampar","empaquetar","estampar","sin_stock"][i] : "cortar" });
+        estado: i < 8 ? ["empaquetar","cortar","cortar","empaquetar","cortar","empaquetar","cortar","sin_stock"][i] : "cortar" });
     }
     const [ciudad, cp] = CIUDADES[rnd(CIUDADES.length)];
     pedidos.push({ order_id: 1000 + i, order_name: "#9" + String(1000 + i).padStart(4, "0"), creado_shopify: hace(h), estado: "pendiente", estado_at: hace(h),
@@ -313,6 +321,12 @@ const Demo = (() => {
       return { ok: true, codbarras: p.gls_codbarras, modo: "pruebas", pdf: PDF, shopify: "desactivado" };
     }
     if (b.accion === "impresa"){ p.etiqueta_impresa = true; return { ok: true }; }
+    if (b.accion === "otros"){
+      if (!(estadoPedido(p) === "empaquetar" || p.envio_tipo === "otros")) return { ok: false, error: "El pedido no está en Empaquetar" };
+      if (p.estado !== "producido"){ p.estado = "producido"; p.estado_at = new Date().toISOString(); }
+      p.envio_tipo = "otros"; p.envio_info = b.info || null; p.envio_info_at = new Date().toISOString();
+      return { ok: true };
+    }
     if (b.accion === "reimprimir") return { ok: true, pdf: PDF };
     if (b.accion === "importar"){
       pedidos.push({ ...JSON.parse(JSON.stringify(pedidos[25])), order_id: n, order_name: "#9" + n, creado_shopify: new Date().toISOString(),
@@ -394,6 +408,17 @@ async function empaquetado(id){
   finally { ocupado.delete(id); await cargar(); }
 }
 
+async function otroEnvio(id, info, nuevo){
+  let r;
+  if (DEMO) r = await Demo.fn({ accion: "otros", order_id: id, info });
+  else { const { error } = await sb.rpc("fab_otro_envio", { p_order_id: id, p_info: info }); r = error ? { ok: false, error: error.message } : { ok: true }; }
+  if (!r.ok){ toast(r.error, true); return; }
+  otrosAbierto = null;
+  const p = pedidos.find((x) => x.order_id === id);
+  toast(nuevo ? `${p?.order_name ?? ""} → Producido · Otros envíos` : "Anotación guardada");
+  await cargar();
+}
+
 async function reimprimir(id){
   const j = await fn({ accion: "reimprimir", order_id: id });
   if (!j.ok){ toast(j.error, true); return; }
@@ -442,7 +467,7 @@ function pintarPedidos(){
   $("#tabs").innerHTML = TABS.map((t) => {
     const ps = filtrados.filter(t.f); const u = ps.filter((p) => p._urg).length;
     if (t.id === "pendiente" && !ps.length && tab !== "pendiente") return "";
-    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && t.id !== "todos" && t.id !== "producido" ? `<span class="u">${u} urg</span>` : ""}</button>`;
+    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
   let lista = filtrados.filter(TABS.find((t) => t.id === tab).f);
   if (tab === "producido") lista = lista.slice().reverse();
@@ -475,7 +500,12 @@ function card(p){
   }).join("");
   const errores = [p.gls_error && `GLS: ${esc(p.gls_error)}`, p.shopify_error && `Shopify: ${esc(p.shopify_error)}`].filter(Boolean);
   let pie = "";
-  if (e === "producido"){
+  if (e === "producido" && p.envio_tipo === "otros"){
+    pie = `<div class="otros">
+        <div class="hecho"><span class="check">📦 Otros envíos</span>${p.envio_info_at ? `<span class="fecha">${fecha(p.envio_info_at)}</span>` : ""}</div>
+        <div class="otros-f"><input data-otrosinfo="${p.order_id}" value="${esc(p.envio_info ?? "")}" placeholder="¿Cómo ha salido? Transportista, nº seguimiento, entregado en mano…"><button data-otrosguardar="${p.order_id}">Guardar</button></div>
+      </div>`;
+  } else if (e === "producido"){
     pie = p.recogida
       ? `<div class="hecho"><span class="check">✔ Listo para recoger</span></div>`
       : `<div class="hecho">
@@ -490,9 +520,15 @@ function card(p){
     if (E.ant) btns.push(`<button class="atras" title="Volver a ${ETAPA[E.ant].label}" data-mover="${id}" data-desde="${e}" data-hacia="${E.ant}">↶</button>`);
     if (e === "pendiente" || e === "cortar") btns.push(`<button class="sec" data-mover="${id}" data-desde="${e}" data-hacia="sin_stock">Sin stock</button>`);
     const sigC = colorVars(E.sig === "producido" ? "producido" : E.sig);
-    if (e === "empaquetar") btns.push(`<button class="go" style="${sigC}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Generando etiqueta…" : E.sigTxt}</button>`);
+    if (e === "empaquetar"){
+      btns.push(`<button class="go" style="${sigC}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Generando etiqueta…" : p.recogida ? "✔ Listo para recoger" : E.sigTxt}</button>`);
+      if (!p.recogida) btns.push(`<button class="sec otrosb" data-otros="${id}">Otros envíos</button>`);
+    }
     else btns.push(`<button class="go" style="${sigC}" data-mover="${id}" data-desde="${e}" data-hacia="${E.sig}">${E.sigTxt}</button>`);
-    pie = `<div class="acciones">${btns.join("")}</div>`;
+    pie = otrosAbierto === id
+      ? `<div class="otros"><div class="otros-f"><input data-otrosinfo="${id}" placeholder="¿Cómo sale? Transportista, nº seguimiento, entregado en mano…" autofocus>
+           <button class="go" style="${colorVars("producido")}" data-otrosok="${id}">✔ Confirmar otros envíos</button><button data-otroscancel>Cancelar</button></div></div>`
+      : `<div class="acciones">${btns.join("")}</div>`;
   }
   return `<article class="${cls}" style="${colorVars(e)}">
     <div class="top"><span class="num">${esc(p.order_name)}</span><span class="fecha">${fecha(p.creado_shopify)}</span>${d >= 2 && e !== "producido" ? `<span class="dias">hace ${d} días</span>` : ""}<div class="badges">${badges}</div></div>
@@ -516,7 +552,7 @@ function lineasEnEtapa(etapa){
   return out;
 }
 function pintarResumen(){
-  const R = ["pendiente", "sin_stock", "cortar", "estampar", "todos"];
+  const R = ["pendiente", "sin_stock", "cortar", "todos"]; // empaquetar es por pedido (vista Pedidos)
   $("#tabs").innerHTML = R.map((e) => {
     const ls = lineasEnEtapa(e); const u = ls.filter((l) => l.p._urg).reduce((s, l) => s + l.cantidad, 0);
     const uds = e === "cortar" ? construirResumen("cortar").quedan : ls.reduce((s, l) => s + l.cantidad, 0);
@@ -720,6 +756,9 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
   else if (b.dataset.mover) moverPedido(Number(b.dataset.mover), b.dataset.desde, b.dataset.hacia);
   else if (b.dataset.empaq) empaquetado(Number(b.dataset.empaq));
+  else if (b.dataset.otros){ otrosAbierto = Number(b.dataset.otros); pintar(); document.querySelector(`input[data-otrosinfo="${otrosAbierto}"]`)?.focus(); }
+  else if (b.dataset.otroscancel !== undefined){ otrosAbierto = null; pintar(); }
+  else if (b.dataset.otrosok || b.dataset.otrosguardar){ const id = Number(b.dataset.otrosok || b.dataset.otrosguardar); otroEnvio(id, document.querySelector(`input[data-otrosinfo="${id}"]`)?.value ?? "", !!b.dataset.otrosok); }
   else if (b.dataset.reimp) reimprimir(Number(b.dataset.reimp));
   else if (b.dataset.bmover) moverLineas([...sel], b.dataset.bmover);
   else if (b.dataset.bclear !== undefined){ sel.clear(); pintar(); }
@@ -736,6 +775,7 @@ document.addEventListener("change", (e) => {
   if (c.id === "fFecha"){ sel.clear(); pintar(); }
 });
 $("#buscar").addEventListener("input", pintar);
+document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.otrosinfo){ e.preventDefault(); const id = Number(e.target.dataset.otrosinfo); otroEnvio(id, e.target.value, otrosAbierto === id); return; } });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.hecho){ e.preventDefault(); hacerUnidades(e.target.dataset.hecho, e.target.value); } });
 $("#bImportar").onclick = async () => { toast("Importando de Shopify…"); const j = await fn({ accion: "importar" }); j.ok ? toast(`${j.nuevos} pedidos nuevos`) : toast(j.error, true); cargar(); };
 $("#bSalir").onclick = async () => { await sb.auth.signOut(); location.reload(); };

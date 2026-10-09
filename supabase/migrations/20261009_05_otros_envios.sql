@@ -1,0 +1,5 @@
+-- APLICADA el 9-oct-2026.
+-- fab_pedidos: envio_tipo ('gls'|'otros'|'recogida'), envio_info, envio_info_at, envio_info_por.
+-- rpc fab_otro_envio(p_order_id, p_info): Empaquetar → Producido sin etiqueta GLS (o actualiza la anotación). Solo fab_usuarios.
+-- trigger fab_pedidos_envio_tipo: al pasar a producido sin tipo → 'recogida' (sin dirección) o 'gls'.
+-- Etapa 'estampar' eliminada del flujo (cortar = "Cortar y estampar" → empaquetar).

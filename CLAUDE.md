@@ -8,8 +8,8 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
    - Pedidos: urgentes (envío Exprés o etiqueta "urgente") primero y en rojo; luego del más antiguo al más nuevo.
    - Resumen producción: prendas por etapa agrupadas por modelo → variante (personalizadas una línea por unidad), imprimir listado y exportar Excel (ExcelJS).
      En Cortar vinilo: genéricas = CONTADOR de vinilos cortados (tabla `fab_cortados`, rpc `fab_sumar_cortados`), NO mueve pedidos; los pedidos genéricos se pasan a mano y al pasar de cortar→estampar consumen del contador (trigger). Personalizadas: "✔ Hecha" mueve esa prenda/pedido a Estampar.
-   Estados POR PRENDA: (pendiente) → cortar (vinilo) ⇄ sin_stock → estampar → empaquetar. Desde 9-oct las prendas ENTRAN DIRECTAMENTE en `cortar` (default de columna fab_lineas.estado); 'pendiente' queda solo para uso manual y su pestaña se oculta si está vacía. El pedido toma el de su prenda más atrasada (trigger BD).
-3. Al empaquetar (botón "Empaquetado · etiqueta") → función `fab` pide etiqueta a GLS (servicio web SOAP `wsclientes.asmred.com/b2b.asmx`, método GrabaServicios, etiqueta PDF) → la pantalla la imprime → check `etiqueta_impresa`.
+   Estados POR PRENDA: (pendiente) → cortar ("Cortar y estampar") ⇄ sin_stock → empaquetar. 'estampar' ELIMINADO 9-oct (sigue en el check de BD por compatibilidad). Desde 9-oct las prendas ENTRAN DIRECTAMENTE en `cortar` (default de columna fab_lineas.estado); 'pendiente' queda solo para uso manual y su pestaña se oculta si está vacía. El pedido toma el de su prenda más atrasada (trigger BD).
+3. En Empaquetar, dos salidas: "Otros envíos" (rpc `fab_otro_envio`, envio_tipo='otros' + anotación libre; pestaña "Otros envíos") o "✔ Etiqueta GLS" → función `fab` pide etiqueta a GLS (servicio web SOAP `wsclientes.asmred.com/b2b.asmx`, método GrabaServicios, etiqueta PDF) → la pantalla la imprime → check `etiqueta_impresa`.
 4. Si `fab_config.shopify_crear_envio = si` y GLS en modo real → `fulfillmentCreate` en Shopify con tracking GLS y aviso al cliente.
 5. Pedidos sin dirección = recogida en taller: no generan etiqueta.
 
