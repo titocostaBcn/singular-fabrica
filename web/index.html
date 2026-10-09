@@ -104,6 +104,8 @@
   .rhacer input:focus{outline:none;border-color:var(--ink)}
   .rhacer button{border:0;border-radius:9px;padding:10px 14px;font-weight:800;background:var(--c,var(--ink));color:#fff;white-space:nowrap}
   .rhacer button[disabled]{opacity:.5}
+  .rhacer .menos{background:#fff;color:var(--ink);border:1px solid var(--line);padding:10px 10px}
+  .rq .rqd{font-size:11px;font-weight:600;color:var(--muted);line-height:1.2;text-align:right}
   .rrow .rpers{justify-self:start;background:#1d1b18;color:#fff;border-radius:9px;padding:6px 14px;font-size:24px;font-weight:800;letter-spacing:.06em;white-space:pre-wrap;word-break:break-word}
   .rrow .rpers small{display:block;font-size:11px;font-weight:600;letter-spacing:.04em;opacity:.65;text-transform:uppercase}
   .rrow .rpers.vacia{background:none;color:var(--muted);font-size:14px;font-weight:500;letter-spacing:0;padding:0}
@@ -236,7 +238,7 @@ const urgente = (p) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tag
 const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_shopify) - new Date(b.creado_shopify));
 
 let vista = "pedidos", tab = "cortar", etapaR = "cortar";
-let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set();
+let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map();
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
 const esHoy = (t) => t && new Date(t).toDateString() === new Date().toDateString();
@@ -289,7 +291,12 @@ const Demo = (() => {
   async function fn(b){
     await espera(250);
     if (b.accion === "lineas"){
-      for (const [p, l] of lineasDe(b.line_ids)) if (p.estado !== "producido") l.estado = b.estado;
+      for (const [p, l] of lineasDe(b.line_ids)) if (p.estado !== "producido"){
+        if (l.estado === "cortar" && ["estampar", "empaquetar"].includes(b.estado) && !(l.personalizacion ?? []).length){
+          const k = l.titulo + "|" + (l.variante ?? ""); if (cortados[k]) cortados[k] = Math.max(cortados[k] - l.cantidad, 0);
+        }
+        l.estado = b.estado;
+      }
       return { ok: true, n: b.line_ids.length };
     }
     const p = pedidos.find((x) => x.order_id === b.order_id);
@@ -310,7 +317,9 @@ const Demo = (() => {
     }
     return { ok: false, error: "acción desconocida" };
   }
-  return { pedidos, cfg, fn };
+  const cortados = {};
+  function sumarCortados(titulo, variante, n){ const k = titulo + "|" + (variante ?? ""); cortados[k] = Math.max((cortados[k] ?? 0) + n, 0); return cortados[k]; }
+  return { pedidos, cfg, fn, cortados, sumarCortados };
 })();
 
 // ───── datos ─────
@@ -319,11 +328,14 @@ async function cargar(){
   if (DEMO){
     data = JSON.parse(JSON.stringify(Demo.pedidos));
     c = { data: Object.entries(Demo.cfg).map(([clave, valor]) => ({ clave, valor })) };
+    cortados = new Map(Object.entries(Demo.cortados));
   } else {
-    const [r, cc] = await Promise.all([
+    const [r, cc, ct] = await Promise.all([
       sb.from("fab_pedidos").select("*, fab_lineas(*)").order("creado_shopify", { ascending: true }).limit(2000),
       sb.from("fab_config").select("clave,valor"),
+      sb.from("fab_cortados").select("clave,hechas"),
     ]);
+    cortados = new Map((ct.data ?? []).map((x) => [x.clave, x.hechas]));
     if (r.error){ toast("Error cargando pedidos: " + r.error.message, true); return; }
     data = r.data; c = cc;
   }
@@ -502,18 +514,19 @@ function lineasEnEtapa(etapa){
 function pintarResumen(){
   const R = ["pendiente", "sin_stock", "cortar", "estampar"];
   $("#tabs").innerHTML = R.map((e) => {
-    const ls = lineasEnEtapa(e); const uds = ls.reduce((s, l) => s + l.cantidad, 0); const u = ls.filter((l) => l.p._urg).reduce((s, l) => s + l.cantidad, 0);
+    const ls = lineasEnEtapa(e); const u = ls.filter((l) => l.p._urg).reduce((s, l) => s + l.cantidad, 0);
+    const uds = e === "cortar" ? construirResumen("cortar").quedan : ls.reduce((s, l) => s + l.cantidad, 0);
     if (e === "pendiente" && !uds && etapaR !== "pendiente") return "";
     return `<button class="tab ${e === etapaR ? "on" : ""}" data-etapar="${e}">${ETAPA[e].plural} <b>${uds}</b>${u ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
 
-  const { ls, lista, total } = construirResumen(etapaR);
+  const { ls, lista, total, quedan, contador } = construirResumen(etapaR);
   filasR = new Map();
   const fTxt = { todos: "", atrasados: " · entrados hasta ayer", hoy: " · entrados hoy" }[$("#fFecha").value];
   const hoyTxt = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
   const E = ETAPA[etapaR];
   $("#resumen").innerHTML = `
-    <div class="rtitulo"><h2>${E.plural}</h2><span class="tot">${total} prendas · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
+    <div class="rtitulo"><h2>${E.plural}</h2><span class="tot">${contador ? `<b>${quedan} por cortar</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
       <span style="margin-left:auto;display:flex;gap:8px"><button class="btn-sec" id="bExcel">⬇ Excel</button><button class="btn-sec" id="bImprLista">🖨 Imprimir listado</button></span></div>
     ${lista.length ? lista.map((g, gi) => {
       const ids = g.filas.flatMap((f) => f.ids);
@@ -521,16 +534,21 @@ function pintarResumen(){
       return `<section class="grupo ${g.urg ? "urgente" : ""}">
         <div class="ghead"><input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>
           <div class="gn">${esc(g.titulo)} ${g.urg ? `<span class="badge b-urg">${g.urg} urgente${g.urg > 1 ? "s" : ""}</span>` : ""}</div>
-          <div class="gq">${g.uds}<small> uds pendientes</small></div></div>
+          <div class="gq">${contador ? g.quedan : g.uds}<small> ${contador ? "por cortar" : "uds"}</small></div></div>
         ${g.filas.map((f, fi) => { const k = gi + "-" + fi; filasR.set(k, f); return `<div class="rrow ${f.urg ? "urg" : ""}">
           <input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>
           <div><div class="rv">${f.talla ? `<span class="talla">Talla ${esc(f.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}</div>${f.resto ? `<div class="resto" style="margin:4px 0 0">${esc(f.resto)}</div>` : ""}</div>
           <div>${f.pers ? `<div class="rpers"><small>${esc(f.persKey || "Personalización")}${f.unidad ? " · " + f.unidad : ""}</small>${esc(f.pers)}</div>` : (g.conPers ? `<div class="rpers vacia">Sin personalización</div>` : "")}
             <div class="rp">${f.pedidosOrd.map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</div></div>
-          <div class="rhacer" style="${colorVars(E.sig === "producido" ? "producido" : E.sig)}" title="${esc(E.sigTxt)}">
-            ${f.uds > 1 ? `<input type="number" inputmode="numeric" min="1" max="${f.uds}" placeholder="0" data-hecho="${k}" aria-label="Unidades hechas">` : ""}
-            <button data-hacer="${k}">${f.uds > 1 ? "✔" : "✔ Hecha"}</button></div>
-          <div class="rq">${f.uds}</div></div>`; }).join("")}
+          ${f.pers
+            ? `<div class="rhacer" style="${colorVars(E.sig === "producido" ? "producido" : E.sig)}" title="${esc(E.sigTxt)}"><button data-hacer="${k}">✔ Hecha</button></div><div class="rq">1</div>`
+            : contador
+              ? `<div class="rhacer" style="${colorVars("cortar")}">
+                  ${f.quedan > 0 ? `<input type="number" inputmode="numeric" min="1" max="${f.quedan}" placeholder="0" data-hecho="${k}" aria-label="Vinilos cortados"><button data-hacer="${k}">✔ Cortadas</button>` : `<span class="check">✔ Todo cortado</span>`}
+                  ${f.hechas > 0 ? `<button class="menos" data-menos="${k}" title="Corregir: restar 1 cortada">−1</button>` : ""}</div>
+                 <div class="rq" title="${f.uds} en pedidos · ${f.hechas} cortadas">${f.quedan}<div class="rqd">${f.hechas ? `${f.hechas} cortadas<br>de ${f.uds}` : `en pedidos`}</div></div>`
+              : `<div></div><div class="rq">${f.uds}</div>`}
+          </div>`; }).join("")}
       </section>`;
     }).join("") : `<div class="vacio">No hay prendas en esta etapa.</div>`}`;
   pintarBarra();
@@ -552,34 +570,47 @@ function construirResumen(etapa){
           ids: [l.line_id], uds: 1, unidad: l.cantidad > 1 ? `${u} de ${l.cantidad}` : null, urg: l.p._urg, pedidos: [l.p] });
       continue;
     }
-    const key = `v:${v.talla ?? ""}|${v.resto}`;
-    if (!g.filas.has(key)) g.filas.set(key, { talla: v.talla, resto: v.resto, pers: "", ids: [], uds: 0, urg: false, pedidos: [] });
+    const key = `v:${l.variante ?? ""}`;
+    if (!g.filas.has(key)) g.filas.set(key, { talla: v.talla, resto: v.resto, pers: "", variante: l.variante ?? null, titulo: l.titulo, clave: l.titulo + "|" + (l.variante ?? ""), ids: [], uds: 0, urg: false, pedidos: [] });
     const fl = g.filas.get(key); fl.ids.push(l.line_id); fl.uds += l.cantidad; fl.urg ||= l.p._urg; fl.pedidos.push(l.p);
   }
   const lista = [...grupos.values()].sort((a, b) => (b.urg > 0) - (a.urg > 0) || b.uds - a.uds);
+  const contador = etapa === "cortar"; // en Cortar vinilo las genéricas llevan contador de cortadas
+  let totalQuedan = 0;
   for (const g of lista){
+    g.quedan = 0;
+    for (const f of g.filas.values()){
+      f.hechas = contador && !f.pers ? Math.min(cortados.get(f.clave) ?? 0, f.uds) : 0;
+      f.quedan = f.uds - f.hechas; g.quedan += f.quedan;
+    }
+    totalQuedan += g.quedan;
     g.conPers = [...g.filas.values()].some((f) => f.pers);
     g.filas = [...g.filas.values()].sort((a, b) => (b.urg - a.urg) || (a.pers ? 1 : 0) - (b.pers ? 1 : 0) || rangoTalla(a.talla) - rangoTalla(b.talla) || String(a.resto).localeCompare(String(b.resto), "es"));
     for (const f of g.filas) f.pedidosOrd = [...new Set(f.pedidos)].sort(porPrioridad);
   }
-  return { ls, lista, total: ls.reduce((s, l) => s + l.cantidad, 0) };
+  return { ls, lista, total: ls.reduce((s, l) => s + l.cantidad, 0), quedan: totalQuedan, contador };
 }
 // Marca como hechas N unidades de una fila del resumen: primero urgentes, luego las más antiguas.
 let filasR = new Map();
 async function hacerUnidades(k, n){
   const f = filasR.get(k); if (!f) return;
   const E = ETAPA[etapaR];
+  if (f.pers){ // personalizada: se sabe el pedido → avanza esa prenda
+    await moverLineas(f.ids, E.sig, `✔ ${f.pers} (${f.pedidosOrd[0]?.order_name ?? ""}) → ${ETAPA[E.sig].label}`);
+    return;
+  }
+  // genérica: solo contador de vinilos cortados; los pedidos se pasan a mano
   n = Math.floor(Number(n));
-  if (!n || n < 1){ toast("Escribe cuántas unidades has hecho", true); return; }
-  if (n > f.uds) n = f.uds;
-  const set = new Set(f.ids);
-  const lineas = pedidos.flatMap((p) => (p.fab_lineas ?? []).filter((l) => set.has(l.line_id)).map((l) => ({ l, p })))
-    .sort((a, b) => porPrioridad(a.p, b.p));
-  const elegidas = []; let acc = 0;
-  for (const { l } of lineas){ if (acc + l.cantidad <= n){ elegidas.push(l.line_id); acc += l.cantidad; } if (acc === n) break; }
-  if (!elegidas.length){ toast("Las prendas de esta fila van de 2 en 2 (mismo pedido). Marca al menos 2.", true); return; }
-  const quedan = f.uds - acc;
-  await moverLineas(elegidas, E.sig, `${acc} hecha${acc > 1 ? "s" : ""} → ${ETAPA[E.sig].label}${quedan ? ` · quedan ${quedan}` : " · fila completada"}${acc < n ? ` (no se puede partir un pedido de varias uds)` : ""}`);
+  if (!n || n < 1){ toast("Escribe cuántos vinilos has cortado", true); return; }
+  if (n > f.quedan) n = f.quedan;
+  await sumarCortados(f, n, `${n} cortada${n > 1 ? "s" : ""} · ${f.titulo}${f.talla ? " T." + f.talla : ""} · quedan ${f.quedan - n}`);
+}
+async function sumarCortados(f, n, msg){
+  let error = null;
+  if (DEMO) Demo.sumarCortados(f.titulo, f.variante, n);
+  else ({ error } = await sb.rpc("fab_sumar_cortados", { p_titulo: f.titulo, p_variante: f.variante, p_n: n }));
+  if (error) toast(error.message, true); else toast(msg);
+  await cargar();
 }
 
 // ───── Excel ─────
@@ -601,22 +632,23 @@ async function exportarExcel(){
 
     // Hoja 1: Resumen
     const ws = wb.addWorksheet("Resumen", { views: [{ state: "frozen", ySplit: 4 }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
-    ws.columns = [{ width: 38 }, { width: 14 }, { width: 28 }, { width: 26 }, { width: 11 }, { width: 60 }, { width: 10 }];
-    ws.mergeCells("A1:G1"); ws.getCell("A1").value = `Singular Wardrobe · ${E.plural} — pendiente`;
+    ws.columns = [{ width: 38 }, { width: 14 }, { width: 28 }, { width: 26 }, { width: 11 }, { width: 60 }, { width: 10 }, { width: 11 }, { width: 10 }];
+    ws.mergeCells("A1:I1"); ws.getCell("A1").value = `Singular Wardrobe · ${E.plural} — pendiente`;
     ws.getCell("A1").font = { size: 16, bold: true };
-    ws.mergeCells("A2:G2");
-    ws.getCell("A2").value = `Generado ${ahora.toLocaleString("es-ES")} · ${fTxt} · ${total} prendas · ${lista.length} modelos`;
+    ws.mergeCells("A2:I2");
+    ws.getCell("A2").value = `Generado ${ahora.toLocaleString("es-ES")} · ${fTxt} · ${etapa === "cortar" ? construirResumen(etapa).quedan + " por cortar de " + total : total + " prendas"} · ${lista.length} modelos`;
     ws.getCell("A2").font = { size: 11, color: { argb: "FF6F6A62" } };
     const cab = ws.getRow(4);
-    cab.values = ["Modelo", "Talla", "Color / variante", "Personalización", "Uds", "Pedidos", "Urgente"];
+    const { quedan, contador } = construirResumen(etapa);
+    cab.values = ["Modelo", "Talla", "Color / variante", "Personalización", contador ? "Por cortar" : "Uds", "Pedidos", "Urgente", ...(contador ? ["En pedidos", "Cortadas"] : [])];
     cab.eachCell((c) => { c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); c.border = borde; c.alignment = { vertical: "middle" }; });
     cab.height = 20;
     for (const g of lista){
-      const r = ws.addRow([g.titulo, "", "", "", g.uds, "", g.urg ? `${g.urg} urg.` : ""]);
+      const r = ws.addRow([g.titulo, "", "", "", contador ? g.quedan : g.uds, "", g.urg ? `${g.urg} urg.` : "", ...(contador ? [g.uds, g.uds - g.quedan] : [])]);
       r.eachCell({ includeEmpty: true }, (c) => { c.font = { bold: true, size: 12 }; c.fill = fill(g.urg ? "FDE2DE" : "EFEBE4"); c.border = borde; });
       r.getCell(5).alignment = { horizontal: "center" };
       for (const f of g.filas){
-        const fr = ws.addRow(["", f.talla ?? "Sin talla", f.resto || "", f.pers || "", f.uds, f.pedidosOrd.map((p) => p.order_name).join(", "), f.urg ? "Sí" : ""]);
+        const fr = ws.addRow(["", f.talla ?? "Sin talla", f.resto || "", f.pers || "", contador ? f.quedan : f.uds, f.pedidosOrd.map((p) => p.order_name).join(", "), f.urg ? "Sí" : "", ...(contador ? [f.uds, f.hechas] : [])]);
         fr.eachCell({ includeEmpty: true }, (c) => { c.border = borde; c.alignment = { vertical: "top", wrapText: true }; if (f.urg) c.fill = fill("FFF0EE"); });
         fr.getCell(2).font = { bold: true };
         fr.getCell(4).font = { bold: true, size: 13 };
@@ -625,7 +657,7 @@ async function exportarExcel(){
         if (f.urg) fr.getCell(7).font = { bold: true, color: { argb: "FFD12F2F" } };
       }
     }
-    const tr = ws.addRow(["TOTAL", "", "", "", total, "", ""]);
+    const tr = ws.addRow(["TOTAL", "", "", "", contador ? quedan : total, "", "", ...(contador ? [total, total - quedan] : [])]);
     tr.eachCell({ includeEmpty: true }, (c) => { c.font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); c.border = borde; });
     tr.getCell(5).alignment = { horizontal: "center" };
 
@@ -683,6 +715,7 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.bclear !== undefined){ sel.clear(); pintar(); }
   else if (b.id === "bImprLista") imprimir("imp-lista");
   else if (b.id === "bExcel") exportarExcel();
+  else if (b.dataset.menos){ const f = filasR.get(b.dataset.menos); if (f) sumarCortados(f, -1, `Corregido: −1 cortada · ${f.titulo}`); }
   else if (b.dataset.hacer){ const k = b.dataset.hacer, inp = document.querySelector(`input[data-hecho="${k}"]`); hacerUnidades(k, inp ? inp.value : 1); }
 });
 document.addEventListener("change", (e) => {
@@ -713,6 +746,7 @@ async function iniciar(){
   sb.channel("fab")
     .on("postgres_changes", { event: "*", schema: "public", table: "fab_pedidos" }, refrescar)
     .on("postgres_changes", { event: "*", schema: "public", table: "fab_lineas" }, refrescar)
+    .on("postgres_changes", { event: "*", schema: "public", table: "fab_cortados" }, refrescar)
     .subscribe();
   setInterval(cargar, 60000);
 }

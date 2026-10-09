@@ -1,0 +1,5 @@
+-- APLICADA el 9-oct-2026.
+-- Contador de vinilos cortados por modelo+variante (solo genéricas). No se asocia a pedidos.
+-- Al pasar a mano una prenda genérica de 'cortar' a estampar/empaquetar se consume del contador (trigger).
+-- Ver definición completa en Supabase: tabla fab_cortados, funciones fab_sumar_cortados(p_titulo, p_variante, p_n)
+-- (security definer, solo emails de fab_usuarios) y fab_consumir_cortados() + trigger fab_lineas_consumir_cortados.
