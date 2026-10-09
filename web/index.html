@@ -98,7 +98,11 @@
   .ghead .gn{font-size:18px;font-weight:800;flex:1}
   .ghead .gq{font-size:26px;font-weight:800;min-width:60px;text-align:right}
   .ghead .gq small{font-size:13px;color:var(--muted);font-weight:600}
-  .rrow{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+  .rrow{display:grid;grid-template-columns:36px minmax(150px,auto) 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+  .rrow .rpers{justify-self:start;background:#1d1b18;color:#fff;border-radius:9px;padding:6px 14px;font-size:24px;font-weight:800;letter-spacing:.06em;white-space:pre-wrap;word-break:break-word}
+  .rrow .rpers small{display:block;font-size:11px;font-weight:600;letter-spacing:.04em;opacity:.65;text-transform:uppercase}
+  .rrow .rpers.vacia{background:none;color:var(--muted);font-size:14px;font-weight:500;letter-spacing:0;padding:0}
+  .rrow .runit{font-size:12px;color:var(--muted);font-weight:700}
   .rrow:first-of-type{border-top:0}
   .rrow.urg{background:var(--urg-bg)}
   .rrow .rv{font-weight:700}
@@ -123,8 +127,13 @@
     body.imp-etiqueta #zonaImpresion img{width:100%;display:block;page-break-after:always}
     body.imp-lista header,body.imp-lista #aviso,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
     body.imp-lista{background:#fff}
-    body.imp-lista .rrow{grid-template-columns:1fr auto}
+    body.imp-lista .rrow{grid-template-columns:minmax(150px,auto) 1fr auto}
+    body.imp-lista .rrow .rpers{background:none;color:#000;border:2px solid #000}
     body.imp-lista .grupo{break-inside:avoid}
+  }
+  @media (max-width:640px){
+    .rrow{grid-template-columns:36px 1fr auto;grid-template-areas:"c t q" "c p p"}
+    .rrow > input{grid-area:c} .rrow > div:nth-of-type(1){grid-area:t} .rrow > div:nth-of-type(2){grid-area:p} .rrow > .rq{grid-area:q}
   }
   @media (max-width:440px){ #lista{grid-template-columns:1fr;padding:12px} #buscar{width:100%} #resumen{padding:12px 12px 130px} }
 </style>
@@ -240,7 +249,7 @@ const Demo = (() => {
   const hace = (h) => new Date(Date.now() - h * 3600e3).toISOString();
   const MODELOS = [
     ["Camisa “Why not?” blanca", ["XS","S","M","L"]], ["Camisa “Why not?” azul", ["S","M","L"]],
-    ["Blazer “Calavera” azul", ["S","M","L"]], ["Blazer \"Army” black", ["XS","S","M"]],
+    ["Blazer “Calavera” azul", ["S","M","L"]], ["Blazer \"Army” black", ["XS","S","M"], "Personalización"],
     ["Sudadera \"A star is born\"", ["S","M","L"], "Inicial (solo una)"], ["Blazer “estudio 54”", ["S","M"], "Iniciales (2 Max.)"],
     ["Pantalón “cupido” crema", ["36","38","40"]], ["Jersey “volume”", ["Única"]],
   ];
@@ -253,7 +262,7 @@ const Demo = (() => {
     const lineas = [];
     for (let k = 0; k < nl; k++){
       const [titulo, tallas, pk] = MODELOS[rnd(MODELOS.length)];
-      const pers = pk && rnd(2) ? [{ key: pk, value: pk.startsWith("Inicial ") ? "ABCDEFGHLMNPS"[rnd(13)] : "ABCDEFGHLMNPS"[rnd(13)] + "ABCDEFGHLMNPS"[rnd(13)] }] : [];
+      const pers = pk && (pk === "Personalización" ? k % 2 === 0 || i % 3 === 0 : rnd(2)) ? [{ key: pk, value: pk === "Personalización" ? ["STAR","ROCK","1973","MSN","Singular","RT","LOVE"][rnd(7)] : pk.startsWith("Inicial ") ? "ABCDEFGHLMNPS"[rnd(13)] : "ABCDEFGHLMNPS"[rnd(13)] + "ABCDEFGHLMNPS"[rnd(13)] }] : [];
       lineas.push({ line_id: lid++, titulo, variante: tallas[rnd(tallas.length)], cantidad: rnd(6) === 0 ? 2 : 1, personalizacion: pers, imagen_url: null,
         estado: i < 8 ? ["estampar","estampar","estampar","empaquetar","estampar","empaquetar","estampar","sin_stock"][i] : "cortar" });
     }
@@ -499,8 +508,14 @@ function pintarResumen(){
     if (l.p.creado_shopify < g.antiguo) g.antiguo = l.p.creado_shopify;
     const pers = textoPers(l);
     const v = partes(l.variante);
-    const key = pers ? `p:${l.line_id}` : `v:${v.talla ?? ""}|${v.resto}`;
-    if (!g.filas.has(key)) g.filas.set(key, { talla: v.talla, resto: v.resto, pers, ids: [], uds: 0, urg: false, pedidos: [] });
+    if (pers){ // una línea por prenda personalizada (si la línea trae 2 uds, salen 2 filas)
+      for (let u = 1; u <= l.cantidad; u++)
+        g.filas.set(`p:${l.line_id}:${u}`, { talla: v.talla, resto: v.resto, pers, persKey: (l.personalizacion ?? []).map((x) => x.key).join(" · "),
+          ids: [l.line_id], uds: 1, unidad: l.cantidad > 1 ? `${u} de ${l.cantidad}` : null, urg: l.p._urg, pedidos: [l.p] });
+      continue;
+    }
+    const key = `v:${v.talla ?? ""}|${v.resto}`;
+    if (!g.filas.has(key)) g.filas.set(key, { talla: v.talla, resto: v.resto, pers: "", ids: [], uds: 0, urg: false, pedidos: [] });
     const fl = g.filas.get(key); fl.ids.push(l.line_id); fl.uds += l.cantidad; fl.urg ||= l.p._urg; fl.pedidos.push(l.p);
   }
   const lista = [...grupos.values()].sort((a, b) => (b.urg > 0) - (a.urg > 0) || b.uds - a.uds);
@@ -513,6 +528,7 @@ function pintarResumen(){
     ${lista.length ? lista.map((g) => {
       const ids = [...g.filas.values()].flatMap((f) => f.ids);
       const todos = ids.every((i) => sel.has(i));
+      g.conPers = [...g.filas.values()].some((f) => f.pers);
       const filas = [...g.filas.values()].sort((a, b) => (b.urg - a.urg) || (a.pers ? 1 : 0) - (b.pers ? 1 : 0) || rangoTalla(a.talla) - rangoTalla(b.talla) || String(a.resto).localeCompare(String(b.resto), "es"));
       return `<section class="grupo ${g.urg ? "urgente" : ""}">
         <div class="ghead"><input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>
@@ -520,8 +536,8 @@ function pintarResumen(){
           <div class="gq">${g.uds}<small> uds</small></div></div>
         ${filas.map((f) => `<label class="rrow ${f.urg ? "urg" : ""}">
           <input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>
-          <div><div class="rv">${f.talla ? `<span class="talla">Talla ${esc(f.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}${f.resto ? `<span class="resto">${esc(f.resto)}</span>` : ""}</div>
-            ${f.pers ? `<div class="pers" style="font-size:15px;padding:3px 9px"><span>Personalización</span>${esc(f.pers)}</div>` : ""}
+          <div><div class="rv">${f.talla ? `<span class="talla">Talla ${esc(f.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}</div>${f.resto ? `<div class="resto" style="margin:4px 0 0">${esc(f.resto)}</div>` : ""}</div>
+          <div>${f.pers ? `<div class="rpers"><small>${esc(f.persKey || "Personalización")}${f.unidad ? " · " + f.unidad : ""}</small>${esc(f.pers)}</div>` : (g.conPers ? `<div class="rpers vacia">Sin personalización</div>` : "")}
             <div class="rp">${[...new Set(f.pedidos)].sort(porPrioridad).map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</div></div>
           <div class="rq">${f.uds}</div></label>`).join("")}
       </section>`;
