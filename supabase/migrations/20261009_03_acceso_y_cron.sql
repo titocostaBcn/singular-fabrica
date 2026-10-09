@@ -1,3 +1,4 @@
+-- APLICADA el 9-oct-2026. Usuario de Supabase Auth titocosta@singularwardrobe.com creado aparte.
 -- Solo los emails de fab_usuarios pueden ver la pantalla (aunque alguien cree una cuenta en Supabase).
 create table if not exists public.fab_usuarios (email text primary key, nombre text, creado_at timestamptz not null default now());
 alter table public.fab_usuarios enable row level security;
@@ -15,7 +16,7 @@ alter policy fab_eventos_leer on public.fab_eventos using (public.fab_es_usuario
 alter policy fab_config_leer  on public.fab_config  using (public.fab_es_usuario());
 create policy fab_usuarios_leer on public.fab_usuarios for select to authenticated using (public.fab_es_usuario());
 
-insert into public.fab_usuarios (email, nombre) values ('fabrica@singularwardrobe.com', 'Pantalla fábrica')
+insert into public.fab_usuarios (email, nombre) values ('titocosta@singularwardrobe.com', 'Tito Costa')
   on conflict do nothing;
 
 -- Importación diaria 7:30 hora de Madrid (5:30 UTC en verano, 6:30 UTC en invierno; la función solo actúa si en Madrid son las 7).

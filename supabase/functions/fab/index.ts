@@ -328,8 +328,11 @@ Deno.serve(async (req) => {
     } else {
       const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
       const { data } = await sb.auth.getUser(jwt);
-      if (!data?.user) return json({ ok: false, error: "no autorizado" }, 401);
-      usuario = data.user.email ?? data.user.id;
+      if (!data?.user?.email) return json({ ok: false, error: "no autorizado" }, 401);
+      // Solo emails dados de alta en fab_usuarios (este Supabase tiene otros usuarios, p. ej. de TDP)
+      const { data: alta } = await sb.from("fab_usuarios").select("email").eq("email", data.user.email.toLowerCase()).maybeSingle();
+      if (!alta) return json({ ok: false, error: "usuario sin acceso a fábrica" }, 403);
+      usuario = data.user.email;
     }
 
     if (accion === "importar") {

@@ -1,3 +1,4 @@
+-- APLICADA el 9-oct-2026 (en 3 pasos: columnas de fab_lineas, cambio del check de fab_pedidos, trigger).
 -- Estados por prenda: pendiente → sin_stock → cortar → estampar → empaquetar.
 -- El pedido toma automáticamente el estado de su prenda más atrasada (trigger). "producido" lo pone la función al empaquetar.
 alter table public.fab_pedidos drop constraint if exists fab_pedidos_estado_check;

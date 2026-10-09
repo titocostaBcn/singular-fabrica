@@ -14,7 +14,7 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 
 ## Piezas
 - Supabase proyecto `hgvsrmywsfnmvenkfynb`. Tablas `fab_pedidos`, `fab_lineas`, `fab_eventos` (log), `fab_config` (ajustes). Bucket privado `fab-etiquetas`.
-- Edge function `supabase/functions/fab/index.ts` (verify_jwt=false, auth propia: JWT de usuario o cabecera `x-fab-cron` = vault `fab_cron_key`). Acciones: importar, lineas, producido, impresa, reimprimir, diag, prueba_gls. En Supabase está desplegada la v3 (sin estados por prenda); la v4 del repo requiere la migración 02.
+- Edge function `supabase/functions/fab/index.ts` (verify_jwt=false, auth propia: JWT de usuario o cabecera `x-fab-cron` = vault `fab_cron_key`). Acciones: importar, lineas, producido, impresa, reimprimir, diag, prueba_gls. Desplegada v4. La función también exige que el email esté en `fab_usuarios`.
 - Credenciales Shopify: app con client_credentials, secretos en vault (`shopify_shop`, `shopify_client_id`, `shopify_client_secret`) leídos con `public.read_secret` (solo service_role).
 - GLS: modo `pruebas` usa el UID público de pruebas; modo `real` usa vault `gls_uid_cliente`.
 - Demo sin conexión: abrir `web/index.html?demo`.
@@ -24,10 +24,13 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 - Probar con un pedido antes de activar nada para todos.
 
 ## Pendiente (9-oct-2026)
-- [ ] Autorización para aplicar migración 02 (estados por prenda) + desplegar función v4.
-- [ ] Autorización para migración 03: acceso solo a emails de `fab_usuarios` (hoy RLS = cualquier usuario autenticado), cron 7:30 (`30 5,6 * * *` UTC + `?solo7=1`), usuario fabrica@singularwardrobe.com.
+- [x] Migración 02 (estados por prenda) + función v4 — aplicadas 9-oct.
+- [x] Migración 03 — aplicada 9-oct: RLS solo emails de `fab_usuarios`, cron `fab_importar_0730`, usuario titocosta@singularwardrobe.com.
+- [ ] Usuarios para el personal de fábrica (alta en Auth + fila en `fab_usuarios`).
+- [ ] Ojo: este Supabase también aloja cosas de TDP (schema `tdp_deposito`, usuarios @tdpdecoracion.es). Tito quiere separar empresas.
 - [ ] UID cliente GLS y servicio/horario contratados (provisional 96/18 nacional, 74/3 internacional).
 - [ ] Permisos app Shopify: read/write_merchant_managed_fulfillment_orders (hoy solo lectura).
 - [ ] Impresora de etiquetas (térmica 10x15 o A4) y Chrome con --kiosk-printing en el PC de fábrica.
 - [ ] Remitente de la etiqueta: hoy "Carrer de Bosch i Gimpera 20, Nave Manual Color" (confirmar si mostrar Manual Color).
-- [ ] Publicar: GitHub (cuenta Singular) → Netlify (netlify.toml, publish=web). Repo privado.
+- [x] Repo GitHub: titocostaBcn/singular-fabrica (privado; cuenta de Singular).
+- [ ] Netlify conectado al repo (netlify.toml, publish=web).
