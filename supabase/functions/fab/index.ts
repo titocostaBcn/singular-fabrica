@@ -1,6 +1,6 @@
-// fab v4 — Gestión de producción Singular Wardrobe
-// Estados por prenda: pendiente → sin_stock → cortar → estampar → empaquetar; el pedido (trigger en BD) toma el de su prenda más atrasada.
-// Acciones: importar · lineas · producido · impresa · reimprimir · diag · prueba_gls
+// fab v5 — Gestión de producción Singular Wardrobe
+// Estados por prenda: (pendiente) → cortar (cortar y estampar) ⇄ sin_stock → empaquetar; el pedido (trigger en BD) toma el de su prenda más atrasada.
+// Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · lineas · producido · impresa · reimprimir · diag · prueba_gls
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
@@ -237,9 +237,26 @@ async function shopifyEnviar(p: any) {
   return m.fulfillmentCreate.fulfillment.id as string;
 }
 
+// Destinos que NO llevan etiqueta GLS (van por "Otros envíos"): Canarias, Ceuta, Melilla, Reino Unido y todo lo que no sea UE.
+// Misma regla que destinoOtros() en web/index.html.
+const UE_GLS = new Set("ES PT FR DE IT NL BE LU AT IE DK SE FI PL CZ SK SI HU HR RO BG GR CY MT EE LV LT".split(" "));
+function destinoOtros(p: any): string | null {
+  if (!p.direccion1) return null; // recogida en taller
+  const pais = String(p.pais ?? "ES").toUpperCase(), cp = String(p.cp ?? "").trim(), prov = String(p.provincia ?? "").toLowerCase();
+  if (["GB", "GG", "JE", "IM", "GI"].includes(pais)) return "Reino Unido";
+  if (pais === "IC" || (pais === "ES" && (/^3[58]/.test(cp) || /palmas|tenerife|canari/.test(prov)))) return "Canarias";
+  if (pais === "EA" || (pais === "ES" && (/^51/.test(cp) || prov.includes("ceuta")))) return "Ceuta";
+  if (pais === "ES" && (/^52/.test(cp) || prov.includes("melilla"))) return "Melilla";
+  if (!UE_GLS.has(pais)) return "Fuera de la UE";
+  return null;
+}
+
 // ───────── PRODUCIDO ─────────
 async function producido(order_id: number, usuario: string) {
   const cfg = await config();
+  const { data: dest } = await sb.from("fab_pedidos").select("direccion1, pais, cp, provincia").eq("order_id", order_id).maybeSingle();
+  const zona = dest && destinoOtros(dest);
+  if (zona) return { ok: false, error: `${zona}: este pedido va por Otros envíos, no por GLS` };
   // Bloqueo para que dos toques seguidos no generen dos envíos en GLS
   const { data: lock } = await sb.from("fab_pedidos")
     .update({ estado: "producido", estado_at: new Date().toISOString(), estado_por: usuario, gls_uid: "EN_CURSO", gls_error: null })
@@ -336,8 +353,16 @@ Deno.serve(async (req) => {
     }
 
     if (accion === "importar") {
-      if (usuario === "cron" && url.searchParams.get("solo7") === "1" && horaMadrid() !== 7) return json({ ok: true, omitido: "no son las 7 en Madrid" });
-      return json({ ok: true, ...(await importar(usuario)) });
+      // El cron llama a 2 horas UTC (verano/invierno); solo actúa si en Madrid es la hora indicada (?hora=8)
+      const hora = url.searchParams.get("hora") ?? (url.searchParams.get("solo7") === "1" ? "7" : null);
+      if (usuario === "cron" && hora && horaMadrid() !== Number(hora)) return json({ ok: true, omitido: `no son las ${hora} en Madrid` });
+      try {
+        return json({ ok: true, ...(await importar(usuario)) });
+      } catch (e) {
+        // Queda registrado: la pantalla muestra "ERROR no actualizado hoy" si no hay importación correcta del día
+        await evento(null, "importacion_error", { error: String((e as Error).message ?? e) }, usuario);
+        throw e;
+      }
     }
 
     const order_id = Number(body.order_id);

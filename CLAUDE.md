@@ -3,19 +3,19 @@
 Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). Proyecto de Singular Wardrobe: NO mezclar con Manual Color (cuenta GitHub propia: titocosta@singularwardrobe.com).
 
 ## Flujo
-1. Importación de Shopify (diaria 7:30 Madrid + botón "Importar"): pedidos abiertos sin enviar → `fab_pedidos` con estado `pendiente`.
+1. Importación de Shopify (diaria 8:00 Madrid, cron `fab_importar_0800` `0 6,7 * * *` UTC + `?hora=8`; + botón "Importar"): pedidos abiertos sin enviar → `fab_pedidos`. Si falla se registra `importacion_error` en `fab_eventos`; desde las 8:15 la pantalla muestra en rojo "ERROR: no actualizado hoy" si no hay `importacion` correcta del día.
 2. Pantalla de fábrica (`web/index.html`), dos vistas:
    - Pedidos: urgentes (envío Exprés o etiqueta "urgente") primero y en rojo; luego del más antiguo al más nuevo.
    - Resumen producción: prendas por etapa agrupadas por modelo → variante (personalizadas una línea por unidad), imprimir listado y exportar Excel (ExcelJS).
      En Cortar vinilo: genéricas = CONTADOR de vinilos cortados (tabla `fab_cortados`, rpc `fab_sumar_cortados`), NO mueve pedidos; los pedidos genéricos se pasan a mano y al pasar de cortar→estampar consumen del contador (trigger). Personalizadas: "✔ Hecha" mueve esa prenda/pedido a Estampar.
    Estados POR PRENDA: (pendiente) → cortar ("Cortar y estampar") ⇄ sin_stock → empaquetar. 'estampar' ELIMINADO 9-oct (sigue en el check de BD por compatibilidad). Desde 9-oct las prendas ENTRAN DIRECTAMENTE en `cortar` (default de columna fab_lineas.estado); 'pendiente' queda solo para uso manual y su pestaña se oculta si está vacía. El pedido toma el de su prenda más atrasada (trigger BD).
-3. En Empaquetar, dos salidas: "Otros envíos" (rpc `fab_otro_envio`, envio_tipo='otros' + anotación libre; pestaña "Otros envíos") o "✔ Etiqueta GLS" → función `fab` pide etiqueta a GLS (servicio web SOAP `wsclientes.asmred.com/b2b.asmx`, método GrabaServicios, etiqueta PDF) → la pantalla la imprime → check `etiqueta_impresa`.
+3. En Empaquetar la salida es AUTOMÁTICA según destino (`destinoOtros()` en web y función): UE (península, Baleares, países UE) = etiqueta GLS; Canarias, Ceuta, Melilla, Reino Unido (+GI/JE/GG/IM) y todo lo no-UE (Suiza, Noruega, Andorra…) = Otros envíos (la función rechaza GLS para esos). Dos salidas: "Otros envíos" (rpc `fab_otro_envio`, envio_tipo='otros' + anotación libre; pestaña "Otros envíos") o "✔ Etiqueta GLS" → función `fab` pide etiqueta a GLS (servicio web SOAP `wsclientes.asmred.com/b2b.asmx`, método GrabaServicios, etiqueta PDF) → la pantalla la imprime → check `etiqueta_impresa`.
 4. Si `fab_config.shopify_crear_envio = si` y GLS en modo real → `fulfillmentCreate` en Shopify con tracking GLS y aviso al cliente.
 5. Pedidos sin dirección = recogida en taller: no generan etiqueta.
 
 ## Piezas
 - Supabase proyecto `hgvsrmywsfnmvenkfynb`. Tablas `fab_pedidos`, `fab_lineas`, `fab_eventos` (log), `fab_config` (ajustes). Bucket privado `fab-etiquetas`.
-- Edge function `supabase/functions/fab/index.ts` (verify_jwt=false, auth propia: JWT de usuario o cabecera `x-fab-cron` = vault `fab_cron_key`). Acciones: importar, lineas, producido, impresa, reimprimir, diag, prueba_gls. Desplegada v4. La función también exige que el email esté en `fab_usuarios`.
+- Edge function `supabase/functions/fab/index.ts` (verify_jwt=false, auth propia: JWT de usuario o cabecera `x-fab-cron` = vault `fab_cron_key`). Acciones: importar, lineas, producido, impresa, reimprimir, diag, prueba_gls. Desplegada v5 (9-oct: bloqueo GLS por destino, ?hora=8, log importacion_error). La función también exige que el email esté en `fab_usuarios`.
 - Credenciales Shopify: app con client_credentials, secretos en vault (`shopify_shop`, `shopify_client_id`, `shopify_client_secret`) leídos con `public.read_secret` (solo service_role).
 - GLS: modo `pruebas` usa el UID público de pruebas; modo `real` usa vault `gls_uid_cliente`.
 - Demo sin conexión: abrir `web/index.html?demo`.

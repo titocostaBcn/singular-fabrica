@@ -30,6 +30,8 @@
   #login button{padding:14px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600}
   #loginErr{color:var(--err);min-height:1.2em;font-size:14px}
 
+  #avisoError{background:#c62828;color:#fff;padding:12px 16px;font-weight:800;font-size:20px;text-align:center;letter-spacing:.5px}
+  #avisoError small{display:block;font-size:13px;font-weight:500;opacity:.9;letter-spacing:0}
   #aviso{background:#fff4c2;border-bottom:1px solid #e6d27a;padding:8px 16px;font-weight:600;font-size:14px}
   header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;display:grid;gap:10px}
   .fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -143,7 +145,7 @@
     body.imp-etiqueta #zonaImpresion,body.imp-etiqueta #zonaImpresion *{visibility:visible}
     body.imp-etiqueta #zonaImpresion{display:block;position:absolute;inset:0}
     body.imp-etiqueta #zonaImpresion img{width:100%;display:block;page-break-after:always}
-    body.imp-lista header,body.imp-lista #aviso,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
+    body.imp-lista header,body.imp-lista #aviso,body.imp-lista #avisoError,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
     body.imp-lista{background:#fff}
     body.imp-lista .rrow{grid-template-columns:minmax(150px,auto) 1fr auto}
     body.imp-lista .rhacer{display:none!important}
@@ -171,6 +173,7 @@
 </section>
 
 <section id="app" class="hidden">
+  <div id="avisoError" class="hidden"></div>
   <div id="aviso" class="hidden"></div>
   <header>
     <div class="fila">
@@ -360,6 +363,26 @@ const Demo = (() => {
 })();
 
 // ───── datos ─────
+// Importación diaria de Shopify a las 8:00. A partir de las 8:15, si hoy no hay una importación correcta → aviso rojo.
+async function comprobarImportacion(){
+  const el = $("#avisoError");
+  let error = null;
+  const ahora = new Date(), hoy = new Date(ahora); hoy.setHours(0, 0, 0, 0);
+  if (DEMO){
+    if (new URLSearchParams(location.search).has("errorimport")) error = "Shopify: demo de fallo";
+  } else if (ahora.getHours() * 60 + ahora.getMinutes() >= 8 * 60 + 15){
+    const { data, error: e } = await sb.from("fab_eventos").select("tipo, created_at, detalle")
+      .in("tipo", ["importacion", "importacion_error"]).gte("created_at", hoy.toISOString()).order("created_at", { ascending: false }).limit(20);
+    if (!e){
+      const okHoy = (data ?? []).some((x) => x.tipo === "importacion");
+      if (!okHoy) error = (data ?? []).find((x) => x.tipo === "importacion_error")?.detalle?.error ?? "la importación de las 8:00 no se ha hecho";
+    }
+  }
+  el.innerHTML = error ? `⚠ ERROR: no actualizado hoy<small>${esc(String(error).slice(0, 200))} · Pulsa «Importar» para reintentar</small>` : "";
+  el.classList.toggle("hidden", !error);
+}
+setInterval(() => comprobarImportacion(), 5 * 60 * 1000);
+
 async function cargar(){
   let data, c;
   if (DEMO){
@@ -386,6 +409,7 @@ async function cargar(){
     if (cfg.gls_modo !== "real") avisos.push("MODO PRUEBAS: las etiquetas GLS son de prueba y no sirven para enviar.");
     if (cfg.shopify_crear_envio !== "si") avisos.push("Shopify no se actualiza todavía (envío al cliente desactivado).");
   }
+  comprobarImportacion();
   $("#aviso").textContent = avisos.join("  ·  ");
   $("#aviso").classList.toggle("hidden", !avisos.length);
   pintar();
