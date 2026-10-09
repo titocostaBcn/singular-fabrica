@@ -104,6 +104,7 @@
   .rhacer input:focus{outline:none;border-color:var(--ink)}
   .rhacer button{border:0;border-radius:9px;padding:10px 14px;font-weight:800;background:var(--c,var(--ink));color:#fff;white-space:nowrap}
   .rhacer button[disabled]{opacity:.5}
+  .rhacer .todos{background:#fff;color:var(--cortar);border:2px solid var(--cortar);padding:9px 12px}
   .rhacer .menos{background:#fff;color:var(--ink);border:1px solid var(--line);padding:10px 10px}
   .rq .rqd{font-size:11px;font-weight:600;color:var(--muted);line-height:1.2;text-align:right}
   .rrow .rpers{justify-self:start;background:#1d1b18;color:#fff;border-radius:9px;padding:6px 14px;font-size:24px;font-weight:800;letter-spacing:.06em;white-space:pre-wrap;word-break:break-word}
@@ -280,7 +281,7 @@ const Demo = (() => {
       cliente_nombre: NOMBRES[rnd(NOMBRES.length)] + " Demo", ciudad, cp, pais: "ES", direccion1: "Calle Ejemplo 1",
       metodo_envio: [5, 17, 26].includes(i) ? "Exprés" : "ENVÍO STANDARD (Entrega 5-7 días hábiles)", tags: [],
       etiqueta_impresa: false, gls_codbarras: null, gls_modo: null, gls_error: null, shopify_error: null, shopify_fulfillment_id: null,
-      cancelado: false, enviado_fuera: false, nota: i === 12 ? "Envolver para regalo, por favor" : null, fab_lineas: lineas });
+      cancelado: false, enviado_fuera: false, nota: i === 12 ? "Envolver para regalo, por favor" : i === 17 ? "Las iniciales en dorado, por favor" : null, fab_lineas: lineas });
   }
   Object.assign(pedidos[20], { direccion1: null, pais: null, metodo_envio: "Terrassa. Taller" });
   const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no" };
@@ -494,7 +495,7 @@ function card(p){
     <div class="top"><span class="num">${esc(p.order_name)}</span><span class="fecha">${fecha(p.creado_shopify)}</span>${d >= 2 && e !== "producido" ? `<span class="dias">hace ${d} días</span>` : ""}<div class="badges">${badges}</div></div>
     <div class="cliente">${esc(p.cliente_nombre ?? "")}${p.ciudad ? " · " + esc(p.ciudad) : ""}${p.cp ? " (" + esc(p.cp) + ")" : ""}${p._urg ? " · <b>" + esc(p.metodo_envio) + "</b>" : ""}</div>
     <div class="lineas">${lineas}</div>
-    ${p.nota ? `<div class="nota">📝 ${esc(p.nota)}</div>` : ""}
+    ${p.nota ? `<div class="nota"><b>📝 Nota del cliente:</b> ${esc(p.nota)}</div>` : ""}
     ${errores.length ? `<div class="err">${errores.join("<br>")}</div>` : ""}
     ${pie}
   </article>`;
@@ -539,12 +540,13 @@ function pintarResumen(){
           <input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>
           <div><div class="rv">${f.talla ? `<span class="talla">Talla ${esc(f.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}</div>${f.resto ? `<div class="resto" style="margin:4px 0 0">${esc(f.resto)}</div>` : ""}</div>
           <div>${f.pers ? `<div class="rpers"><small>${esc(f.persKey || "Personalización")}${f.unidad ? " · " + f.unidad : ""}</small>${esc(f.pers)}</div>` : (g.conPers ? `<div class="rpers vacia">Sin personalización</div>` : "")}
-            <div class="rp">${f.pedidosOrd.map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</div></div>
+            <div class="rp">${f.pedidosOrd.map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</div>
+            ${f.pers && f.nota ? `<div class="nota" style="margin-top:6px;font-size:14px"><b>📝 Nota del cliente:</b> ${esc(f.nota)}</div>` : ""}</div>
           ${f.pers
             ? `<div class="rhacer" style="${colorVars(E.sig === "producido" ? "producido" : E.sig)}" title="${esc(E.sigTxt)}"><button data-hacer="${k}">✔ Hecha</button></div><div class="rq">1</div>`
             : contador
               ? `<div class="rhacer" style="${colorVars("cortar")}">
-                  ${f.quedan > 0 ? `<input type="number" inputmode="numeric" min="1" max="${f.quedan}" placeholder="0" data-hecho="${k}" aria-label="Vinilos cortados"><button data-hacer="${k}">✔ Cortadas</button>` : `<span class="check">✔ Todo cortado</span>`}
+                  ${f.quedan > 0 ? `<input type="number" inputmode="numeric" min="1" max="${f.quedan}" placeholder="0" data-hecho="${k}" aria-label="Vinilos cortados"><button data-hacer="${k}">✔ Cortadas</button><button class="todos" data-todos="${k}" title="Marcar las ${f.quedan} como cortadas">Todos</button>` : `<span class="check">✔ Todo cortado</span>`}
                   ${f.hechas > 0 ? `<button class="menos" data-menos="${k}" title="Corregir: restar 1 cortada">−1</button>` : ""}</div>
                  <div class="rq" title="${f.uds} en pedidos · ${f.hechas} cortadas">${f.quedan}<div class="rqd">${f.hechas ? `${f.hechas} cortadas<br>de ${f.uds}` : `en pedidos`}</div></div>`
               : `<div></div><div class="rq">${f.uds}</div>`}
@@ -567,7 +569,7 @@ function construirResumen(etapa){
     if (pers){ // una línea por prenda personalizada (si la línea trae 2 uds, salen 2 filas)
       for (let u = 1; u <= l.cantidad; u++)
         g.filas.set(`p:${l.line_id}:${u}`, { talla: v.talla, resto: v.resto, pers, persKey: (l.personalizacion ?? []).map((x) => x.key).join(" · "),
-          ids: [l.line_id], uds: 1, unidad: l.cantidad > 1 ? `${u} de ${l.cantidad}` : null, urg: l.p._urg, pedidos: [l.p] });
+          ids: [l.line_id], uds: 1, unidad: l.cantidad > 1 ? `${u} de ${l.cantidad}` : null, urg: l.p._urg, pedidos: [l.p], nota: l.p.nota ?? "" });
       continue;
     }
     const key = `v:${l.variante ?? ""}`;
@@ -632,23 +634,23 @@ async function exportarExcel(){
 
     // Hoja 1: Resumen
     const ws = wb.addWorksheet("Resumen", { views: [{ state: "frozen", ySplit: 4 }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
-    ws.columns = [{ width: 38 }, { width: 14 }, { width: 28 }, { width: 26 }, { width: 11 }, { width: 60 }, { width: 10 }, { width: 11 }, { width: 10 }];
-    ws.mergeCells("A1:I1"); ws.getCell("A1").value = `Singular Wardrobe · ${E.plural} — pendiente`;
+    ws.columns = [{ width: 38 }, { width: 14 }, { width: 28 }, { width: 26 }, { width: 11 }, { width: 60 }, { width: 10 }, { width: 11 }, { width: 10 }, { width: 40 }];
+    ws.mergeCells("A1:J1"); ws.getCell("A1").value = `Singular Wardrobe · ${E.plural} — pendiente`;
     ws.getCell("A1").font = { size: 16, bold: true };
-    ws.mergeCells("A2:I2");
+    ws.mergeCells("A2:J2");
     ws.getCell("A2").value = `Generado ${ahora.toLocaleString("es-ES")} · ${fTxt} · ${etapa === "cortar" ? construirResumen(etapa).quedan + " por cortar de " + total : total + " prendas"} · ${lista.length} modelos`;
     ws.getCell("A2").font = { size: 11, color: { argb: "FF6F6A62" } };
     const cab = ws.getRow(4);
     const { quedan, contador } = construirResumen(etapa);
-    cab.values = ["Modelo", "Talla", "Color / variante", "Personalización", contador ? "Por cortar" : "Uds", "Pedidos", "Urgente", ...(contador ? ["En pedidos", "Cortadas"] : [])];
+    cab.values = ["Modelo", "Talla", "Color / variante", "Personalización", contador ? "Por cortar" : "Uds", "Pedidos", "Urgente", contador ? "En pedidos" : "", contador ? "Cortadas" : "", "Nota del cliente"];
     cab.eachCell((c) => { c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); c.border = borde; c.alignment = { vertical: "middle" }; });
     cab.height = 20;
     for (const g of lista){
-      const r = ws.addRow([g.titulo, "", "", "", contador ? g.quedan : g.uds, "", g.urg ? `${g.urg} urg.` : "", ...(contador ? [g.uds, g.uds - g.quedan] : [])]);
+      const r = ws.addRow([g.titulo, "", "", "", contador ? g.quedan : g.uds, "", g.urg ? `${g.urg} urg.` : "", contador ? g.uds : "", contador ? g.uds - g.quedan : "", ""]);
       r.eachCell({ includeEmpty: true }, (c) => { c.font = { bold: true, size: 12 }; c.fill = fill(g.urg ? "FDE2DE" : "EFEBE4"); c.border = borde; });
       r.getCell(5).alignment = { horizontal: "center" };
       for (const f of g.filas){
-        const fr = ws.addRow(["", f.talla ?? "Sin talla", f.resto || "", f.pers || "", contador ? f.quedan : f.uds, f.pedidosOrd.map((p) => p.order_name).join(", "), f.urg ? "Sí" : "", ...(contador ? [f.uds, f.hechas] : [])]);
+        const fr = ws.addRow(["", f.talla ?? "Sin talla", f.resto || "", f.pers || "", contador ? f.quedan : f.uds, f.pedidosOrd.map((p) => p.order_name).join(", "), f.urg ? "Sí" : "", contador ? f.uds : "", contador ? f.hechas : "", f.pers ? (f.nota || "") : ""]);
         fr.eachCell({ includeEmpty: true }, (c) => { c.border = borde; c.alignment = { vertical: "top", wrapText: true }; if (f.urg) c.fill = fill("FFF0EE"); });
         fr.getCell(2).font = { bold: true };
         fr.getCell(4).font = { bold: true, size: 13 };
@@ -657,7 +659,7 @@ async function exportarExcel(){
         if (f.urg) fr.getCell(7).font = { bold: true, color: { argb: "FFD12F2F" } };
       }
     }
-    const tr = ws.addRow(["TOTAL", "", "", "", contador ? quedan : total, "", "", ...(contador ? [total, total - quedan] : [])]);
+    const tr = ws.addRow(["TOTAL", "", "", "", contador ? quedan : total, "", "", contador ? total : "", contador ? total - quedan : "", ""]);
     tr.eachCell({ includeEmpty: true }, (c) => { c.font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); c.border = borde; });
     tr.getCell(5).alignment = { horizontal: "center" };
 
@@ -666,17 +668,17 @@ async function exportarExcel(){
     wd.columns = [
       { header: "Pedido", key: "pedido", width: 11 }, { header: "Fecha pedido", key: "fecha", width: 17 }, { header: "Urgente", key: "urg", width: 9 },
       { header: "Modelo", key: "modelo", width: 38 }, { header: "Talla", key: "talla", width: 14 }, { header: "Color / variante", key: "resto", width: 28 },
-      { header: "Personalización", key: "pers", width: 26 }, { header: "Uds", key: "uds", width: 7 }, { header: "Envío", key: "envio", width: 34 },
+      { header: "Personalización", key: "pers", width: 26 }, { header: "Uds", key: "uds", width: 7 }, { header: "Envío", key: "envio", width: 34 }, { header: "Nota del cliente", key: "nota", width: 40 },
     ];
     wd.getRow(1).eachCell((c) => { c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); });
     for (const l of [...ls].sort((a, b) => porPrioridad(a.p, b.p))){
       const v = partes(l.variante);
-      const r = wd.addRow({ pedido: l.p.order_name, fecha: ((d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000))(new Date(l.p.creado_shopify)), urg: l.p._urg ? "Sí" : "", modelo: l.titulo, talla: v.talla ?? "Sin talla", resto: v.resto, pers: textoPers(l), uds: l.cantidad, envio: l.p.metodo_envio ?? "" });
+      const r = wd.addRow({ pedido: l.p.order_name, fecha: ((d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000))(new Date(l.p.creado_shopify)), urg: l.p._urg ? "Sí" : "", modelo: l.titulo, talla: v.talla ?? "Sin talla", resto: v.resto, pers: textoPers(l), uds: l.cantidad, envio: l.p.metodo_envio ?? "", nota: l.p.nota ?? "" });
       r.getCell("fecha").numFmt = "dd/mm/yyyy hh:mm";
       if (l.p._urg) r.eachCell((c) => { c.fill = fill("FFF0EE"); });
       r.getCell("pers").font = { bold: true };
     }
-    wd.autoFilter = { from: "A1", to: "I1" };
+    wd.autoFilter = { from: "A1", to: "J1" };
 
     const buf = await wb.xlsx.writeBuffer();
     const nombre = `singular_${etapa}_${ahora.toISOString().slice(0, 10)}_${String(ahora.getHours()).padStart(2, "0")}${String(ahora.getMinutes()).padStart(2, "0")}.xlsx`;
@@ -715,6 +717,7 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.bclear !== undefined){ sel.clear(); pintar(); }
   else if (b.id === "bImprLista") imprimir("imp-lista");
   else if (b.id === "bExcel") exportarExcel();
+  else if (b.dataset.todos){ const f = filasR.get(b.dataset.todos); if (f) hacerUnidades(b.dataset.todos, f.quedan); }
   else if (b.dataset.menos){ const f = filasR.get(b.dataset.menos); if (f) sumarCortados(f, -1, `Corregido: −1 cortada · ${f.titulo}`); }
   else if (b.dataset.hacer){ const k = b.dataset.hacer, inp = document.querySelector(`input[data-hecho="${k}"]`); hacerUnidades(k, inp ? inp.value : 1); }
 });
