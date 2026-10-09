@@ -1,0 +1,2 @@
+-- APLICADA el 9-oct-2026.
+-- fab_pedidos: entregado_at, entregado_por. rpc fab_entregar(p_order_id, p_entregado): solo recogida (sin dirección) y producido; solo fab_usuarios.

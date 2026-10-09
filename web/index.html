@@ -87,6 +87,8 @@
   .otros-f button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:12px 14px;font-weight:700}
   .otros-f button.go{background:var(--c);border-color:var(--c);color:#fff}
   .acciones .otrosb{flex:1}
+  .hecho .entregar{background:var(--producido);border-color:var(--producido);color:#fff;padding:12px 16px;font-weight:800}
+  .card.entregado{opacity:.6}
   .hecho{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
   .check{font-weight:700;color:var(--producido)}
   .nocheck{font-weight:700;color:var(--pendiente)}
@@ -261,7 +263,7 @@ const TABS = [
   ...["pendiente", "sin_stock", "cortar", "empaquetar"].map((e) => ({ id: e, label: ETAPA[e].plural, f: (p) => p._estado === e && activo(p) })),
   { id: "producido",    label: "Producidos hoy", f: (p) => p._estado === "producido" && esHoy(p.estado_at) },
   { id: "otros",        label: "Otros envíos",   f: (p) => p._estado === "producido" && p.envio_tipo === "otros" },
-  { id: "recogida",     label: "Recogida en tienda", f: (p) => p.recogida && !p.cancelado },
+  { id: "recogida",     label: "Recogida en tienda", f: (p) => p.recogida && !p.cancelado, cuenta: (p) => !p.entregado_at },
   { id: "sin_etiqueta", label: "Sin etiqueta",   f: (p) => p._estado === "producido" && !p.recogida && p.envio_tipo !== "otros" && !p.etiqueta_impresa && !p.cancelado },
   { id: "todos",        label: "Todos",          f: () => true },
 ];
@@ -409,6 +411,16 @@ async function empaquetado(id){
   finally { ocupado.delete(id); await cargar(); }
 }
 
+async function entregar(id, valor){
+  let error = null;
+  if (DEMO){ const p = Demo.pedidos.find((x) => x.order_id === id); p.entregado_at = valor ? new Date().toISOString() : null; }
+  else ({ error } = await sb.rpc("fab_entregar", { p_order_id: id, p_entregado: valor }));
+  if (error){ toast(error.message, true); return; }
+  const p = pedidos.find((x) => x.order_id === id);
+  toast(valor ? `${p?.order_name ?? ""} entregado al cliente` : `${p?.order_name ?? ""}: entrega deshecha`);
+  await cargar();
+}
+
 async function otroEnvio(id, info, nuevo){
   let r;
   if (DEMO) r = await Demo.fn({ accion: "otros", order_id: id, info });
@@ -466,19 +478,20 @@ function pintarPedidos(){
   const q = $("#buscar").value.trim().toLowerCase();
   const filtrados = pedidos.filter((p) => !q || p.order_name.toLowerCase().includes(q) || (p.cliente_nombre ?? "").toLowerCase().includes(q));
   $("#tabs").innerHTML = TABS.map((t) => {
-    const ps = filtrados.filter(t.f); const u = ps.filter((p) => p._urg).length;
+    const ps = filtrados.filter(t.f).filter(t.cuenta ?? (() => true)); const u = ps.filter((p) => p._urg).length;
     if (t.id === "pendiente" && !ps.length && tab !== "pendiente") return "";
     return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta", "recogida"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
   let lista = filtrados.filter(TABS.find((t) => t.id === tab).f);
   if (tab === "producido") lista = lista.slice().reverse();
-  if (tab === "recogida") lista = lista.slice().sort((a, b) => (b._estado === "producido") - (a._estado === "producido") || porPrioridad(a, b));
+  const rangoRec = (p) => p.entregado_at ? 2 : p._estado === "producido" ? 0 : 1;
+  if (tab === "recogida") lista = lista.slice().sort((a, b) => rangoRec(a) - rangoRec(b) || (rangoRec(a) === 2 ? new Date(b.entregado_at) - new Date(a.entregado_at) : porPrioridad(a, b)));
   $("#lista").innerHTML = lista.length ? lista.map(card).join("") : `<div class="vacio">No hay pedidos aquí.</div>`;
 }
 
 function card(p){
   const e = p._estado, E = ETAPA[e];
-  const cls = ["card", p._urg ? "urgente" : "", p.cancelado ? "cancelado" : "", p.enviado_fuera ? "fuera" : ""].join(" ");
+  const cls = ["card", p._urg ? "urgente" : "", p.cancelado ? "cancelado" : "", p.enviado_fuera ? "fuera" : "", p.entregado_at ? "entregado" : ""].join(" ");
   const d = diasDesde(p.creado_shopify);
   const badges = [
     p._urg ? `<span class="badge b-urg">Urgente</span>` : "",
@@ -509,7 +522,9 @@ function card(p){
       </div>`;
   } else if (e === "producido"){
     pie = p.recogida
-      ? `<div class="hecho"><span class="check">✔ Listo para recoger</span></div>`
+      ? (p.entregado_at
+          ? `<div class="hecho"><span class="check">✔ Entregado al cliente</span><span class="fecha">${fecha(p.entregado_at)}</span><button data-entregar="${p.order_id}" data-valor="0">Deshacer</button></div>`
+          : `<div class="hecho"><span class="nocheck">⏳ Listo para recoger</span><button class="entregar" data-entregar="${p.order_id}" data-valor="1">✔ Entregado al cliente</button></div>`)
       : `<div class="hecho">
           <span class="${p.etiqueta_impresa ? "check" : "nocheck"}">${p.etiqueta_impresa ? "✔ Etiqueta impresa" : "✖ Etiqueta no impresa"}</span>
           <span>GLS ${esc(p.gls_codbarras ?? "—")}${p.gls_modo === "pruebas" ? " (prueba)" : ""}</span>
@@ -758,6 +773,7 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
   else if (b.dataset.mover) moverPedido(Number(b.dataset.mover), b.dataset.desde, b.dataset.hacia);
   else if (b.dataset.empaq) empaquetado(Number(b.dataset.empaq));
+  else if (b.dataset.entregar) entregar(Number(b.dataset.entregar), b.dataset.valor === "1");
   else if (b.dataset.otros){ otrosAbierto = Number(b.dataset.otros); pintar(); document.querySelector(`input[data-otrosinfo="${otrosAbierto}"]`)?.focus(); }
   else if (b.dataset.otroscancel !== undefined){ otrosAbierto = null; pintar(); }
   else if (b.dataset.otrosok || b.dataset.otrosguardar){ const id = Number(b.dataset.otrosok || b.dataset.otrosguardar); otroEnvio(id, document.querySelector(`input[data-otrosinfo="${id}"]`)?.value ?? "", !!b.dataset.otrosok); }
