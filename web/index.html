@@ -62,6 +62,7 @@
   .badges{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
   .badge{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-radius:6px;padding:3px 8px;background:var(--line)}
   .b-urg{background:var(--urg);color:#fff}
+  .b-ret{background:#7a1010;color:#fff}
   .b-err{background:var(--err-bg);color:var(--err)}
   .chip{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;border-radius:5px;padding:2px 6px;color:var(--c);background:var(--cb);white-space:nowrap}
   .cliente{font-size:14px;color:var(--muted)}
@@ -306,10 +307,13 @@ function destinoOtros(p){
 }
 const esHoy = (t) => t && new Date(t).toDateString() === new Date().toDateString();
 const fecha = (t) => new Date(t).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+// Retrasado: sin salir (no producido) y más de 7 días naturales desde el pedido; urgentes (Exprés) más de 3.
+const retrasado = (p) => activo(p) && estadoPedido(p) !== "producido" && diasDesde(p.creado_shopify) > (urgente(p) ? 3 : 7);
 const diasDesde = (t) => Math.floor((new Date().setHours(0,0,0,0) - new Date(new Date(t).setHours(0,0,0,0))) / 864e5);
 function toast(msg, err = false){ const t = $("#toast"); t.textContent = msg; t.className = err ? "e" : ""; clearTimeout(toast.h); toast.h = setTimeout(() => t.className = "hidden", err ? 7000 : 3000); }
 
 const TABS = [
+  { id: "retrasados",   label: "⚠ Retrasados",   f: (p) => retrasado(p) },
   ...["pendiente", "sin_stock", "cortar", "empaquetar"].map((e) => ({ id: e, label: ETAPA[e].plural, f: (p) => p._estado === e && activo(p) })),
   { id: "producido",    label: "Producidos hoy", f: (p) => p._estado === "producido" && esHoy(p.estado_at) },
   { id: "otros",        label: "Otros envíos",   f: (p) => p._estado === "producido" && p.envio_tipo === "otros" },
@@ -643,7 +647,7 @@ function pintarPedidos(){
   $("#tabs").innerHTML = TABS.map((t) => {
     const ps = filtrados.filter(t.f).filter(t.cuenta ?? (() => true)); const u = ps.filter((p) => p._urg).length;
     if (t.id === "pendiente" && !ps.length && tab !== "pendiente") return "";
-    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta", "recogida", "listos", "recogidos"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
+    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta", "recogida", "listos", "recogidos", "retrasados"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
   let lista = listaActual(filtrados, true);
   if (tab === "producido") lista = lista.slice().reverse();
@@ -659,6 +663,7 @@ function card(p){
   const d = diasDesde(p.creado_shopify);
   const badges = [
     p._urg ? `<span class="badge b-urg">Urgente</span>` : "",
+    retrasado(p) ? `<span class="badge b-ret">Retrasado · ${diasDesde(p.creado_shopify)} días</span>` : "",
     `<span class="chip" style="${colorVars(e)}">${E.label}</span>`,
     p.recogida ? `<span class="badge">Recogida taller</span>` : "",
     p.pais && p.pais !== "ES" ? `<span class="badge">${esc(p.pais)}</span>` : "",
