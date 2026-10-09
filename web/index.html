@@ -92,8 +92,6 @@
   .hecho .entregar{background:var(--producido);border-color:var(--producido);color:#fff;padding:12px 16px;font-weight:800}
   .card.entregado{opacity:.6}
   .card.ajeno{opacity:.55;filter:grayscale(.6)}
-  .badge.b-yo{background:#1b7f4b;color:#fff}
-  .badge.b-otra{background:#555;color:#fff}
   #subbar{padding:10px 16px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   #subbar.hidden{display:none}
   #subbar button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 14px;font-weight:600}
@@ -198,7 +196,6 @@
     <div class="fila">
       <div class="marca">Singular Wardrobe · Fábrica</div>
       <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button></div>
-      <button class="btn-sec" id="bYo" title="Quién está usando este dispositivo">👤 ¿Quién eres?</button>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec" id="bSalir">Salir</button>
     </div>
@@ -219,8 +216,7 @@
 </section>
 
 <div id="quien" class="hidden"><div class="caja">
-  <h3 style="margin:0">¿Quién eres?</h3>
-  <div style="font-size:14px;opacity:.75">Se recuerda en este ordenador o móvil. Sirve para repartir los pedidos.</div>
+  <h3 style="margin:0" id="quienTit">¿Para quién?</h3>
   <div class="nombres" id="quienLista"></div>
   <form id="quienForm"><input id="quienOtro" placeholder="Otro nombre" maxlength="30"><button>OK</button></form>
   <button class="btn-sec" id="quienCerrar" type="button">Cancelar</button>
@@ -284,10 +280,15 @@ const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_s
 let vista = "pedidos", tab = "cortar", etapaR = "cortar";
 let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null;
 // Reparto: cada dispositivo dice quién es (mismo login para todas). Se puede coger un pedido en cualquier etapa.
-let yo = (() => { try { return localStorage.getItem("fab_nombre") || ""; } catch { return ""; } })();
+// Pensado para un PC compartido: no hay "usuario" del dispositivo. Arriba se elige Todos / Libres / una persona;
+// al coger un pedido se dice para quién. Si una tablet se queda fija en una persona, se recuerda (localStorage).
 let filtroAsig = (() => { try { return localStorage.getItem("fab_filtro_asig") || "todos"; } catch { return "todos"; } })();
 let forzarPend = null, trasElegir = null;
-const ajeno = (p) => !!p.asignado_a && p.asignado_a !== yo;
+const persona = () => (["todos", "libres", "mios"].includes(filtroAsig) ? "" : filtroAsig);
+const ajeno = (p) => !!persona() && !!p.asignado_a && p.asignado_a !== persona();
+const PALETA = ["#1b7f4b", "#6a3fb5", "#c2410c", "#0e7490", "#be185d", "#4d7c0f", "#1d4ed8", "#a16207"];
+function colorPersona(n){ const l = equipo(); let i = l.indexOf(n); if (i < 0) i = [...n].reduce((a, c) => a + c.charCodeAt(0), 0); return PALETA[i % PALETA.length]; }
+function equipo(){ return [...new Set([...nombresEquipo(), ...pedidos.map((p) => p.asignado_a).filter(Boolean)])]; }
 const ETAPAS_REPARTO = ["pendiente", "sin_stock", "cortar", "empaquetar"];
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
@@ -351,7 +352,7 @@ const Demo = (() => {
   Object.assign(pedidos[20], { direccion1: null, pais: null, metodo_envio: "Terrassa. Taller" });
   Object.assign(pedidos[3], { ciudad: "Las Palmas de Gran Canaria", cp: "35001", provincia: "Las Palmas" });
   Object.assign(pedidos[5], { ciudad: "London", cp: "SW1A 1AA", pais: "GB" });
-  const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no" };
+  const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no", empaquetadoras: "Dania, Irene, Andrea, Mica, Cristina, Carlota" };
   const PDF = "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyODMgNDI1XSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4gPj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA2NTUgPj4Kc3RyZWFtCkJUIC9GMSAyNiBUZiAzMCAzNzAgVGQgKEdMUyAgREVNTykgVGogRVQKQlQgL0YxIDEyIFRmIDMwIDM0MCBUZCAoRVRJUVVFVEEgREUgUFJVRUJBIC0gTk8gVkFMSURBKSBUaiBFVApCVCAvRjEgMTQgVGYgMzAgMzAwIFRkIChEZXN0aW5hdGFyaW86IENsaWVudGUgRGVtbykgVGogRVQKQlQgL0YxIDE0IFRmIDMwIDI4MCBUZCAoQ2FsbGUgTWF5b3IgMSwgMjgwMTMgTWFkcmlkKSBUaiBFVAowIDAgMCByZyAzMCAxMjAgbSAzMCAyMzAgbCAzNCAyMzAgbCAzNCAxMjAgbCBmCjQwIDEyMCA2IDExMCByZSBmIDUyIDEyMCAyIDExMCByZSBmIDYwIDEyMCA4IDExMCByZSBmIDc0IDEyMCAzIDExMCByZSBmIDgyIDEyMCA1IDExMCByZSBmIDk0IDEyMCAyIDExMCByZSBmIDEwMCAxMjAgNyAxMTAgcmUgZiAxMTIgMTIwIDMgMTEwIHJlIGYgMTIwIDEyMCA2IDExMCByZSBmIDEzMiAxMjAgMiAxMTAgcmUgZiAxNDAgMTIwIDggMTEwIHJlIGYgMTU0IDEyMCA0IDExMCByZSBmIDE2NCAxMjAgMiAxMTAgcmUgZiAxNzIgMTIwIDYgMTEwIHJlIGYgMTg0IDEyMCAzIDExMCByZSBmIDE5MiAxMjAgNyAxMTAgcmUgZiAyMDQgMTIwIDIgMTEwIHJlIGYgMjEyIDEyMCA1IDExMCByZSBmIDIyNCAxMjAgNCAxMTAgcmUgZiAyMzQgMTIwIDYgMTEwIHJlIGYgMjQ2IDEyMCAzIDExMCByZSBmCkJUIC9GMSAxNCBUZiA2MCA5NSBUZCAoNjE3NzEzMTUzMDk1MDIpIFRqIEVUCgplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MyAwMDAwMCBuIAowMDAwMDAwOTUwIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKMTAyNgolJUVPRgo=";
   let cb = 61771315309503, n = 2000;
   const espera = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -503,44 +504,51 @@ async function asignar(ids, nombre, { soltar = null, forzar = false } = {}){
   if (!r.ok){ toast(r.error, true); return []; }
   return r.ids;
 }
-function conNombre(accion){ if (yo) return accion(); trasElegir = accion; abrirQuien(); }
-async function coger(id, forzar = false){
-  conNombre(async () => {
-    const p = pedidos.find((x) => x.order_id === id);
-    const ok = await asignar([id], yo, { forzar });
-    toast(ok.length ? `${p?.order_name ?? ""} es tuyo, ${yo}` : `${p?.order_name ?? ""}: ya lo ha cogido otra persona`, !ok.length);
-    forzarPend = null; await cargar();
+// Ejecuta accion(nombre): con la persona seleccionada arriba, o preguntando "¿Para quién?"
+function paraQuien(titulo, accion){
+  if (persona()) return accion(persona());
+  trasElegir = accion; abrirQuien(titulo);
+}
+async function coger(id){
+  const p = pedidos.find((x) => x.order_id === id);
+  paraQuien(`¿Quién coge ${p?.order_name ?? ""}?`, async (n) => {
+    const ok = await asignar([id], n);
+    toast(ok.length ? `${p?.order_name ?? ""} → ${n}` : `${p?.order_name ?? ""}: ya lo tiene otra persona`, !ok.length);
+    await cargar();
   });
+}
+async function cambiar(id){
+  const p = pedidos.find((x) => x.order_id === id);
+  trasElegir = async (n) => { const ok = await asignar([id], n, { forzar: true }); toast(ok.length ? `${p?.order_name ?? ""} → ${n}` : "No se ha podido cambiar", !ok.length); forzarPend = null; await cargar(); };
+  abrirQuien(`¿A quién pasas ${p?.order_name ?? ""}?`);
 }
 async function soltar(id){
   const p = pedidos.find((x) => x.order_id === id);
-  const ok = await asignar([id], null, { soltar: yo });
+  const ok = await asignar([id], null, { soltar: p?.asignado_a ?? null });
   toast(ok.length ? `${p?.order_name ?? ""} vuelve a estar libre` : "No se ha podido soltar", !ok.length); await cargar();
 }
-async function cogerSiguientes(n){
-  conNombre(async () => {
-    const libres = listaActual().filter((p) => !p.asignado_a && activo(p)).slice(0, n).map((p) => p.order_id);
+async function cogerSiguientes(k){
+  paraQuien(`¿Para quién son los ${k} siguientes?`, async (n) => {
+    const libres = listaActual().filter((p) => !p.asignado_a && activo(p)).slice(0, k).map((p) => p.order_id);
     if (!libres.length){ toast("No quedan pedidos libres aquí", true); return; }
-    const ok = await asignar(libres, yo);
-    toast(`${yo}: has cogido ${ok.length} pedido${ok.length === 1 ? "" : "s"}`); filtroAsig = "mios"; guardarFiltro(); await cargar();
+    const ok = await asignar(libres, n);
+    toast(`${n}: ${ok.length} pedido${ok.length === 1 ? "" : "s"} cogido${ok.length === 1 ? "" : "s"}`);
+    filtroAsig = n; guardarFiltro(); await cargar();
   });
 }
 function guardarFiltro(){ try { localStorage.setItem("fab_filtro_asig", filtroAsig); } catch {} }
 function nombresEquipo(){ return (cfg.empaquetadoras ?? "").split(",").map((x) => x.trim()).filter(Boolean); }
-function abrirQuien(){
-  const usados = [...new Set(pedidos.map((p) => p.asignado_a).filter(Boolean))];
-  const lista = [...new Set([...nombresEquipo(), ...usados])];
-  $("#quienLista").innerHTML = lista.map((n) => `<button type="button" data-soy="${esc(n)}" ${n === yo ? 'style="background:#1b7f4b;color:#fff"' : ""}>${esc(n)}</button>`).join("") || `<div style="opacity:.7">Escribe tu nombre:</div>`;
+function abrirQuien(titulo = "¿Para quién?"){
+  $("#quienTit").textContent = titulo;
+  $("#quienLista").innerHTML = equipo().map((n) => `<button type="button" data-soy="${esc(n)}" style="border-color:${colorPersona(n)};color:${colorPersona(n)}">${esc(n)}</button>`).join("");
   $("#quienOtro").value = "";
   $("#quien").classList.remove("hidden");
 }
 function elegirNombre(n){
   n = (n ?? "").trim().slice(0, 30); if (!n) return;
-  yo = n; try { localStorage.setItem("fab_nombre", n); } catch {}
-  $("#quien").classList.add("hidden"); pintarYo();
-  const f = trasElegir; trasElegir = null; f ? f() : pintar();
+  $("#quien").classList.add("hidden");
+  const f = trasElegir; trasElegir = null; if (f) f(n);
 }
-function pintarYo(){ $("#bYo").textContent = yo ? `👤 ${yo}` : "👤 ¿Quién eres?"; }
 
 async function entregar(id, valor){
   let error = null;
@@ -611,10 +619,8 @@ function listaActual(base = null, conFiltro = false){
   base = base ?? pedidos.filter((p) => !q || p.order_name.toLowerCase().includes(q) || (p.cliente_nombre ?? "").toLowerCase().includes(q));
   let l = base.filter(TABS.find((t) => t.id === tab).f);
   if (ETAPAS_REPARTO.includes(tab)){
-    if (conFiltro && filtroAsig === "mios") l = l.filter((p) => yo && p.asignado_a === yo);
+    if (conFiltro && persona()) l = l.filter((p) => p.asignado_a === persona());
     if (conFiltro && filtroAsig === "libres") l = l.filter((p) => !p.asignado_a);
-    const rango = (p) => !p.asignado_a ? 1 : p.asignado_a === yo ? 0 : 2;
-    l = l.slice().sort((a, b) => rango(a) - rango(b) || porPrioridad(a, b));
   }
   return l;
 }
@@ -622,12 +628,11 @@ function pintarSubbar(){
   const el = $("#subbar");
   if (vista !== "pedidos" || !ETAPAS_REPARTO.includes(tab)){ el.classList.add("hidden"); return; }
   const l = listaActual();
-  const n = { todos: l.length, mios: l.filter((p) => yo && p.asignado_a === yo).length, libres: l.filter((p) => !p.asignado_a).length };
-  const quien = [...new Set(l.map((p) => p.asignado_a).filter(Boolean))].map((x) => `${esc(x)} ${l.filter((p) => p.asignado_a === x).length}`).join(" · ");
-  el.innerHTML = [["todos", "Todos"], ["mios", yo ? `Mis pedidos` : "Mis pedidos (¿quién eres?)"], ["libres", "Libres"]]
-    .map(([k, t]) => `<button data-fasig="${k}" class="${filtroAsig === k ? "on" : ""}">${t} <b>${n[k]}</b></button>`).join("")
-    + (quien ? `<span style="font-size:13px;opacity:.7">👤 ${quien}</span>` : "")
-    + `<button class="coger" data-cogern="5">✋ Coger 5 siguientes</button>`;
+  if (filtroAsig === "mios" || (persona() && !equipo().includes(persona()))) filtroAsig = "todos";
+  const chip = (k, t, n, col) => `<button data-fasig="${esc(k)}" class="${filtroAsig === k ? "on" : ""}" ${col ? `style="${filtroAsig === k ? `background:${col};border-color:${col};color:#fff` : `border-color:${col};color:${col}`}"` : ""}>${t} <b>${n}</b></button>`;
+  el.innerHTML = chip("todos", "Todos", l.length) + chip("libres", "Libres", l.filter((p) => !p.asignado_a).length)
+    + equipo().map((x) => chip(x, "👤 " + esc(x), l.filter((p) => p.asignado_a === x).length, colorPersona(x))).join("")
+    + `<button class="coger" data-cogern="5">✋ Coger 5 siguientes${persona() ? " para " + esc(persona()) : ""}</button>`;
   el.classList.remove("hidden");
 }
 function pintarPedidos(){
@@ -658,7 +663,7 @@ function card(p){
     p.recogida ? `<span class="badge">Recogida taller</span>` : "",
     p.pais && p.pais !== "ES" ? `<span class="badge">${esc(p.pais)}</span>` : "",
     destinoOtros(p) && p._estado !== "producido" ? `<span class="badge">📦 ${esc(destinoOtros(p))}</span>` : "",
-    p.asignado_a ? `<span class="badge ${p.asignado_a === yo ? "b-yo" : "b-otra"}">👤 ${esc(p.asignado_a)}</span>` : "",
+    p.asignado_a ? `<span class="badge" style="background:${colorPersona(p.asignado_a)};color:#fff">👤 ${esc(p.asignado_a)}</span>` : "",
     p.cancelado ? `<span class="badge b-err">Cancelado</span>` : "",
     p.enviado_fuera ? `<span class="badge">Enviado fuera</span>` : "",
   ].join("");
@@ -710,13 +715,12 @@ function card(p){
       : `<div class="acciones">${btns.join("")}</div>`;
     // Reparto: libre → cualquiera puede trabajarlo o cogerlo; mío → puedo soltarlo; de otra → bloqueado (se puede quitar confirmando)
     if (ajeno(p)){
-      pie = `<div class="asig"><b>👤 ${esc(p.asignado_a)} lo está haciendo</b>${forzarPend === id
-        ? `<button data-forzar="${id}" style="background:#c62828;color:#fff;border-color:#c62828">¿Seguro? Quitárselo</button><button data-forzarno>No</button>`
-        : `<button data-forzarpre="${id}">Cogerlo yo</button>`}</div>`;
+      pie = `<div class="asig"><b>👤 Lo tiene ${esc(p.asignado_a)}</b><button data-cambiar="${id}">Pasar a otra</button></div>`;
     } else if (p.asignado_a){
-      pie = `<div class="asig"><b style="color:#1b7f4b">👤 Tuyo, ${esc(yo)}</b><button data-soltar="${id}">Soltar</button></div>` + pie;
+      const col = colorPersona(p.asignado_a);
+      pie = `<div class="asig"><b style="color:${col};font-size:18px">👤 ${esc(p.asignado_a)}</b><button data-cambiar="${id}">Cambiar</button><button data-soltar="${id}">Soltar</button></div>` + pie;
     } else {
-      pie = `<div class="asig"><b style="opacity:.6">Libre</b><button data-coger="${id}" style="background:#1b7f4b;color:#fff;border-color:#1b7f4b">✋ Lo cojo yo</button></div>` + pie;
+      pie = `<div class="asig"><b style="opacity:.6">Libre</b><button data-coger="${id}" style="background:#1b7f4b;color:#fff;border-color:#1b7f4b">✋ Coger${persona() ? " para " + esc(persona()) : ""}</button></div>` + pie;
     }
   }
   return `<article class="${cls}" style="${colorVars(e)}">
@@ -946,13 +950,10 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.mover) moverPedido(Number(b.dataset.mover), b.dataset.desde, b.dataset.hacia);
   else if (b.dataset.coger) coger(Number(b.dataset.coger));
   else if (b.dataset.soltar) soltar(Number(b.dataset.soltar));
-  else if (b.dataset.forzarpre){ forzarPend = Number(b.dataset.forzarpre); pintar(); }
-  else if (b.dataset.forzarno !== undefined){ forzarPend = null; pintar(); }
-  else if (b.dataset.forzar) coger(Number(b.dataset.forzar), true);
-  else if (b.dataset.fasig){ if (b.dataset.fasig === "mios" && !yo){ trasElegir = () => { filtroAsig = "mios"; guardarFiltro(); pintar(); }; abrirQuien(); } else { filtroAsig = b.dataset.fasig; guardarFiltro(); pintar(); } }
+  else if (b.dataset.cambiar) cambiar(Number(b.dataset.cambiar));
+  else if (b.dataset.fasig){ filtroAsig = b.dataset.fasig; guardarFiltro(); pintar(); }
   else if (b.dataset.cogern) cogerSiguientes(Number(b.dataset.cogern));
   else if (b.dataset.soy) elegirNombre(b.dataset.soy);
-  else if (b.id === "bYo") abrirQuien();
   else if (b.id === "quienCerrar"){ trasElegir = null; $("#quien").classList.add("hidden"); }
   else if (b.dataset.empaq) empaquetado(Number(b.dataset.empaq));
   else if (b.dataset.entregar) entregar(Number(b.dataset.entregar), b.dataset.valor === "1");
@@ -979,7 +980,6 @@ document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.hecho){ e.preventDefault(); hacerUnidades(e.target.dataset.hecho, e.target.value); } });
 $("#bImportar").onclick = async () => { toast("Importando de Shopify…"); const j = await fn({ accion: "importar" }); j.ok ? toast(`${j.nuevos} pedidos nuevos`) : toast(j.error, true); cargar(); };
 $("#quienForm").onsubmit = (e) => { e.preventDefault(); elegirNombre($("#quienOtro").value); };
-pintarYo();
 $("#bSalir").onclick = async () => { await sb.auth.signOut(); location.reload(); };
 $("#fLogin").onsubmit = async (e) => {
   e.preventDefault();
