@@ -680,6 +680,7 @@ function card(p){
       <div>
         <div class="t">${l.cantidad > 1 ? `<b>${l.cantidad}×</b>` : ""}${esc(l.titulo)} ${mixto && e !== "producido" ? `<span class="chip" style="${colorVars(le)}">${ETAPA[le].label}</span>` : ""}</div>
         ${(() => { const v = partes(l.variante); return `<div>${v.talla ? `<span class="talla">Talla ${esc(v.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}${v.resto ? `<span class="resto">${esc(v.resto)}</span>` : ""}</div>`; })()}
+        ${l.sin_vinilo ? `<div><span class="badge">Sin vinilo${l.stock != null ? ` · stock ${l.stock}` : ""}</span></div>` : ""}
         ${(l.personalizacion ?? []).map((x) => `<div class="pers"><span>${esc(x.key)}</span>${esc(x.value)}</div>`).join(" ")}
       </div>
     </div>`;

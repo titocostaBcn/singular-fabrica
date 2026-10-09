@@ -1,4 +1,4 @@
-// fab v5 — Gestión de producción Singular Wardrobe
+// fab v6 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (cortar y estampar) ⇄ sin_stock → empaquetar; el pedido (trigger en BD) toma el de su prenda más atrasada.
 // Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · lineas · producido · impresa · reimprimir · diag · prueba_gls
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
@@ -69,7 +69,17 @@ const Q_PEDIDOS = `query Pedidos($q: String!, $after: String) { orders(first: 50
   nodes { id name createdAt cancelledAt displayFulfillmentStatus tags note email phone
     shippingAddress { name address1 address2 city province zip countryCodeV2 phone company }
     shippingLine { title }
-    lineItems(first: 50) { nodes { id title variantTitle sku currentQuantity customAttributes { key value } image { url } } } } } }`;
+    lineItems(first: 50) { nodes { id title variantTitle sku currentQuantity customAttributes { key value } image { url }
+      variant { id inventoryQuantity inventoryItem { tracked } product { id tags } } } } } } }`;
+
+// Producto con etiqueta "sin vinilo" en Shopify: no se corta; si hay stock pasa solo a Empaquetar, si no a Sin stock.
+const esSinVinilo = (tags: string[] | undefined) => (tags ?? []).some((t) => /^\s*sin\s+vinilo\s*$/i.test(t));
+const datosVariante = (l: any) => ({
+  product_id: l.variant?.product?.id ? idNum(l.variant.product.id) : null,
+  variant_id: l.variant?.id ? idNum(l.variant.id) : null,
+  sin_vinilo: esSinVinilo(l.variant?.product?.tags),
+  stock: l.variant && l.variant.inventoryItem?.tracked !== false ? (l.variant.inventoryQuantity ?? null) : null, // null = sin control de stock
+});
 
 // ───────── IMPORTAR ─────────
 async function importar(usuario: string) {
@@ -108,11 +118,21 @@ async function importar(usuario: string) {
     const lineas = o.lineItems.nodes.filter((l: any) => l.currentQuantity > 0).map((l: any) => ({
       line_id: idNum(l.id), order_id, titulo: l.title, variante: l.variantTitle, sku: l.sku,
       cantidad: l.currentQuantity, personalizacion: (l.customAttributes ?? []).filter((x: any) => x.value && !x.key.startsWith("_")),
-      imagen_url: l.image?.url ?? null,
+      imagen_url: l.image?.url ?? null, ...datosVariante(l),
     }));
     if (lineas.length) await sb.from("fab_lineas").insert(lineas);
     nuevos++;
   }
+
+  // Pedidos ya importados: refrescar etiqueta "sin vinilo" y stock de sus prendas (pueden haber cambiado en Shopify)
+  for (const o of pedidos) {
+    if (!ya.has(idNum(o.id))) continue;
+    for (const l of o.lineItems.nodes) {
+      if (!l.variant) continue;
+      await sb.from("fab_lineas").update(datosVariante(l)).eq("line_id", idNum(l.id));
+    }
+  }
+  const sinVinilo = await repartirSinVinilo(usuario);
 
   // Revisar pedidos abiertos en la BD: cancelados o enviados por fuera del sistema
   const { data: abiertos } = await sb.from("fab_pedidos").select("order_id")
@@ -129,9 +149,39 @@ async function importar(usuario: string) {
     }
   }
 
-  const res = { revisados: pedidos.length, nuevos, cancelados, enviados_fuera: fuera };
+  const res = { revisados: pedidos.length, nuevos, cancelados, enviados_fuera: fuera, sin_vinilo: sinVinilo };
   await evento(null, "importacion", res, usuario);
   return res;
+}
+
+// Prendas "sin vinilo" en Cortar / Sin stock → Empaquetar si hay stock, si no Sin stock.
+// El stock de Shopify ("disponible") ya descuenta todos los pedidos sin enviar: si es >= 0 hay para todos;
+// si es negativo faltan esas unidades y se quedan sin stock los pedidos más nuevos (urgentes y antiguos primero).
+async function repartirSinVinilo(usuario: string) {
+  const { data } = await sb.from("fab_lineas")
+    .select("line_id, order_id, variant_id, cantidad, estado, stock, fab_pedidos!inner(creado_shopify, metodo_envio, tags, estado, cancelado, enviado_fuera)")
+    .eq("sin_vinilo", true).in("estado", ["cortar", "sin_stock"])
+    .neq("fab_pedidos.estado", "producido").eq("fab_pedidos.cancelado", false).eq("fab_pedidos.enviado_fuera", false);
+  const urg = (p: any) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t: string) => /urgent/i.test(t));
+  const ls = (data ?? []).sort((a: any, b: any) => (Number(urg(b.fab_pedidos)) - Number(urg(a.fab_pedidos))) ||
+    (new Date(a.fab_pedidos.creado_shopify).getTime() - new Date(b.fab_pedidos.creado_shopify).getTime()));
+  const porVar = new Map<string, any[]>();
+  for (const l of ls) { const k = String(l.variant_id ?? "l" + l.line_id); porVar.set(k, [...(porVar.get(k) ?? []), l]); }
+  const disponibles: number[] = [], agotadas: number[] = [];
+  for (const grupo of porVar.values()) {
+    const stock = grupo[0].stock;
+    const total = grupo.reduce((s, l) => s + l.cantidad, 0);
+    let cubiertas = stock == null || stock >= 0 ? total : Math.max(total + stock, 0);
+    for (const l of grupo) {
+      if (cubiertas >= l.cantidad) { cubiertas -= l.cantidad; if (l.estado !== "empaquetar") disponibles.push(l.line_id); }
+      else if (l.estado !== "sin_stock") agotadas.push(l.line_id);
+    }
+  }
+  const ahora = new Date().toISOString();
+  if (disponibles.length) await sb.from("fab_lineas").update({ estado: "empaquetar", estado_at: ahora, estado_por: "auto sin vinilo" }).in("line_id", disponibles);
+  if (agotadas.length) await sb.from("fab_lineas").update({ estado: "sin_stock", estado_at: ahora, estado_por: "auto sin vinilo" }).in("line_id", agotadas);
+  if (disponibles.length || agotadas.length) await evento(null, "sin_vinilo", { disponibles, agotadas }, usuario);
+  return { disponibles: disponibles.length, sin_stock: agotadas.length };
 }
 
 // ───────── GLS ─────────
