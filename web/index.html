@@ -264,6 +264,8 @@ const TABS = [
   { id: "producido",    label: "Producidos hoy", f: (p) => p._estado === "producido" && esHoy(p.estado_at) },
   { id: "otros",        label: "Otros envíos",   f: (p) => p._estado === "producido" && p.envio_tipo === "otros" },
   { id: "recogida",     label: "Recogida en tienda", f: (p) => p.recogida && !p.cancelado, cuenta: (p) => !p.entregado_at },
+  { id: "listos",       label: "Listos para recoger", f: (p) => p.recogida && !p.cancelado && p._estado === "producido" && !p.entregado_at },
+  { id: "recogidos",    label: "Recogidos",      f: (p) => p.recogida && !!p.entregado_at },
   { id: "sin_etiqueta", label: "Sin etiqueta",   f: (p) => p._estado === "producido" && !p.recogida && p.envio_tipo !== "otros" && !p.etiqueta_impresa && !p.cancelado },
   { id: "todos",        label: "Todos",          f: () => true },
 ];
@@ -480,12 +482,13 @@ function pintarPedidos(){
   $("#tabs").innerHTML = TABS.map((t) => {
     const ps = filtrados.filter(t.f).filter(t.cuenta ?? (() => true)); const u = ps.filter((p) => p._urg).length;
     if (t.id === "pendiente" && !ps.length && tab !== "pendiente") return "";
-    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta", "recogida"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
+    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta", "recogida", "listos", "recogidos"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
   let lista = filtrados.filter(TABS.find((t) => t.id === tab).f);
   if (tab === "producido") lista = lista.slice().reverse();
   const rangoRec = (p) => p.entregado_at ? 2 : p._estado === "producido" ? 0 : 1;
   if (tab === "recogida") lista = lista.slice().sort((a, b) => rangoRec(a) - rangoRec(b) || (rangoRec(a) === 2 ? new Date(b.entregado_at) - new Date(a.entregado_at) : porPrioridad(a, b)));
+  if (tab === "recogidos") lista = lista.slice().sort((a, b) => new Date(b.entregado_at) - new Date(a.entregado_at));
   $("#lista").innerHTML = lista.length ? lista.map(card).join("") : `<div class="vacio">No hay pedidos aquí.</div>`;
 }
 
