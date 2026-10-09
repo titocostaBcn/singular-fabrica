@@ -254,8 +254,8 @@ let vista = "pedidos", tab = "cortar", etapaR = "cortar";
 let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null;
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
-// Destino → tipo de envío automático: Europa = etiqueta GLS; Canarias, Ceuta, Melilla, Reino Unido y resto del mundo = Otros envíos.
-const EUROPA_GLS = new Set("ES PT FR DE IT NL BE LU AT IE DK SE FI PL CZ SK SI HU HR RO BG GR CY MT EE LV LT CH NO IS LI AD MC SM VA".split(" "));
+// Destino → tipo de envío automático: UE (península, Baleares y países UE) = etiqueta GLS; Canarias, Ceuta, Melilla, Reino Unido y todo lo que no sea UE (Suiza, Noruega, Andorra…) = Otros envíos.
+const EUROPA_GLS = new Set("ES PT FR DE IT NL BE LU AT IE DK SE FI PL CZ SK SI HU HR RO BG GR CY MT EE LV LT".split(" "));
 function destinoOtros(p){
   if (p.recogida) return null;
   const pais = (p.pais ?? "ES").toUpperCase(), cp = String(p.cp ?? "").trim(), prov = (p.provincia ?? "").toLowerCase();
@@ -263,7 +263,7 @@ function destinoOtros(p){
   if (pais === "IC" || (pais === "ES" && (/^3[58]/.test(cp) || /palmas|tenerife|canari/.test(prov)))) return "Canarias";
   if (pais === "EA" || (pais === "ES" && (/^51/.test(cp) || prov.includes("ceuta")))) return "Ceuta";
   if (pais === "ES" && (/^52/.test(cp) || prov.includes("melilla"))) return "Melilla";
-  if (!EUROPA_GLS.has(pais)) return "Fuera de Europa";
+  if (!EUROPA_GLS.has(pais)) return "Fuera de la UE";
   return null;
 }
 const esHoy = (t) => t && new Date(t).toDateString() === new Date().toDateString();
