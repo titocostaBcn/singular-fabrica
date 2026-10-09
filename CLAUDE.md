@@ -33,5 +33,5 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 - [ ] Permisos app Shopify: read/write_merchant_managed_fulfillment_orders (hoy solo lectura).
 - [ ] Impresora de etiquetas (térmica 10x15 o A4) y Chrome con --kiosk-printing en el PC de fábrica.
 - [ ] Remitente de la etiqueta: hoy "Carrer de Bosch i Gimpera 20, Nave Manual Color" (confirmar si mostrar Manual Color).
-- [x] Repo GitHub: titocostaBcn/singular-fabrica (privado; cuenta de Singular).
+- [x] Repo GitHub: titocostaBcn/singular-fabrica — PÚBLICO desde 9-oct (Netlify gratis bloqueaba despliegues en privado). No subir nunca secretos: todo en vault de Supabase.
 - [x] Netlify: proyecto `tallersingular` → https://tallersingular.netlify.app (se publica solo al subir a main).
