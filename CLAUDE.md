@@ -20,6 +20,7 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 - Demo sin conexión: abrir `web/index.html?demo`.
 
 ## Reglas
+- Commits: autor `titocostaBcn <300454408+titocostaBcn@users.noreply.github.com>` y SIN trailer Co-Authored-By. Netlify (plan gratis, repo privado) bloquea despliegues de autores/coautores no reconocidos.
 - Diagnóstico antes de actuar; autorización explícita de Tito antes de escribir en Supabase o Shopify.
 - Probar con un pedido antes de activar nada para todos.
 
@@ -33,4 +34,4 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 - [ ] Impresora de etiquetas (térmica 10x15 o A4) y Chrome con --kiosk-printing en el PC de fábrica.
 - [ ] Remitente de la etiqueta: hoy "Carrer de Bosch i Gimpera 20, Nave Manual Color" (confirmar si mostrar Manual Color).
 - [x] Repo GitHub: titocostaBcn/singular-fabrica (privado; cuenta de Singular).
-- [ ] Netlify conectado al repo (netlify.toml, publish=web).
+- [x] Netlify: proyecto `tallersingular` → https://tallersingular.netlify.app (se publica solo al subir a main).
