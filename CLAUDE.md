@@ -39,6 +39,7 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 - [ ] Ojo: este Supabase también aloja cosas de TDP (schema `tdp_deposito`, usuarios @tdpdecoracion.es). Tito quiere separar empresas.
 - [ ] UID cliente GLS y servicio/horario contratados (provisional 96/18 nacional, 74/3 internacional).
 - [ ] Permisos app Shopify: read/write_merchant_managed_fulfillment_orders (hoy solo lectura).
+- [ ] Cuando Tito dé permisos de escritura (write_orders): guardar en cada pedido de Shopify "Estampado por" y "Empaquetado por" (metafields de pedido, p. ej. singular.estampado_por / singular.empaquetado_por) — pedido explícito de Tito 10-oct. NO activar antes.
 - [ ] Impresora de etiquetas (térmica 10x15 o A4) y Chrome con --kiosk-printing en el PC de fábrica.
 - [ ] Remitente de la etiqueta: hoy "Carrer de Bosch i Gimpera 20, Nave Manual Color" (confirmar si mostrar Manual Color).
 - [x] Repo GitHub: titocostaBcn/singular-fabrica — PÚBLICO desde 9-oct (Netlify gratis bloqueaba despliegues en privado). No subir nunca secretos: todo en vault de Supabase.
