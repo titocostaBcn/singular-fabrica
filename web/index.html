@@ -968,7 +968,8 @@ async function cargarHistorico(){
     if (error){ toast("Error cargando el histórico: " + error.message, true); H.rows = []; }
     else H.rows = data;
   }
-  H.cargando = false; pintarHistorico();
+  H.cargando = false; H.leido = new Date(); pintarHistorico();
+  if (H.leido) toast(`Histórico actualizado · ${H.leido.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`);
 }
 function filasHistorico(){
   const q = H.q.toLowerCase().replace(/^#/, "");
@@ -1001,7 +1002,7 @@ function pintarHistorico(){
       <label>Persona<select id="hPersona"></select></label>
       <label>Como<select id="hRol"><option value="cualquiera">Estampado o empaquetado</option><option value="estampado">Solo estampado</option><option value="empaquetado">Solo empaquetado</option></select></label>
       <label>Pedido o cliente<input id="hQ" placeholder="#40250 o nombre"></label>
-      <div class="hacc"><button id="hBuscar" class="prim">Buscar</button><button id="hImprimir">🖨 PDF</button><button id="hExcel">⬇ Excel</button></div>
+      <div class="hacc"><button id="hRefrescar" title="Volver a leer los pedidos (por si han salido nuevos)">↻ Refrescar</button><button id="hBuscar" class="prim">Buscar</button><button id="hImprimir">🖨 PDF</button><button id="hExcel">⬇ Excel</button></div>
     </div><div id="hCuerpo"></div>`;
     el.addEventListener("change", (e) => { if (["hDesde", "hHasta", "hCampo"].includes(e.target.id)) cargarHistorico(); else if (["hPersona", "hRol"].includes(e.target.id)){ leerFiltrosHist(); pintarHistorico(); } });
     el.addEventListener("input", (e) => { if (e.target.id === "hQ"){ leerFiltrosHist(); pintarHistorico(); } });
@@ -1010,7 +1011,6 @@ function pintarHistorico(){
   if (document.activeElement?.id !== "hQ") $("#hQ").value = H.q;
   const nombres = [...new Set([...equipo(), ...(H.rows ?? []).flatMap((p) => [p.estampado_por, p.empaquetado_por]).filter(Boolean)])];
   $("#hPersona").innerHTML = `<option value="">Todas</option>` + nombres.map((n) => `<option ${n === H.persona ? "selected" : ""}>${esc(n)}</option>`).join("");
-  if (H.rows === null && !H.cargando){ cargarHistorico(); return; }
   const filas = filasHistorico();
   const periodo = H.desde === H.hasta ? new Date(H.desde + "T00:00").toLocaleDateString("es-ES") : `${new Date(H.desde + "T00:00").toLocaleDateString("es-ES")} – ${new Date(H.hasta + "T00:00").toLocaleDateString("es-ES")}`;
   const cuenta = new Map();
@@ -1020,7 +1020,7 @@ function pintarHistorico(){
   const resumen = [...cuenta].sort((a, b) => (b[1].e + b[1].k) - (a[1].e + a[1].k)).map(([n, c]) => `<div class="pc"><span style="color:${n === "Sin indicar" ? "var(--muted)" : colorPersona(n)};font-weight:800">👤 ${esc(n)}</span> · <b>${c.e}</b> estampados · <b>${c.k}</b> empaquetados</div>`).join("");
   $("#hCuerpo").innerHTML = H.cargando ? `<div class="vacio">Cargando…</div>` : `
     <div class="himpcab" style="display:none"><h2 style="margin:0 0 4px">Singular Wardrobe · Histórico de pedidos</h2></div>
-    <div class="rtitulo"><h2>${filas.length} pedido${filas.length === 1 ? "" : "s"} ${H.campo === "estampado" ? "estampado" : "sacado"}${filas.length === 1 ? "" : "s"}</h2><span class="tot">${periodo}${H.persona ? " · " + esc(H.persona) + (H.rol !== "cualquiera" ? " (" + H.rol + ")" : "") : ""}${H.q ? " · «" + esc(H.q) + "»" : ""}</span></div>
+    <div class="rtitulo"><h2>${filas.length} pedido${filas.length === 1 ? "" : "s"} ${H.campo === "estampado" ? "estampado" : "sacado"}${filas.length === 1 ? "" : "s"}</h2><span class="tot">${periodo}${H.persona ? " · " + esc(H.persona) + (H.rol !== "cualquiera" ? " (" + H.rol + ")" : "") : ""}${H.q ? " · «" + esc(H.q) + "»" : ""}${H.leido ? ` · actualizado ${H.leido.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : ""}</span></div>
     <div class="hres">${resumen || ""}</div>
     ${filas.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>Pedido</th><th>Cliente / destino</th><th>Prendas</th><th>Estampado</th><th>Empaquetado / enviado</th><th>Salida</th><th>Nota</th></tr></thead><tbody>
       ${filas.map((p) => `<tr>
@@ -1165,7 +1165,7 @@ function pintarBarra(){
 // ───── eventos ─────
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.vista){ vista = b.dataset.vista; sel.clear(); pintar(); }
+  if (b.dataset.vista){ vista = b.dataset.vista; sel.clear(); if (vista === "historico") H.cargando = true; pintar(); if (vista === "historico") cargarHistorico(); }
   else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
   else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
   else if (b.dataset.mover && b.dataset.hacia === "empaquetar") estampar(Number(b.dataset.mover), b.dataset.desde);
@@ -1185,7 +1185,7 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.otrosguardar){ const id = Number(b.dataset.otrosguardar); otroEnvio(id, document.querySelector(`input[data-otrosinfo="${id}"]`)?.value ?? "", false); }
   else if (b.id === "quienNadie"){ $("#quien").classList.add("hidden"); const f = trasElegir; trasElegir = null; if (f) f(""); }
   else if (b.dataset.hrapido) histRapido(b.dataset.hrapido);
-  else if (b.id === "hBuscar") cargarHistorico();
+  else if (b.id === "hBuscar" || b.id === "hRefrescar") cargarHistorico();
   else if (b.id === "hImprimir") imprimir("imp-hist");
   else if (b.id === "hExcel") excelHistorico();
   else if (b.dataset.reimp) reimprimir(Number(b.dataset.reimp));
