@@ -116,6 +116,26 @@
 
   /* resumen */
   #resumen{padding:16px 16px 110px;display:grid;gap:12px;max-width:1100px}
+  #historico{padding:16px 16px 60px;display:grid;gap:14px}
+  .hfiltros{display:flex;flex-wrap:wrap;gap:10px;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .hfiltros label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+  .hfiltros input,.hfiltros select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--panel);color:inherit}
+  .hfiltros .rapidos{display:flex;gap:6px;flex-wrap:wrap}
+  .hfiltros .rapidos button,.hacc button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 12px;font-weight:600}
+  .hacc{display:flex;gap:8px;margin-left:auto}
+  .hacc button.prim{background:#1f1f1f;color:#fff;border-color:#1f1f1f}
+  .hres{display:flex;flex-wrap:wrap;gap:8px}
+  .hres .pc{border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--panel);font-size:14px}
+  .hres .pc b{font-size:16px}
+  .htabla{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+  .htabla th{background:#1f1f1f;color:#fff;text-align:left;padding:8px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0}
+  .htabla td{padding:8px;border-top:1px solid var(--line);vertical-align:top}
+  .htabla td.hnum{font-weight:800;white-space:nowrap;font-size:15px}
+  .htabla .pr{white-space:nowrap}
+  .htabla .ps{font-weight:800}
+  .htabla .quien{font-weight:700}
+  .htabla small{color:var(--muted);display:block}
+  .hwrap{overflow-x:auto}
   .rtitulo{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
   .rtitulo h2{margin:0;font-size:22px}
   .rtitulo .tot{color:var(--muted)}
@@ -165,6 +185,15 @@
     body.imp-etiqueta #zonaImpresion img{width:100%;display:block;page-break-after:always}
     body.imp-lista header,body.imp-lista #subbar,body.imp-lista #aviso,body.imp-lista #avisoError,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
     body.imp-lista{background:#fff}
+    body.imp-hist header,body.imp-hist #subbar,body.imp-hist #aviso,body.imp-hist #avisoError,body.imp-hist #barra,body.imp-hist #toast,body.imp-hist #lista,body.imp-hist #resumen,body.imp-hist .hfiltros{display:none!important}
+    body.imp-hist,html:has(body.imp-hist){background:#fff!important}
+    @page{margin:10mm}
+    body.imp-hist #historico{padding:0}
+    body.imp-hist .htabla{font-size:10px;border:1px solid #999}
+    body.imp-hist .htabla th{background:#000!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;position:static}
+    body.imp-hist .htabla tr{break-inside:avoid}
+    body.imp-hist .hwrap{overflow:visible}
+    body.imp-hist .himpcab{display:block!important}
     body.imp-lista .rrow{grid-template-columns:minmax(150px,auto) 1fr auto}
     body.imp-lista .rhacer{display:none!important}
     body.imp-lista .rrow .rpers{background:none;color:#000;border:2px solid #000}
@@ -196,7 +225,7 @@
   <header>
     <div class="fila">
       <div class="marca">Singular Wardrobe · Fábrica</div>
-      <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button></div>
+      <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec" id="bSalir">Salir</button>
     </div>
@@ -213,12 +242,14 @@
   <div id="subbar" class="hidden"></div>
   <main id="lista"></main>
   <main id="resumen" class="hidden"></main>
+  <main id="historico" class="hidden"></main>
   <div id="barra" class="hidden"></div>
 </section>
 
 <div id="quien" class="hidden"><div class="caja">
   <h3 style="margin:0" id="quienTit">¿Para quién?</h3>
   <div class="nombres" id="quienLista"></div>
+  <button type="button" id="quienNadie" class="btn-sec hidden">Sin indicar</button>
   <form id="quienForm"><input id="quienOtro" placeholder="Otro nombre" maxlength="30"><button>OK</button></form>
   <button class="btn-sec" id="quienCerrar" type="button">Cancelar</button>
 </div></div>
@@ -354,6 +385,12 @@ const Demo = (() => {
       cancelado: false, enviado_fuera: false, nota: i === 12 ? "Envolver para regalo, por favor" : i === 17 ? "Las iniciales en dorado, por favor" : null, fab_lineas: lineas });
   }
   Object.assign(pedidos[20], { direccion1: null, pais: null, metodo_envio: "Terrassa. Taller" });
+  const hist = [["Dania", "Irene", 80, 30], ["Mica", "Irene", 70, 40], ["Dania", "Andrea", 60, 20], ["Cristina", "Mica", 50, 6]];
+  hist.forEach(([est, emp, hE, hS], k) => {
+    const p = pedidos[6 + k];
+    Object.assign(p, { estado: "producido", estado_at: hace(hS), estampado_por: est, estampado_at: hace(hE), empaquetado_por: emp, empaquetado_at: hace(hS), envio_tipo: k === 3 ? "otros" : "gls", envio_info: k === 3 ? "Correos · PQ123ES" : null, gls_codbarras: k === 3 ? null : "617713153095" + (10 + k), etiqueta_impresa: k !== 3 });
+    p.fab_lineas.forEach((l) => l.estado = "empaquetar");
+  });
   Object.assign(pedidos[3], { ciudad: "Las Palmas de Gran Canaria", cp: "35001", provincia: "Las Palmas" });
   Object.assign(pedidos[5], { ciudad: "London", cp: "SW1A 1AA", pais: "GB" });
   const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no", empaquetadoras: "Dania, Irene, Andrea, Mica, Cristina, Carlota" };
@@ -439,7 +476,8 @@ async function cargar(){
     cortados = new Map(Object.entries(Demo.cortados));
   } else {
     const [r, cc, ct] = await Promise.all([
-      sb.from("fab_pedidos").select("*, fab_lineas(*)").order("creado_shopify", { ascending: true }).limit(2000),
+      // los producidos de hace más de 30 días ya no se cargan aquí (se consultan en el Histórico)
+      sb.from("fab_pedidos").select("*, fab_lineas(*)").or(`estado.neq.producido,estado_at.gte.${new Date(Date.now() - 30 * 864e5).toISOString()}`).order("creado_shopify", { ascending: true }).limit(3000),
       sb.from("fab_config").select("clave,valor"),
       sb.from("fab_cortados").select("clave,hechas"),
     ]);
@@ -542,9 +580,11 @@ async function cogerSiguientes(k){
 }
 function guardarFiltro(){ try { localStorage.setItem("fab_filtro_asig", filtroAsig); } catch {} }
 function nombresEquipo(){ return (cfg.empaquetadoras ?? "").split(",").map((x) => x.trim()).filter(Boolean); }
-function abrirQuien(titulo = "¿Para quién?"){
+function abrirQuien(titulo = "¿Para quién?", { nadie = false, destacar = null } = {}){
   $("#quienTit").textContent = titulo;
-  $("#quienLista").innerHTML = equipo().map((n) => `<button type="button" data-soy="${esc(n)}" style="border-color:${colorPersona(n)};color:${colorPersona(n)}">${esc(n)}</button>`).join("");
+  const lista = destacar ? [destacar, ...equipo().filter((n) => n !== destacar)] : equipo();
+  $("#quienLista").innerHTML = lista.map((n) => `<button type="button" data-soy="${esc(n)}" style="${n === destacar ? `background:${colorPersona(n)};color:#fff;` : `color:${colorPersona(n)};`}border-color:${colorPersona(n)}">${esc(n)}</button>`).join("");
+  $("#quienNadie").classList.toggle("hidden", !nadie);
   $("#quienOtro").value = "";
   $("#quien").classList.remove("hidden");
 }
@@ -552,6 +592,41 @@ function elegirNombre(n){
   n = (n ?? "").trim().slice(0, 30); if (!n) return;
   $("#quien").classList.add("hidden");
   const f = trasElegir; trasElegir = null; if (f) f(n);
+}
+
+// ───── quién estampa / quién empaqueta (para el Histórico) ─────
+async function marcarPersona(ids, tipo, persona){
+  if (DEMO){
+    for (const id of ids){ const p = Demo.pedidos.find((x) => x.order_id === id); if (!p) continue; p[tipo + "_por"] = persona || null; p[tipo + "_at"] = p[tipo + "_at"] || new Date().toISOString(); }
+    return;
+  }
+  const { error } = await sb.rpc("fab_marcar_persona", { p_order_ids: ids, p_tipo: tipo, p_persona: persona || null });
+  if (error) toast("No se ha guardado quién lo ha hecho: " + error.message, true);
+}
+// Pide la persona (si no hay una fija arriba). Al estampar vale la que lo tiene cogido; al empaquetar siempre se pregunta.
+function preguntarQuien(p, tipo, accion){
+  if (persona()) return accion(persona());
+  if (tipo === "estampado" && p.asignado_a) return accion(p.asignado_a);
+  trasElegir = accion;
+  abrirQuien(`¿Quién lo ha ${tipo}? · ${p.order_name}`, { nadie: true, destacar: p.asignado_a });
+}
+async function estampar(id, desde){
+  const p = pedidos.find((x) => x.order_id === id); if (!p) return;
+  preguntarQuien(p, "estampado", async (per) => { await moverPedido(id, desde, "empaquetar"); await marcarPersona([id], "estampado", per); if (DEMO) await cargar(); });
+}
+async function empaquetarCon(id){
+  const p = pedidos.find((x) => x.order_id === id); if (!p) return;
+  preguntarQuien(p, "empaquetado", async (per) => {
+    await empaquetado(id);
+    if (pedidos.find((x) => x.order_id === id)?._estado === "producido"){ await marcarPersona([id], "empaquetado", per); await cargar(); }
+  });
+}
+async function otrosCon(id, info){
+  const p = pedidos.find((x) => x.order_id === id); if (!p) return;
+  preguntarQuien(p, "empaquetado", async (per) => {
+    await otroEnvio(id, info, true);
+    if (pedidos.find((x) => x.order_id === id)?._estado === "producido"){ await marcarPersona([id], "empaquetado", per); await cargar(); }
+  });
 }
 
 async function entregar(id, valor){
@@ -610,11 +685,13 @@ function imprimir(modo){
 function pintar(){
   $("#lista").classList.toggle("hidden", vista !== "pedidos");
   $("#resumen").classList.toggle("hidden", vista !== "resumen");
+  $("#historico").classList.toggle("hidden", vista !== "historico");
+  $("#tabs").classList.toggle("hidden", vista === "historico");
   if (vista !== "pedidos") $("#subbar").classList.add("hidden");
   $("#buscar").classList.toggle("hidden", vista !== "pedidos");
   $("#fFecha").classList.toggle("hidden", vista !== "resumen");
   document.querySelectorAll(".vistas button").forEach((b) => b.classList.toggle("on", b.dataset.vista === vista));
-  vista === "pedidos" ? pintarPedidos() : pintarResumen();
+  vista === "pedidos" ? pintarPedidos() : vista === "resumen" ? pintarResumen() : pintarHistorico();
 }
 
 // Pedidos de la pestaña actual; en etapas de producción aplica el filtro Todos / Mis pedidos / Libres
@@ -858,6 +935,142 @@ async function sumarCortados(f, n, msg){
 }
 
 // ───── Excel ─────
+// ───── Histórico: pedidos sacados (empaquetados/enviados) o estampados en un periodo ─────
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const H = { desde: ymd(new Date()), hasta: ymd(new Date()), campo: "empaquetado", persona: "", rol: "cualquiera", q: "", rows: null, cargando: false };
+function histRapido(k){
+  const hoy = new Date(); let d0 = new Date(hoy), d1 = new Date(hoy);
+  if (k === "ayer"){ d0.setDate(d0.getDate() - 1); d1 = new Date(d0); }
+  if (k === "7") d0.setDate(d0.getDate() - 6);
+  if (k === "mes") d0 = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  if (k === "mesant"){ d0 = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1); d1 = new Date(hoy.getFullYear(), hoy.getMonth(), 0); }
+  H.desde = ymd(d0); H.hasta = ymd(d1);
+  if ($("#hDesde")){ $("#hDesde").value = H.desde; $("#hHasta").value = H.hasta; }
+  cargarHistorico();
+}
+function leerFiltrosHist(){
+  const v = (id) => document.getElementById(id)?.value;
+  if (!$("#hDesde")) return;
+  H.desde = v("hDesde") || H.desde; H.hasta = v("hHasta") || H.hasta; H.campo = v("hCampo"); H.persona = v("hPersona"); H.rol = v("hRol"); H.q = v("hQ").trim();
+  if (H.hasta < H.desde) H.hasta = H.desde;
+}
+async function cargarHistorico(){
+  leerFiltrosHist();
+  const d0 = new Date(H.desde + "T00:00:00"), d1 = new Date(H.hasta + "T00:00:00"); d1.setDate(d1.getDate() + 1);
+  const col = H.campo + "_at";
+  H.cargando = true; pintarHistorico();
+  if (DEMO){
+    H.rows = JSON.parse(JSON.stringify(Demo.pedidos)).filter((p) => p[col] && new Date(p[col]) >= d0 && new Date(p[col]) < d1);
+  } else {
+    const { data, error } = await sb.from("fab_pedidos").select("*, fab_lineas(*)").gte(col, d0.toISOString()).lt(col, d1.toISOString()).order(col, { ascending: true }).limit(5000);
+    if (error){ toast("Error cargando el histórico: " + error.message, true); H.rows = []; }
+    else H.rows = data;
+  }
+  H.cargando = false; pintarHistorico();
+}
+function filasHistorico(){
+  const q = H.q.toLowerCase().replace(/^#/, "");
+  return (H.rows ?? []).filter((p) => {
+    if (H.persona){
+      const e = p.estampado_por === H.persona, k = p.empaquetado_por === H.persona;
+      if (H.rol === "estampado" ? !e : H.rol === "empaquetado" ? !k : !(e || k)) return false;
+    }
+    if (q && !(p.order_name ?? "").toLowerCase().replace(/^#/, "").includes(q) && !(p.cliente_nombre ?? "").toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => new Date(a[H.campo + "_at"]) - new Date(b[H.campo + "_at"]));
+}
+const fechaHora = (t) => t ? new Date(t).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+function salidaTxt(p){
+  if (p.estado !== "producido") return "Aún no ha salido";
+  if (p.recogida ?? !p.direccion1) return p.entregado_at ? `Recogida · entregado ${fechaHora(p.entregado_at)}` : "Recogida en tienda · pendiente de entregar";
+  if (p.envio_tipo === "otros") return `Otros envíos${p.envio_info ? " · " + p.envio_info : ""}`;
+  return `GLS ${p.gls_codbarras ?? "—"}${p.gls_modo === "pruebas" ? " (prueba)" : ""}${p.etiqueta_impresa ? "" : " · etiqueta sin imprimir"}`;
+}
+const prendasTxt = (p) => (p.fab_lineas ?? []).map((l) => { const v = partes(l.variante); return `${l.cantidad > 1 ? l.cantidad + "× " : ""}${l.titulo}${v.talla ? " · T." + v.talla : ""}${v.resto ? " · " + v.resto : ""}${(l.personalizacion ?? []).length ? " · " + l.personalizacion.map((x) => `${x.key}: ${x.value}`).join(", ") : ""}`; });
+function pintarHistorico(){
+  const el = $("#historico");
+  if (!el.dataset.listo){
+    el.dataset.listo = "1";
+    el.innerHTML = `<div class="hfiltros">
+      <label>Desde<input type="date" id="hDesde"></label>
+      <label>Hasta<input type="date" id="hHasta"></label>
+      <div class="rapidos"><button data-hrapido="hoy">Hoy</button><button data-hrapido="ayer">Ayer</button><button data-hrapido="7">7 días</button><button data-hrapido="mes">Este mes</button><button data-hrapido="mesant">Mes anterior</button></div>
+      <label>Fecha de<select id="hCampo"><option value="empaquetado">Salida (empaquetado / enviado)</option><option value="estampado">Estampado</option></select></label>
+      <label>Persona<select id="hPersona"></select></label>
+      <label>Como<select id="hRol"><option value="cualquiera">Estampado o empaquetado</option><option value="estampado">Solo estampado</option><option value="empaquetado">Solo empaquetado</option></select></label>
+      <label>Pedido o cliente<input id="hQ" placeholder="#40250 o nombre"></label>
+      <div class="hacc"><button id="hBuscar" class="prim">Buscar</button><button id="hImprimir">🖨 PDF</button><button id="hExcel">⬇ Excel</button></div>
+    </div><div id="hCuerpo"></div>`;
+    el.addEventListener("change", (e) => { if (["hDesde", "hHasta", "hCampo"].includes(e.target.id)) cargarHistorico(); else if (["hPersona", "hRol"].includes(e.target.id)){ leerFiltrosHist(); pintarHistorico(); } });
+    el.addEventListener("input", (e) => { if (e.target.id === "hQ"){ leerFiltrosHist(); pintarHistorico(); } });
+  }
+  $("#hDesde").value = H.desde; $("#hHasta").value = H.hasta; $("#hCampo").value = H.campo; $("#hRol").value = H.rol;
+  if (document.activeElement?.id !== "hQ") $("#hQ").value = H.q;
+  const nombres = [...new Set([...equipo(), ...(H.rows ?? []).flatMap((p) => [p.estampado_por, p.empaquetado_por]).filter(Boolean)])];
+  $("#hPersona").innerHTML = `<option value="">Todas</option>` + nombres.map((n) => `<option ${n === H.persona ? "selected" : ""}>${esc(n)}</option>`).join("");
+  if (H.rows === null && !H.cargando){ cargarHistorico(); return; }
+  const filas = filasHistorico();
+  const periodo = H.desde === H.hasta ? new Date(H.desde + "T00:00").toLocaleDateString("es-ES") : `${new Date(H.desde + "T00:00").toLocaleDateString("es-ES")} – ${new Date(H.hasta + "T00:00").toLocaleDateString("es-ES")}`;
+  const cuenta = new Map();
+  for (const p of filas){
+    for (const [n, k] of [[p.estampado_por, "e"], [p.empaquetado_por, "k"]]){ const key = n || "Sin indicar"; const c = cuenta.get(key) ?? { e: 0, k: 0 }; c[k]++; cuenta.set(key, c); }
+  }
+  const resumen = [...cuenta].sort((a, b) => (b[1].e + b[1].k) - (a[1].e + a[1].k)).map(([n, c]) => `<div class="pc"><span style="color:${n === "Sin indicar" ? "var(--muted)" : colorPersona(n)};font-weight:800">👤 ${esc(n)}</span> · <b>${c.e}</b> estampados · <b>${c.k}</b> empaquetados</div>`).join("");
+  $("#hCuerpo").innerHTML = H.cargando ? `<div class="vacio">Cargando…</div>` : `
+    <div class="himpcab" style="display:none"><h2 style="margin:0 0 4px">Singular Wardrobe · Histórico de pedidos</h2></div>
+    <div class="rtitulo"><h2>${filas.length} pedido${filas.length === 1 ? "" : "s"} ${H.campo === "estampado" ? "estampado" : "sacado"}${filas.length === 1 ? "" : "s"}</h2><span class="tot">${periodo}${H.persona ? " · " + esc(H.persona) + (H.rol !== "cualquiera" ? " (" + H.rol + ")" : "") : ""}${H.q ? " · «" + esc(H.q) + "»" : ""}</span></div>
+    <div class="hres">${resumen || ""}</div>
+    ${filas.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>Pedido</th><th>Cliente / destino</th><th>Prendas</th><th>Estampado</th><th>Empaquetado / enviado</th><th>Salida</th><th>Nota</th></tr></thead><tbody>
+      ${filas.map((p) => `<tr>
+        <td class="hnum">${esc(p.order_name)}<small>${fechaHora(p.creado_shopify)}</small>${urgente(p) ? `<small style="color:var(--urg);font-weight:700">Urgente</small>` : ""}</td>
+        <td>${esc(p.cliente_nombre ?? "")}<small>${esc([p.ciudad, p.cp, p.pais && p.pais !== "ES" ? p.pais : ""].filter(Boolean).join(" · ") || "Recogida en tienda")}</small><small>${esc(p.metodo_envio ?? "")}</small></td>
+        <td>${prendasTxt(p).map((t) => `<div class="pr">${esc(t)}</div>`).join("")}</td>
+        <td><span class="quien" style="color:${p.estampado_por ? colorPersona(p.estampado_por) : "var(--muted)"}">${esc(p.estampado_por || "Sin indicar")}</span><small>${fechaHora(p.estampado_at)}</small></td>
+        <td><span class="quien" style="color:${p.empaquetado_por ? colorPersona(p.empaquetado_por) : "var(--muted)"}">${p.empaquetado_at ? esc(p.empaquetado_por || "Sin indicar") : "—"}</span><small>${fechaHora(p.empaquetado_at)}</small></td>
+        <td>${esc(salidaTxt(p))}</td>
+        <td>${esc(p.nota ?? "")}</td></tr>`).join("")}
+    </tbody></table></div>` : `<div class="vacio">No hay pedidos con estos filtros.</div>`}`;
+}
+async function excelHistorico(){
+  try {
+    const ExcelJS = await cargarExcelJS();
+    const filas = filasHistorico(), ahora = new Date();
+    const wb = new ExcelJS.Workbook(); wb.creator = "Singular Wardrobe · Fábrica"; wb.created = ahora;
+    const fill = (hex) => ({ type: "pattern", pattern: "solid", fgColor: { argb: "FF" + hex } });
+    const local = (t) => t ? ((d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000))(new Date(t)) : null;
+    const ws = wb.addWorksheet("Histórico", { views: [{ state: "frozen", ySplit: 4 }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
+    ws.columns = [{ width: 10 }, { width: 16 }, { width: 26 }, { width: 22 }, { width: 70 }, { width: 14 }, { width: 16 }, { width: 14 }, { width: 16 }, { width: 34 }, { width: 34 }];
+    ws.mergeCells("A1:K1"); ws.getCell("A1").value = `Singular Wardrobe · Pedidos ${H.campo === "estampado" ? "estampados" : "sacados"}`; ws.getCell("A1").font = { size: 16, bold: true };
+    ws.mergeCells("A2:K2"); ws.getCell("A2").value = `${H.desde} a ${H.hasta}${H.persona ? " · " + H.persona : ""}${H.q ? " · " + H.q : ""} · ${filas.length} pedidos · generado ${ahora.toLocaleString("es-ES")}`; ws.getCell("A2").font = { color: { argb: "FF6F6A62" } };
+    const cab = ws.getRow(4);
+    cab.values = ["Pedido", "Fecha pedido", "Cliente", "Destino", "Prendas", "Estampado por", "Estampado", "Empaquetado por", "Empaquetado", "Salida", "Nota"];
+    cab.eachCell((c) => { c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); });
+    for (const p of filas){
+      const r = ws.addRow([p.order_name, local(p.creado_shopify), p.cliente_nombre ?? "", [p.ciudad, p.cp, p.pais].filter(Boolean).join(" · ") || "Recogida", prendasTxt(p).join("\n"),
+        p.estampado_por || "Sin indicar", local(p.estampado_at), p.empaquetado_at ? (p.empaquetado_por || "Sin indicar") : "", local(p.empaquetado_at), salidaTxt(p), p.nota ?? ""]);
+      [2, 7, 9].forEach((i) => r.getCell(i).numFmt = "dd/mm/yyyy hh:mm");
+      r.eachCell({ includeEmpty: true }, (c) => { c.alignment = { vertical: "top", wrapText: true }; });
+      r.getCell(1).font = { bold: true }; r.getCell(6).font = { bold: true }; r.getCell(8).font = { bold: true };
+    }
+    ws.autoFilter = { from: "A4", to: "K4" };
+    // Hoja 2: resumen por persona
+    const wr = wb.addWorksheet("Por persona");
+    wr.columns = [{ header: "Persona", width: 22 }, { header: "Estampados", width: 14 }, { header: "Empaquetados", width: 14 }];
+    wr.getRow(1).eachCell((c) => { c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); });
+    const cuenta = new Map();
+    for (const p of filas) for (const [n, k] of [[p.estampado_por, 0], [p.empaquetado_at ? p.empaquetado_por : undefined, 1]]){ if (k === 1 && !p.empaquetado_at) continue; const key = n || "Sin indicar"; const c = cuenta.get(key) ?? [0, 0]; c[k]++; cuenta.set(key, c); }
+    for (const [n, c] of [...cuenta].sort()) wr.addRow([n, c[0], c[1]]);
+    const buf = await wb.xlsx.writeBuffer();
+    const nombre = `singular_historico_${H.desde}_${H.hasta}${H.persona ? "_" + H.persona : ""}.xlsx`;
+    window.__ultimoExcel = { nombre, bytes: buf.byteLength };
+    if (window.__noDescargar) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    a.download = nombre; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    toast("Excel descargado: " + nombre);
+  } catch (e){ toast(String(e.message || e), true); }
+}
+
 async function cargarExcelJS(){
   if (window.ExcelJS) return window.ExcelJS;
   await new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"; s.onload = ok; s.onerror = () => ko(new Error("No se pudo cargar el generador de Excel")); document.head.appendChild(s); });
@@ -953,6 +1166,7 @@ document.addEventListener("click", (e) => {
   if (b.dataset.vista){ vista = b.dataset.vista; sel.clear(); pintar(); }
   else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
   else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
+  else if (b.dataset.mover && b.dataset.hacia === "empaquetar") estampar(Number(b.dataset.mover), b.dataset.desde);
   else if (b.dataset.mover) moverPedido(Number(b.dataset.mover), b.dataset.desde, b.dataset.hacia);
   else if (b.dataset.coger) coger(Number(b.dataset.coger));
   else if (b.dataset.soltar) soltar(Number(b.dataset.soltar));
@@ -961,11 +1175,17 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.cogern) cogerSiguientes(Number(b.dataset.cogern));
   else if (b.dataset.soy) elegirNombre(b.dataset.soy);
   else if (b.id === "quienCerrar"){ trasElegir = null; $("#quien").classList.add("hidden"); }
-  else if (b.dataset.empaq) empaquetado(Number(b.dataset.empaq));
+  else if (b.dataset.empaq) empaquetarCon(Number(b.dataset.empaq));
   else if (b.dataset.entregar) entregar(Number(b.dataset.entregar), b.dataset.valor === "1");
   else if (b.dataset.otros){ otrosAbierto = Number(b.dataset.otros); pintar(); document.querySelector(`input[data-otrosinfo="${otrosAbierto}"]`)?.focus(); }
   else if (b.dataset.otroscancel !== undefined){ otrosAbierto = null; pintar(); }
-  else if (b.dataset.otrosok || b.dataset.otrosguardar){ const id = Number(b.dataset.otrosok || b.dataset.otrosguardar); otroEnvio(id, document.querySelector(`input[data-otrosinfo="${id}"]`)?.value ?? "", !!b.dataset.otrosok); }
+  else if (b.dataset.otrosok){ const id = Number(b.dataset.otrosok); otrosCon(id, document.querySelector(`input[data-otrosinfo="${id}"]`)?.value ?? ""); }
+  else if (b.dataset.otrosguardar){ const id = Number(b.dataset.otrosguardar); otroEnvio(id, document.querySelector(`input[data-otrosinfo="${id}"]`)?.value ?? "", false); }
+  else if (b.id === "quienNadie"){ $("#quien").classList.add("hidden"); const f = trasElegir; trasElegir = null; if (f) f(""); }
+  else if (b.dataset.hrapido) histRapido(b.dataset.hrapido);
+  else if (b.id === "hBuscar") cargarHistorico();
+  else if (b.id === "hImprimir") imprimir("imp-hist");
+  else if (b.id === "hExcel") excelHistorico();
   else if (b.dataset.reimp) reimprimir(Number(b.dataset.reimp));
   else if (b.dataset.bmover) moverLineas([...sel], b.dataset.bmover);
   else if (b.dataset.bclear !== undefined){ sel.clear(); pintar(); }
@@ -982,7 +1202,7 @@ document.addEventListener("change", (e) => {
   if (c.id === "fFecha"){ sel.clear(); pintar(); }
 });
 $("#buscar").addEventListener("input", pintar);
-document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.otrosinfo){ e.preventDefault(); const id = Number(e.target.dataset.otrosinfo); otroEnvio(id, e.target.value, otrosAbierto === id); return; } });
+document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.otrosinfo){ e.preventDefault(); const id = Number(e.target.dataset.otrosinfo); otrosAbierto === id ? otrosCon(id, e.target.value) : otroEnvio(id, e.target.value, false); return; } });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.hecho){ e.preventDefault(); hacerUnidades(e.target.dataset.hecho, e.target.value); } });
 $("#bImportar").onclick = async () => { toast("Importando de Shopify…"); const j = await fn({ accion: "importar" }); j.ok ? toast(`${j.nuevos} pedidos nuevos`) : toast(j.error, true); cargar(); };
 $("#quienForm").onsubmit = (e) => { e.preventDefault(); elegirNombre($("#quienOtro").value); };
