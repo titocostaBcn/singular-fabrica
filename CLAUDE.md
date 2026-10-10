@@ -4,7 +4,7 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 
 ## Flujo
 1. Importación de Shopify (diaria 8:00 Madrid, cron `fab_importar_0800` `0 6,7 * * *` UTC + `?hora=8`; + botón "Importar"): pedidos abiertos sin enviar → `fab_pedidos`. Si falla se registra `importacion_error` en `fab_eventos`; desde las 8:15 la pantalla muestra en rojo "ERROR: no actualizado hoy" si no hay `importacion` correcta del día.
-2. Pantalla de fábrica (`web/index.html`), dos vistas:
+2. Pantalla de fábrica (`web/index.html`), vistas Pedidos, Resumen producción, Histórico y Ayuda (manual `web/manual.md`, buscador sin acentos, PDF `imp-ayuda`):
    - Pedidos: urgentes (envío Exprés o etiqueta "urgente") primero y en rojo; luego del más antiguo al más nuevo.
    - Resumen producción: prendas por etapa agrupadas por modelo → variante (personalizadas una línea por unidad), imprimir listado y exportar Excel (ExcelJS).
      En Cortar vinilo: genéricas = CONTADOR de vinilos cortados (tabla `fab_cortados`, rpc `fab_sumar_cortados`), NO mueve pedidos; los pedidos genéricos se pasan a mano y al pasar de cortar→estampar consumen del contador (trigger). Personalizadas: "✔ Hecha" mueve esa prenda/pedido a Estampar.
@@ -26,6 +26,7 @@ Gestión de producción de pedidos de Shopify (singularwardrobe.myshopify.com). 
 - Demo sin conexión: abrir `web/index.html?demo`.
 
 ## Reglas
+- MANUAL DE USO (petición de Tito 10-oct): CADA cambio del programa se añade al manual en el mismo commit: `web/manual.md` (lo muestra la vista Ayuda, con buscador y PDF; diagrama `web/ayuda-recorrido.svg`) y la copia en Claude Docs "Manual de uso · Fábrica Singular Wardrobe" (https://claude.ai/code/artifact/626826bd-9bdd-46a2-b2ec-e62bb8dc6e0c, nodo prosa e2687337-31d3).
 - MCP Supabase: cancela (pide confirmación) SQL con DELETE/DROP o UPDATE sin WHERE; poner siempre WHERE y evitar DELETE.
 - 9-oct 22:57: limpieza de pruebas (todos los pedidos a cortar, contador a 0, sin GLS/otros/entregas/asignaciones; evento reset_pruebas).
 - Commits: autor `titocostaBcn <300454408+titocostaBcn@users.noreply.github.com>` y SIN trailer Co-Authored-By. Netlify (plan gratis, repo privado) bloquea despliegues de autores/coautores no reconocidos.

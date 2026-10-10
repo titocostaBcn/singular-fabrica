@@ -117,6 +117,28 @@
   /* resumen */
   #resumen{padding:16px 16px 110px;display:grid;gap:12px;max-width:1100px}
   #historico{padding:16px 16px 60px;display:grid;gap:14px}
+  #ayuda{padding:16px 16px 80px}
+  .aybarra{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bg,#f4f1ec);padding:8px 0 12px;max-width:860px;margin:0 auto}
+  .aybarra input{flex:1;min-width:220px;padding:11px 16px;border:1px solid var(--line);border-radius:999px;font:inherit;font-size:16px;background:var(--panel);color:inherit}
+  .aybarra .cuenta{color:var(--muted);font-size:14px}
+  .aybarra button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:10px 14px;font-weight:600}
+  .manual{max-width:860px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px 28px 28px;line-height:1.55;font-size:16px}
+  .manual h1{font-size:26px;margin:20px 0 6px}
+  .manual h2{font-size:21px;margin:30px 0 8px;padding-top:12px;border-top:1px solid var(--line)}
+  .manual h3{font-size:17px;margin:20px 0 6px}
+  .manual p{margin:8px 0}
+  .manual ul,.manual ol{margin:8px 0;padding-left:24px}
+  .manual li{margin:4px 0}
+  .manual table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px}
+  .manual th{text-align:left;background:#1f1f1f;color:#fff;padding:8px 10px}
+  .manual td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+  .manual td:first-child{font-weight:600;width:34%}
+  .manual figure{margin:14px 0}.manual figure img{width:100%;height:auto;display:block}
+  .manual mark{background:#ffe066;color:#000;border-radius:3px;padding:0 1px}
+  .manual .indice{columns:2;column-gap:24px;margin:10px 0 0;padding-left:20px}
+  .manual .indice button{background:none;border:0;padding:2px 0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer;text-align:left}
+  .manual .nada{color:var(--muted);padding:30px 0;text-align:center}
+  @media (max-width:640px){ .manual{padding:4px 16px 20px} .manual .indice{columns:1} }
   .hfiltros{display:flex;flex-wrap:wrap;gap:10px;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
   .hfiltros label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
   .hfiltros input,.hfiltros select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--panel);color:inherit}
@@ -187,6 +209,14 @@
     body.imp-lista{background:#fff}
     body.imp-hist header,body.imp-hist #subbar,body.imp-hist #aviso,body.imp-hist #avisoError,body.imp-hist #barra,body.imp-hist #toast,body.imp-hist #lista,body.imp-hist #resumen,body.imp-hist .hfiltros{display:none!important}
     body.imp-hist,html:has(body.imp-hist){background:#fff!important}
+    body.imp-ayuda header,body.imp-ayuda #subbar,body.imp-ayuda #aviso,body.imp-ayuda #avisoError,body.imp-ayuda #barra,body.imp-ayuda #toast,body.imp-ayuda #lista,body.imp-ayuda #resumen,body.imp-ayuda #historico,body.imp-ayuda .aybarra,body.imp-ayuda .indice-bloque{display:none!important}
+    body.imp-ayuda,html:has(body.imp-ayuda){background:#fff!important}
+    body.imp-ayuda #ayuda{padding:0}
+    body.imp-ayuda .manual{border:0;padding:0;max-width:none;font-size:11pt}
+    body.imp-ayuda .manual h2{break-after:avoid}
+    body.imp-ayuda .manual tr,body.imp-ayuda .manual figure{break-inside:avoid}
+    body.imp-ayuda .manual th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body.imp-ayuda .manual mark{background:none;padding:0}
     @page{margin:10mm}
     body.imp-hist #historico{padding:0}
     body.imp-hist .htabla{font-size:10px;border:1px solid #999}
@@ -225,7 +255,7 @@
   <header>
     <div class="fila">
       <div class="marca">Singular Wardrobe · Fábrica</div>
-      <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button></div>
+      <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec" id="bSalir">Salir</button>
     </div>
@@ -243,6 +273,7 @@
   <main id="lista"></main>
   <main id="resumen" class="hidden"></main>
   <main id="historico" class="hidden"></main>
+  <main id="ayuda" class="hidden"></main>
   <div id="barra" class="hidden"></div>
 </section>
 
@@ -688,12 +719,13 @@ function pintar(){
   $("#lista").classList.toggle("hidden", vista !== "pedidos");
   $("#resumen").classList.toggle("hidden", vista !== "resumen");
   $("#historico").classList.toggle("hidden", vista !== "historico");
-  $("#tabs").classList.toggle("hidden", vista === "historico");
+  $("#ayuda").classList.toggle("hidden", vista !== "ayuda");
+  $("#tabs").classList.toggle("hidden", vista === "historico" || vista === "ayuda");
   if (vista !== "pedidos") $("#subbar").classList.add("hidden");
   $("#buscar").classList.toggle("hidden", vista !== "pedidos");
   $("#fFecha").classList.toggle("hidden", vista !== "resumen");
   document.querySelectorAll(".vistas button").forEach((b) => b.classList.toggle("on", b.dataset.vista === vista));
-  vista === "pedidos" ? pintarPedidos() : vista === "resumen" ? pintarResumen() : pintarHistorico();
+  vista === "pedidos" ? pintarPedidos() : vista === "resumen" ? pintarResumen() : vista === "historico" ? pintarHistorico() : pintarAyuda();
 }
 
 // Pedidos de la pestaña actual; en etapas de producción aplica el filtro Todos / Mis pedidos / Libres
@@ -1073,6 +1105,84 @@ async function excelHistorico(){
   } catch (e){ toast(String(e.message || e), true); }
 }
 
+// ───── Ayuda: el manual de uso (web/manual.md), con buscador por palabras e impresión en PDF ─────
+// Regla: cada cambio del programa se añade a web/manual.md (y al manual en Claude Docs).
+let manual = null, ayudaQ = "";
+const sinAcentos = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+function mdInline(t){
+  return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+function mdHtml(md){
+  const L = md.split("\n"), out = [];
+  for (let i = 0; i < L.length;){
+    const l = L[i];
+    if (!l.trim()){ i++; continue; }
+    let m;
+    if ((m = l.match(/^!\[([^\]]*)\]\(([^)\s]+)\)\s*$/))){ out.push(`<figure><img src="${esc(m[2])}" alt="${esc(m[1])}"></figure>`); i++; continue; }
+    if ((m = l.match(/^(#{1,3})\s+(.*)$/))){ out.push(`<h${m[1].length}>${mdInline(m[2])}</h${m[1].length}>`); i++; continue; }
+    if (l.startsWith("|")){
+      const filas = []; while (i < L.length && L[i].startsWith("|")) filas.push(L[i++]);
+      const celdas = (f) => f.replace(/^\||\|\s*$/g, "").split("|").map((c) => c.trim());
+      const cuerpo = filas.slice(1).filter((f) => !/^\|\s*-/.test(f));
+      out.push(`<table><thead><tr>${celdas(filas[0]).map((c) => `<th>${mdInline(c)}</th>`).join("")}</tr></thead><tbody>${cuerpo.map((f) => `<tr>${celdas(f).map((c) => `<td>${mdInline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`);
+      continue;
+    }
+    if (/^\d+\.\s/.test(l)){ const it = []; while (i < L.length && /^\d+\.\s/.test(L[i])) it.push(L[i++].replace(/^\d+\.\s+/, "")); out.push(`<ol>${it.map((x) => `<li>${mdInline(x)}</li>`).join("")}</ol>`); continue; }
+    if (/^-\s/.test(l)){ const it = []; while (i < L.length && /^-\s/.test(L[i])) it.push(L[i++].replace(/^-\s+/, "")); out.push(`<ul>${it.map((x) => `<li>${mdInline(x)}</li>`).join("")}</ul>`); continue; }
+    const par = []; while (i < L.length && L[i].trim() && !/^(#|\||-\s|\d+\.\s|!\[)/.test(L[i])) par.push(L[i++]);
+    out.push(`<p>${mdInline(par.join(" "))}</p>`);
+  }
+  return out.join("");
+}
+function textoPlano(md){ return md.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/[*#|>-]/g, " ").replace(/\s+/g, " "); }
+async function cargarManual(){
+  try {
+    const r = await fetch("manual.md", { cache: "no-cache" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const md = await r.text();
+    const partes = md.split(/\n(?=## )/);
+    const cab = partes.shift();
+    const titulo = (cab.match(/^#\s+(.*)$/m) ?? [, "Manual de uso"])[1];
+    manual = { titulo, intro: mdHtml(cab.replace(/^#\s+.*$/m, "")), secciones: partes.map((p, k) => {
+      const t = p.match(/^##\s+(.*)$/m)[1];
+      return { id: "ay-" + k, titulo: t, html: mdHtml(p), texto: sinAcentos(t + " " + textoPlano(p)) };
+    }) };
+  } catch (e){ manual = { error: String(e.message || e) }; }
+}
+function resaltar(raiz, palabras){
+  if (!palabras.length) return;
+  const nodos = []; const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
+  while (w.nextNode()) nodos.push(w.currentNode);
+  for (const n of nodos){
+    const orig = n.nodeValue, norm = sinAcentos(orig);
+    if (norm.length !== orig.length) continue;
+    const marcas = [];
+    for (const p of palabras){ let k = norm.indexOf(p); while (k >= 0){ marcas.push([k, k + p.length]); k = norm.indexOf(p, k + p.length); } }
+    if (!marcas.length) continue;
+    marcas.sort((a, b) => a[0] - b[0]);
+    const frag = document.createDocumentFragment(); let pos = 0;
+    for (const [a, b] of marcas){ if (a < pos) continue; frag.append(orig.slice(pos, a)); const mk = document.createElement("mark"); mk.textContent = orig.slice(a, b); frag.append(mk); pos = b; }
+    frag.append(orig.slice(pos)); n.replaceWith(frag);
+  }
+}
+async function pintarAyuda(){
+  const el = $("#ayuda");
+  if (!el.dataset.listo){
+    el.dataset.listo = "1";
+    el.innerHTML = `<div class="aybarra"><input id="aQ" type="search" placeholder="Buscar en el manual: etiqueta, sin stock, recogida…" autocomplete="off"><span class="cuenta" id="aCuenta"></span><button id="aLimpiar">Borrar</button><button id="aImprimir">🖨 PDF</button></div><article class="manual" id="aCuerpo"><p class="nada">Cargando el manual…</p></article>`;
+    $("#aQ").addEventListener("input", (e) => { ayudaQ = e.target.value; pintarAyuda(); });
+  }
+  if (!manual) await cargarManual();
+  if (manual.error){ $("#aCuerpo").innerHTML = `<p class="nada">No se ha podido cargar el manual (${esc(manual.error)}). Recarga la página.</p>`; return; }
+  const palabras = sinAcentos(ayudaQ).split(/\s+/).filter((p) => p.length >= 2);
+  const secs = palabras.length ? manual.secciones.filter((s) => palabras.every((p) => s.texto.includes(p))) : manual.secciones;
+  $("#aCuenta").textContent = palabras.length ? `${secs.length} apartado${secs.length === 1 ? "" : "s"}` : "";
+  $("#aCuerpo").innerHTML = `<h1>${mdInline(manual.titulo)}</h1>`
+    + (palabras.length ? "" : manual.intro + `<div class="indice-bloque"><h3>Índice</h3><ol class="indice">${manual.secciones.map((s) => `<li><button class="lnk" data-irsec="${s.id}">${mdInline(s.titulo.replace(/^\d+\.\s*/, ""))}</button></li>`).join("")}</ol></div>`)
+    + (secs.length ? secs.map((s) => `<section id="${s.id}">${s.html}</section>`).join("") : `<p class="nada">Ningún apartado contiene «${esc(ayudaQ)}». Prueba con otra palabra.</p>`);
+  resaltar($("#aCuerpo"), palabras);
+}
+
 async function cargarExcelJS(){
   if (window.ExcelJS) return window.ExcelJS;
   await new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"; s.onload = ok; s.onerror = () => ko(new Error("No se pudo cargar el generador de Excel")); document.head.appendChild(s); });
@@ -1188,6 +1298,9 @@ document.addEventListener("click", (e) => {
   else if (b.id === "hBuscar" || b.id === "hRefrescar") cargarHistorico();
   else if (b.id === "hImprimir") imprimir("imp-hist");
   else if (b.id === "hExcel") excelHistorico();
+  else if (b.id === "aImprimir") imprimir("imp-ayuda");
+  else if (b.id === "aLimpiar"){ ayudaQ = ""; $("#aQ").value = ""; pintarAyuda(); $("#aQ").focus(); }
+  else if (b.dataset.irsec){ document.getElementById(b.dataset.irsec)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (b.dataset.reimp) reimprimir(Number(b.dataset.reimp));
   else if (b.dataset.bmover) moverLineas([...sel], b.dataset.bmover);
   else if (b.dataset.bclear !== undefined){ sel.clear(); pintar(); }
