@@ -35,7 +35,11 @@
   #aviso{background:#fff4c2;border-bottom:1px solid #e6d27a;padding:8px 16px;font-weight:600;font-size:14px}
   header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;display:grid;gap:10px}
   .fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .marca{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px;margin-right:auto}
+  .marca{display:flex;align-items:center;gap:12px;margin-right:auto;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:var(--muted)}
+  .marca img{height:44px;width:auto;display:block}
+  #login .logo{width:240px;max-width:100%;height:auto;margin:0 auto 6px;display:block}
+  .logo-imp{display:none}
+  .manual .logo-manual{width:260px;max-width:60%;height:auto;display:block;margin:22px 0 4px}
   .vistas{display:flex;background:var(--line);border-radius:12px;padding:3px}
   .vistas button{border:0;background:none;border-radius:9px;padding:9px 16px;font-weight:700;color:var(--muted)}
   .vistas button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px #0002}
@@ -207,6 +211,8 @@
     body.imp-etiqueta #zonaImpresion img{width:100%;display:block;page-break-after:always}
     body.imp-lista header,body.imp-lista #subbar,body.imp-lista #aviso,body.imp-lista #avisoError,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
     body.imp-lista{background:#fff}
+    body.imp-lista .logo-imp,body.imp-hist .logo-imp{display:block;margin:0 0 10px}
+    .logo-imp img{height:44px;width:auto}
     body.imp-hist header,body.imp-hist #subbar,body.imp-hist #aviso,body.imp-hist #avisoError,body.imp-hist #barra,body.imp-hist #toast,body.imp-hist #lista,body.imp-hist #resumen,body.imp-hist .hfiltros{display:none!important}
     body.imp-hist,html:has(body.imp-hist){background:#fff!important}
     body.imp-ayuda header,body.imp-ayuda #subbar,body.imp-ayuda #aviso,body.imp-ayuda #avisoError,body.imp-ayuda #barra,body.imp-ayuda #toast,body.imp-ayuda #lista,body.imp-ayuda #resumen,body.imp-ayuda #historico,body.imp-ayuda .aybarra,body.imp-ayuda .indice-bloque{display:none!important}
@@ -227,7 +233,9 @@
     body.imp-lista .rrow{grid-template-columns:minmax(150px,auto) 1fr auto}
     body.imp-lista .rhacer{display:none!important}
     body.imp-lista .rrow .rpers{background:none;color:#000;border:2px solid #000}
-    body.imp-lista .grupo{break-inside:avoid}
+    body.imp-lista .rrow,body.imp-lista .ghead{break-inside:avoid}
+    body.imp-lista .ghead{break-after:avoid}
+    body.imp-lista #bExcel,body.imp-lista #bImprLista{display:none!important}
   }
   @media (max-width:640px){
     .rrow{grid-template-columns:36px 1fr auto auto;grid-template-areas:"c t h q" "c p p p"}
@@ -241,7 +249,8 @@
 
 <section id="login" class="hidden">
   <form id="fLogin">
-    <h1>Fábrica · Singular Wardrobe</h1>
+    <img class="logo" src="logo.png" alt="Singular Wardrobe">
+    <h1 style="text-align:center">Fábrica</h1>
     <input id="email" type="email" placeholder="Email" autocomplete="username" required>
     <input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password" required>
     <button type="submit">Entrar</button>
@@ -254,7 +263,7 @@
   <div id="aviso" class="hidden"></div>
   <header>
     <div class="fila">
-      <div class="marca">Singular Wardrobe · Fábrica</div>
+      <div class="marca"><img src="logo.png" alt="Singular Wardrobe"><span>Fábrica</span></div>
       <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec" id="bSalir">Salir</button>
@@ -875,7 +884,7 @@ function pintarResumen(){
   const fTxt = { todos: "", atrasados: " · entrados hasta ayer", hoy: " · entrados hoy" }[$("#fFecha").value];
   const hoyTxt = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
   const E = ETAPA[etapaR];
-  $("#resumen").innerHTML = `
+  $("#resumen").innerHTML = `<div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
     <div class="rtitulo"><h2>${etapaR === "todos" ? "Todo lo pendiente de producir" : E.plural}</h2><span class="tot">${contador ? `<b>${quedan} por cortar</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
       <span style="margin-left:auto;display:flex;gap:8px"><button class="btn-sec" id="bExcel">⬇ Excel</button><button class="btn-sec" id="bImprLista">🖨 Imprimir listado</button></span></div>
     ${lista.length ? lista.map((g, gi) => {
@@ -1051,7 +1060,7 @@ function pintarHistorico(){
   }
   const resumen = [...cuenta].sort((a, b) => (b[1].e + b[1].k) - (a[1].e + a[1].k)).map(([n, c]) => `<div class="pc"><span style="color:${n === "Sin indicar" ? "var(--muted)" : colorPersona(n)};font-weight:800">👤 ${esc(n)}</span> · <b>${c.e}</b> estampados · <b>${c.k}</b> empaquetados</div>`).join("");
   $("#hCuerpo").innerHTML = H.cargando ? `<div class="vacio">Cargando…</div>` : `
-    <div class="himpcab" style="display:none"><h2 style="margin:0 0 4px">Singular Wardrobe · Histórico de pedidos</h2></div>
+    <div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div><div class="himpcab" style="display:none"><h2 style="margin:0 0 4px">Histórico de pedidos</h2></div>
     <div class="rtitulo"><h2>${filas.length} pedido${filas.length === 1 ? "" : "s"} ${H.campo === "estampado" ? "estampado" : "sacado"}${filas.length === 1 ? "" : "s"}</h2><span class="tot">${periodo}${H.persona ? " · " + esc(H.persona) + (H.rol !== "cualquiera" ? " (" + H.rol + ")" : "") : ""}${H.q ? " · «" + esc(H.q) + "»" : ""}${H.leido ? ` · actualizado ${H.leido.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : ""}</span></div>
     <div class="hres">${resumen || ""}</div>
     ${filas.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>Pedido</th><th>Cliente / destino</th><th>Prendas</th><th>Estampado</th><th>Empaquetado / enviado</th><th>Salida</th><th>Nota</th></tr></thead><tbody>
@@ -1074,8 +1083,9 @@ async function excelHistorico(){
     const local = (t) => t ? ((d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000))(new Date(t)) : null;
     const ws = wb.addWorksheet("Histórico", { views: [{ state: "frozen", ySplit: 4 }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
     ws.columns = [{ width: 10 }, { width: 16 }, { width: 26 }, { width: 22 }, { width: 70 }, { width: 14 }, { width: 16 }, { width: 14 }, { width: 16 }, { width: 34 }, { width: 34 }];
-    ws.mergeCells("A1:K1"); ws.getCell("A1").value = `Singular Wardrobe · Pedidos ${H.campo === "estampado" ? "estampados" : "sacados"}`; ws.getCell("A1").font = { size: 16, bold: true };
-    ws.mergeCells("A2:K2"); ws.getCell("A2").value = `${H.desde} a ${H.hasta}${H.persona ? " · " + H.persona : ""}${H.q ? " · " + H.q : ""} · ${filas.length} pedidos · generado ${ahora.toLocaleString("es-ES")}`; ws.getCell("A2").font = { color: { argb: "FF6F6A62" } };
+    ws.mergeCells("A1:K1"); ws.getCell("A1").value = `Singular Wardrobe · Pedidos ${H.campo === "estampado" ? "estampados" : "sacados"}`; ws.getCell("A1").font = { size: 16, bold: true }; ws.getCell("A1").alignment = { vertical: "middle" };
+    ws.mergeCells("A2:K2");
+    await logoExcel(wb, ws, 8.6); ws.getCell("A2").value = `${H.desde} a ${H.hasta}${H.persona ? " · " + H.persona : ""}${H.q ? " · " + H.q : ""} · ${filas.length} pedidos · generado ${ahora.toLocaleString("es-ES")}`; ws.getCell("A2").font = { color: { argb: "FF6F6A62" } };
     const cab = ws.getRow(4);
     cab.values = ["Pedido", "Fecha pedido", "Cliente", "Destino", "Prendas", "Estampado por", "Estampado", "Empaquetado por", "Empaquetado", "Salida", "Nota"];
     cab.eachCell((c) => { c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = fill("1D1B18"); });
@@ -1177,12 +1187,22 @@ async function pintarAyuda(){
   const palabras = sinAcentos(ayudaQ).split(/\s+/).filter((p) => p.length >= 2);
   const secs = palabras.length ? manual.secciones.filter((s) => palabras.every((p) => s.texto.includes(p))) : manual.secciones;
   $("#aCuenta").textContent = palabras.length ? `${secs.length} apartado${secs.length === 1 ? "" : "s"}` : "";
-  $("#aCuerpo").innerHTML = `<h1>${mdInline(manual.titulo)}</h1>`
+  $("#aCuerpo").innerHTML = `<img class="logo-manual" src="logo.png" alt="Singular Wardrobe"><h1>${mdInline(manual.titulo)}</h1>`
     + (palabras.length ? "" : manual.intro + `<div class="indice-bloque"><h3>Índice</h3><ol class="indice">${manual.secciones.map((s) => `<li><button class="lnk" data-irsec="${s.id}">${mdInline(s.titulo.replace(/^\d+\.\s*/, ""))}</button></li>`).join("")}</ol></div>`)
     + (secs.length ? secs.map((s) => `<section id="${s.id}">${s.html}</section>`).join("") : `<p class="nada">Ningún apartado contiene «${esc(ayudaQ)}». Prueba con otra palabra.</p>`);
   resaltar($("#aCuerpo"), palabras);
 }
 
+// Logo en los Excel: arriba a la derecha de la hoja (fila 1 más alta)
+let logoB64 = null;
+async function logoExcel(wb, ws, col){
+  try {
+    if (!logoB64){ const b = await (await fetch("logo.png")).blob(); logoB64 = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); }
+    const id = wb.addImage({ base64: logoB64, extension: "png" });
+    ws.getRow(1).height = 46;
+    ws.addImage(id, { tl: { col, row: 0.15 }, ext: { width: 196, height: 53 }, editAs: "absolute" });
+  } catch {}
+}
 async function cargarExcelJS(){
   if (window.ExcelJS) return window.ExcelJS;
   await new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"; s.onload = ok; s.onerror = () => ko(new Error("No se pudo cargar el generador de Excel")); document.head.appendChild(s); });
@@ -1203,8 +1223,9 @@ async function exportarExcel(){
     const ws = wb.addWorksheet("Resumen", { views: [{ state: "frozen", ySplit: 4 }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
     ws.columns = [{ width: 38 }, { width: 14 }, { width: 28 }, { width: 26 }, { width: 11 }, { width: 60 }, { width: 10 }, { width: 11 }, { width: 10 }, { width: 40 }];
     ws.mergeCells("A1:J1"); ws.getCell("A1").value = etapa === "todos" ? "Singular Wardrobe · Todo lo pendiente de producir" : `Singular Wardrobe · ${E.plural} — pendiente`;
-    ws.getCell("A1").font = { size: 16, bold: true };
+    ws.getCell("A1").font = { size: 16, bold: true }; ws.getCell("A1").alignment = { vertical: "middle" };
     ws.mergeCells("A2:J2");
+    await logoExcel(wb, ws, 7.2);
     ws.getCell("A2").value = `Generado ${ahora.toLocaleString("es-ES")} · ${fTxt} · ${etapa === "cortar" ? construirResumen(etapa).quedan + " por cortar de " + total : total + " prendas"} · ${lista.length} modelos`;
     ws.getCell("A2").font = { size: 11, color: { argb: "FF6F6A62" } };
     const cab = ws.getRow(4);

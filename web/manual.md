@@ -28,6 +28,8 @@ Cada mañana a las 8:00 el programa trae solo los pedidos nuevos de la tienda. N
 - **Franja roja «ERROR: no actualizado hoy»**: la actualización de las 8:00 ha fallado. Pulsa ↻ Importar. Si vuelve a salir, avisa a Tito.
 - **Franja amarilla «MODO PRUEBAS»**: las etiquetas de GLS todavía son de prueba y no sirven para enviar. Desaparecerá cuando el programa funcione de verdad.
 
+Todas las pantallas, los listados impresos, los PDF y los Excel llevan el logo de Singular Wardrobe.
+
 La pantalla se actualiza sola: lo que hace una compañera aparece en tu pantalla en unos segundos. Si dudas, recarga la página con Cmd + Shift + R en Mac o Ctrl + F5 en Windows.
 
 ## 2. El recorrido de un pedido
