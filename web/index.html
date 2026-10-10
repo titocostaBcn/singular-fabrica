@@ -597,13 +597,15 @@ function elegirNombre(n){
 // ───── quién estampa / quién empaqueta (para el Histórico) ─────
 async function marcarPersona(ids, tipo, persona){
   if (DEMO){
-    for (const id of ids){ const p = Demo.pedidos.find((x) => x.order_id === id); if (!p) continue; p[tipo + "_por"] = persona || null; p[tipo + "_at"] = p[tipo + "_at"] || new Date().toISOString(); }
+    // en la BD lo hace el trigger fab_registro_personas: al acabar la etapa el pedido queda libre
+    for (const id of ids){ const p = Demo.pedidos.find((x) => x.order_id === id); if (!p) continue; p[tipo + "_por"] = persona || null; p[tipo + "_at"] = p[tipo + "_at"] || new Date().toISOString(); p.asignado_a = null; p.asignado_at = null; }
     return;
   }
   const { error } = await sb.rpc("fab_marcar_persona", { p_order_ids: ids, p_tipo: tipo, p_persona: persona || null });
   if (error) toast("No se ha guardado quién lo ha hecho: " + error.message, true);
 }
 // Pide la persona (si no hay una fija arriba). Al estampar vale la que lo tiene cogido; al empaquetar siempre se pregunta.
+// Al acabar cada etapa el pedido vuelve a quedar LIBRE (estampa una persona, empaqueta otra).
 function preguntarQuien(p, tipo, accion){
   if (persona()) return accion(persona());
   if (tipo === "estampado" && p.asignado_a) return accion(p.asignado_a);
