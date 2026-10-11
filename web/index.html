@@ -62,6 +62,50 @@
   .usu-nuevo .clave{display:flex;gap:8px}
   .usu-nuevo .clave input{flex:1}
   #usuErr{color:var(--err);min-height:1.2em;font-size:14px}
+  /* ── pantallas de puesto (Producción, Expedición): una tarea, botones grandes, nada más ── */
+  body.puesto .vistas, body.puesto #bImportar, body.puesto header > .fila + .fila, body.puesto #subbar, body.puesto #barra{display:none!important}
+  body.puesto #resumen .ghead > input, body.puesto #resumen .rrow > input{visibility:hidden}
+  body.puesto #bExcel{display:none}
+  body.puesto #resumen{max-width:900px;margin:0 auto;padding-top:4px}
+  body.puesto #ayuda{max-width:900px;margin:0 auto}
+  #puesto{max-width:900px;margin:0 auto;padding:4px 16px 0}
+  .pasos{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:var(--hh,0px);z-index:4;background:var(--bg);padding:12px 0 10px}
+  .pasos button{flex:1 1 180px;display:flex;justify-content:space-between;align-items:center;gap:10px;border:2px solid var(--line);background:var(--panel);border-radius:14px;padding:12px 16px;font-size:18px;font-weight:700;color:var(--ink);text-align:left}
+  .pasos button b{font-size:28px;line-height:1}
+  .pasos button.on{border-color:var(--c);background:var(--cb);color:var(--c)}
+  .pasos .ayuda-b{flex:0 0 auto;font-size:15px;font-weight:600;color:var(--muted)}
+  @media (max-width:560px){ .pasos{flex-wrap:nowrap;overflow-x:auto;padding:8px 0} .pasos button{flex:0 0 auto;font-size:15px;padding:10px 12px} .pasos button b{font-size:22px} .busca-p input{font-size:17px;padding:12px} .pc .num{font-size:28px} }
+  .busca-p{display:flex;gap:8px;margin:2px 0 14px}
+  .busca-p input{flex:1;min-width:0;font:inherit;font-size:20px;padding:14px 16px;border:2px solid var(--line);border-radius:14px;background:var(--panel)}
+  .busca-p input:focus{outline:3px solid var(--c, #1d1b18);outline-offset:1px}
+  .pc{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;display:grid;gap:12px}
+  .pc.urgente{border-color:var(--urg);box-shadow:inset 8px 0 0 var(--urg)}
+  .pc.ajeno{opacity:.6}
+  .pc .cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .pc .num{font-size:32px;font-weight:800;letter-spacing:-.01em;line-height:1}
+  .pc .hueco{background:var(--ink);color:#fff;border-radius:10px;padding:6px 12px;font-weight:800;font-size:20px}
+  .pc .urg{background:var(--urg);color:#fff;border-radius:8px;padding:5px 10px;font-weight:800;font-size:15px}
+  .pc .ret{color:var(--urg);font-weight:700;font-size:15px}
+  .pc .otra{margin-left:auto;font-size:15px;font-weight:700;color:var(--muted)}
+  .pc .dest{font-size:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pc .salida{border:2px solid var(--c);color:var(--c);border-radius:999px;padding:3px 12px;font-weight:800;font-size:15px}
+  .pc .pps{display:grid;gap:10px}
+  .pc .pp{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center}
+  .pc .pp img,.pc .pp .ph{width:64px;height:64px;border-radius:10px;object-fit:cover;background:var(--line)}
+  .pc .pp .t{font-weight:700;font-size:18px}
+  .pc .pp.otra-etapa{opacity:.45}
+  .pc .pp .nov{font-size:13px;color:var(--muted);font-weight:600}
+  .pc .bts{display:flex;gap:10px;flex-wrap:wrap}
+  .pc .bts .go{flex:1 1 280px;border:0;border-radius:14px;padding:18px 20px;font-size:21px;font-weight:800;color:#fff;background:var(--c)}
+  .pc .bts .go:disabled{opacity:.6}
+  .pc .bts .sec{border:2px solid var(--line);background:var(--panel);border-radius:14px;padding:14px 16px;font-size:16px;font-weight:700}
+  .pc .estado{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:17px}
+  .pc .ok{color:var(--producido);font-weight:800}
+  .pc .no{color:var(--urg);font-weight:800}
+  .puestos{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .puestos label{border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:14px;display:flex;gap:6px;align-items:center;cursor:pointer;background:#fff}
+  .puestos label:has(input:checked){border-color:#1b7f4b;background:#e3f4ea;color:#14532d;font-weight:600}
+  .puestos .nota{font-size:13px;color:var(--muted)}
   @media (max-width:560px){ .usu-nuevo .campos{grid-template-columns:1fr} }
 
   #avisoError{background:#c62828;color:#fff;padding:12px 16px;font-weight:800;font-size:20px;text-align:center;letter-spacing:.5px}
@@ -414,6 +458,11 @@
     </div>
   </header>
   <div id="subbar" class="hidden"></div>
+  <main id="puesto" class="hidden">
+    <nav class="pasos" id="pasos"></nav>
+    <div class="busca-p" id="buscaP"><input id="buscaPIn" type="search" inputmode="search" placeholder="Escanea la hoja o escribe el nº de pedido" autocomplete="off"><button type="button" class="btn-sec" id="buscaPX">Borrar</button></div>
+    <div id="puestoLista"></div>
+  </main>
   <main id="plan" class="hidden"></main>
   <main id="lista"></main>
   <main id="resumen" class="hidden"></main>
@@ -460,6 +509,7 @@
     <h4>Añadir persona</h4>
     <div class="campos"><input id="unNombre" placeholder="Nombre (Dania, Irene…)" maxlength="30"><input id="unEmail" type="email" placeholder="Email (usuario)" autocomplete="off"></div>
     <div class="clave"><input id="unClave" type="text" placeholder="Contraseña (mínimo 8)" autocomplete="new-password"><button type="button" class="btn-sec" id="unGenerar">Generar</button></div>
+    <div class="puestos" id="unPuestos"></div>
     <div class="bots"><button type="submit" class="go">Añadir</button></div>
   </form>
   <div id="usuErr"></div>
@@ -564,6 +614,119 @@ const PALETA = ["#1b7f4b", "#6a3fb5", "#c2410c", "#0e7490", "#be185d", "#4d7c0f"
 function colorPersona(n){ const l = equipo(); let i = l.indexOf(n); if (i < 0) i = [...n].reduce((a, c) => a + c.charCodeAt(0), 0); return PALETA[i % PALETA.length]; }
 function equipo(){ return [...new Set([...nombresEquipo(), ...pedidos.map((p) => p.asignado_a).filter(Boolean)])]; }
 const ETAPAS_REPARTO = ["pendiente", "sin_stock", "cortar", "estampar", "empaquetar"];
+
+// ───── puestos: Administración ve el programa entero; Producción y Expedición tienen su propia pantalla, sencilla ─────
+// fab_usuarios.puesto (rpc fab_yo). Sin puesto o administrador = Administración. Es para que cada una vea solo lo suyo, no seguridad.
+const PUESTOS = {
+  administracion: { label: "Administración", nota: "todo el programa: plan del día, hojas, recogida, histórico, usuarios" },
+  produccion:     { label: "Producción",     nota: "cortar vinilo y estampar" },
+  expedicion:     { label: "Expedición",     nota: "empaquetar, etiquetas y recogidas" },
+};
+let YO = { admin: false, puesto: null, nombre: null };
+const modoPuesto = () => !YO.admin && (YO.puesto === "produccion" || YO.puesto === "expedicion");
+async function cargarYo(){
+  if (DEMO){
+    // ?demo&puesto=produccion (o expedicion) enseña la pantalla de ese puesto; sin puesto, la del administrador.
+    const q = new URLSearchParams(location.search), pu = q.get("puesto");
+    YO = PUESTOS[pu] && pu !== "administracion" ? { admin: false, puesto: pu, nombre: q.get("nombre") || "Andrea" } : { admin: true, puesto: null, nombre: "Tito" };
+  } else {
+    const { data, error } = await sb.rpc("fab_yo");
+    if (!error && data) YO = { admin: !!data.admin, puesto: PUESTOS[data.puesto] ? data.puesto : null, nombre: data.nombre ?? null };
+  }
+  $("#bUsuarios").classList.toggle("hidden", !YO.admin);
+  document.body.classList.toggle("puesto", modoPuesto());
+  $(".marca span").textContent = modoPuesto() ? `${PUESTOS[YO.puesto].label}${YO.nombre ? " · " + YO.nombre : ""}` : "Fábrica" + (YO.nombre ? " · " + YO.nombre : "");
+  // Lo que haga queda a su nombre (quién estampó, quién empaquetó) sin preguntar
+  if (modoPuesto() && YO.nombre) filtroAsig = YO.nombre;
+}
+
+// Pasos de cada puesto, con cuántos hay en cada uno
+let paso = null, buscaPuesto = "";
+const ordenPuesto = (a, b) => { const r = (p) => !p.asignado_a ? 1 : p.asignado_a === YO.nombre ? 0 : 2; return r(a) - r(b) || porPrioridad(a, b); };
+const pedidosEn = (e) => pedidos.filter((p) => activo(p) && p._estado === e).sort(ordenPuesto);
+const hechosHoy = () => pedidos.filter((p) => p._estado === "producido" && esHoy(p.estado_at) && !p.cancelado).sort((a, b) => new Date(b.estado_at) - new Date(a.estado_at));
+const recogidasListas = () => pedidos.filter((p) => p.recogida && !p.cancelado && p._estado === "producido" && !p.entregado_at).sort(porPrioridad);
+const sinEtiqueta = () => pedidos.filter((p) => p._estado === "producido" && !p.recogida && p.envio_tipo !== "otros" && !p.etiqueta_impresa && !p.cancelado);
+const PASOS = {
+  produccion: () => [
+    { id: "cortar", label: "1 · Cortar vinilo", n: construirResumen("cortar").quedan, c: "cortar", vacio: "" },
+    { id: "estampar", label: "2 · Estampar", n: pedidosEn("estampar").length, c: "estampar", vacio: "No hay nada para estampar. Cuando un pedido tenga su vinilo cortado, aparecerá aquí." },
+  ],
+  expedicion: () => [
+    { id: "empaquetar", label: "Empaquetar", n: pedidosEn("empaquetar").length, c: "empaquetar", vacio: "No hay pedidos para empaquetar ahora mismo." },
+    { id: "hechos", label: "Hechos hoy", n: hechosHoy().length, c: "producido", vacio: "Todavía no ha salido ningún pedido hoy." },
+    { id: "recogidas", label: "Recogidas en tienda", n: recogidasListas().length, c: "producido", vacio: "No hay ninguna recogida esperando al cliente." },
+    ...(sinEtiqueta().length ? [{ id: "sin_etiqueta", label: "⚠ Sin etiqueta", n: sinEtiqueta().length, c: "urg", vacio: "" }] : []),
+  ],
+};
+function pintarPuesto(){
+  for (const id of ["lista", "plan", "resumen", "historico", "ayuda"]) $("#" + id).classList.add("hidden");
+  $("#puesto").classList.remove("hidden");
+  const pasos = PASOS[YO.puesto]();
+  if (!paso || (paso !== "ayuda" && !pasos.some((x) => x.id === paso))) paso = pasos[0].id;
+  const P = pasos.find((x) => x.id === paso);
+  $("#pasos").innerHTML = pasos.map((x) => `<button data-paso="${x.id}" class="${x.id === paso ? "on" : ""}" style="${colorVars(x.c)}"><span>${x.label}</span><b>${x.n}</b></button>`).join("")
+    + `<button data-paso="ayuda" class="ayuda-b ${paso === "ayuda" ? "on" : ""}" style="${colorVars("producido")}">Ayuda</button>`;
+  const conLista = paso !== "ayuda" && paso !== "cortar";
+  $("#buscaP").classList.toggle("hidden", !conLista);
+  $("#puesto").style.cssText = P ? colorVars(P.c) : "";
+  if (paso === "ayuda"){ $("#puestoLista").innerHTML = ""; $("#ayuda").classList.remove("hidden"); pintarAyuda(); return; }
+  if (paso === "cortar"){ $("#puestoLista").innerHTML = ""; etapaR = "cortar"; $("#resumen").classList.remove("hidden"); pintarResumen(); return; }
+  const lista = paso === "estampar" ? pedidosEn("estampar") : paso === "empaquetar" ? pedidosEn("empaquetar") : paso === "hechos" ? hechosHoy() : paso === "recogidas" ? recogidasListas() : sinEtiqueta();
+  const q = buscaPuesto.trim().toLowerCase(), dig = q.replace(/\D/g, "");
+  const vis = !q ? lista : lista.filter((p) => dig ? numPedido(p).includes(dig) : (p.cliente_nombre ?? "").toLowerCase().includes(q));
+  // Lo que se esté escribiendo en «Otros envíos» no se pierde cuando la pantalla se actualiza sola
+  const otrosIn = document.querySelector(`#puestoLista input[data-otrosinfo="${otrosAbierto}"]`), otrosVal = otrosIn?.value, otrosFoco = otrosIn && document.activeElement === otrosIn;
+  $("#puestoLista").innerHTML = vis.length ? vis.map(tarjetaPuesto).join("")
+    : `<div class="vacio">${q ? `Ningún pedido de aquí coincide con «${esc(buscaPuesto)}».` : esc(P?.vacio ?? "")}</div>`;
+  const nuevo = document.querySelector(`#puestoLista input[data-otrosinfo="${otrosAbierto}"]`);
+  if (nuevo && otrosVal != null){ nuevo.value = otrosVal; if (otrosFoco) nuevo.focus(); }
+}
+function tarjetaPuesto(p){
+  const e = p._estado, id = p.order_id, busy = ocupado.has(id), zona = destinoOtros(p), exp = YO.puesto === "expedicion";
+  const otra = activo(p) && e !== "producido" && p.asignado_a && p.asignado_a !== YO.nombre ? p.asignado_a : "";
+  const d = diasDesde(p.creado_shopify);
+  const prendas = (p.fab_lineas ?? []).map((l) => {
+    const v = partes(l.variante), fuera = e === "estampar" && l.estado !== "estampar";
+    return `<div class="pp ${fuera ? "otra-etapa" : ""}">
+      ${l.imagen_url ? `<img src="${esc(l.imagen_url)}&width=160" alt="" loading="lazy">` : `<div class="ph"></div>`}
+      <div><div class="t">${l.cantidad > 1 ? `${l.cantidad}× ` : ""}${esc(l.titulo)}</div>
+        <div>${v.talla ? `<span class="talla">Talla ${esc(v.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}${v.resto ? ` <span class="resto">${esc(v.resto)}</span>` : ""}${fuera ? ` <span class="nov">${l.sin_vinilo ? "no lleva vinilo" : "no se estampa ahora"}</span>` : ""}</div>
+        ${(l.personalizacion ?? []).map((x) => `<div class="pers"><span>${esc(x.key)}</span>${esc(x.value)}</div>`).join(" ")}</div></div>`;
+  }).join("");
+  let bts = "";
+  if (e === "estampar"){
+    bts = `<button class="go" style="${colorVars("empaquetar")}" data-mover="${id}" data-desde="estampar" data-hacia="empaquetar">✔ Estampado</button>
+      <button class="sec" data-vmal="${id}">✖ Vinilo mal</button><button class="sec" data-mover="${id}" data-desde="estampar" data-hacia="sin_stock">Falta la prenda</button>`;
+  } else if (e === "empaquetar"){
+    if (otrosAbierto === id) bts = `<div class="otros-f" style="flex:1"><input data-otrosinfo="${id}" placeholder="¿Cómo sale? Transportista, nº de seguimiento, entregado en mano…" autofocus>
+        <button class="go" style="${colorVars("producido")}" data-otrosok="${id}">✔ Confirmar</button><button class="sec" data-otroscancel>Cancelar</button></div>`;
+    else if (zona) bts = `<button class="go" style="${colorVars("producido")}" data-otros="${id}">✔ Empaquetado · anotar cómo sale</button>`;
+    else bts = `<button class="go" style="${colorVars("producido")}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Pidiendo la etiqueta a GLS…" : p.recogida ? "✔ Empaquetado · listo para recoger" : "✔ Empaquetado · imprimir etiqueta"}</button>`;
+  } else if (e === "producido" && p.recogida){
+    bts = p.entregado_at ? `<div class="estado"><span class="ok">✔ Entregado al cliente</span><span>${fecha(p.entregado_at)}</span></div>`
+      : `<button class="go" style="${colorVars("producido")}" data-entregar="${id}" data-valor="1">✔ Entregado al cliente</button>`;
+  } else if (e === "producido" && p.envio_tipo === "otros"){
+    bts = `<div class="estado"><span class="ok">✔ Salió por Otros envíos</span><span>${esc(p.envio_info || "sin anotación")}</span></div>`;
+  } else if (e === "producido"){
+    bts = `<div class="estado">${p.etiqueta_impresa ? `<span class="ok">✔ Etiqueta impresa</span>` : `<span class="no">✖ Etiqueta sin imprimir</span>`}<span>GLS ${esc(p.gls_codbarras ?? "—")}</span></div>
+      ${p.gls_codbarras ? `<button class="sec" data-reimp="${id}">🖨 Reimprimir etiqueta</button>` : `<span class="no">Avisa a administración</span>`}`;
+  }
+  const mods = modificado(p) ? `<div class="mod"><b>✏️ Ha cambiado el pedido</b><ul>${(p.modificado ?? []).map((m) => `<li>${esc(m)}</li>`).join("")}</ul><button data-visto="${id}">✔ Visto</button></div>` : "";
+  const err = [p.gls_error && `GLS: ${esc(p.gls_error)}`].filter(Boolean);
+  return `<article class="pc ${p._urg ? "urgente" : ""} ${otra ? "ajeno" : ""}" style="${colorVars(e === "producido" ? "producido" : e)}">
+    <div class="cab"><span class="num">${esc(p.order_name)}</span>${p.hueco && e !== "producido" ? `<span class="hueco">Hueco ${p.hueco}</span>` : ""}${p._urg ? `<span class="urg">URGENTE</span>` : ""}${retrasado(p) ? `<span class="ret">hace ${d} días</span>` : ""}${otra ? `<span class="otra">👤 Lo está haciendo ${esc(otra)}</span>` : ""}</div>
+    ${exp ? `<div class="dest"><span>${esc(p.cliente_nombre ?? "")}${p.ciudad ? " · " + esc(p.ciudad) : ""}${p.pais && p.pais !== "ES" ? " · " + esc(p.pais) : ""}</span><span class="salida" style="${colorVars(p.recogida || zona ? "estampar" : "cortar")}">${p.recogida ? "Recogida en tienda" : zona ? "Otros envíos · " + esc(zona) : "GLS"}</span></div>` : ""}
+    ${mods}
+    <div class="pps">${prendas}</div>
+    ${p.nota ? `<div class="nota"><b>📝 Nota del cliente:</b> ${esc(p.nota)}</div>` : ""}
+    ${err.length ? `<div class="err">${err.join("<br>")}</div>` : ""}
+    <div class="bts">${bts}</div>
+  </article>`;
+}
+$("#buscaPIn").addEventListener("input", (e) => { buscaPuesto = e.target.value; pintarPuesto(); });
+$("#buscaPX").onclick = () => { buscaPuesto = ""; $("#buscaPIn").value = ""; pintarPuesto(); $("#buscaPIn").focus(); };
+
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
 // Destino → tipo de envío automático: UE (península, Baleares y países UE) = etiqueta GLS; Canarias, Ceuta, Melilla, Reino Unido y todo lo que no sea UE (Suiza, Noruega, Andorra…) = Otros envíos.
@@ -722,16 +885,17 @@ const Demo = (() => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "El email no es válido" };
       if (b.clave && b.clave.length < 8) return { ok: false, error: "La contraseña tiene que tener al menos 8 caracteres" };
       const u = usuariosDemo.find((x) => x.email === email);
-      if (!u){ if (!b.clave) return { ok: false, error: "Pon una contraseña para el usuario nuevo" }; usuariosDemo.push({ email, nombre: b.nombre || null, admin: false, tiene_clave: true, ultimo_acceso: null }); return { ok: true, hecho: "alta" }; }
-      return { ok: true, hecho: b.clave ? "contraseña" : "acceso" };
+      if (!u){ if (!b.clave) return { ok: false, error: "Pon una contraseña para el usuario nuevo" }; usuariosDemo.push({ email, nombre: b.nombre || null, admin: false, puesto: b.puesto ?? null, tiene_clave: true, ultimo_acceso: null }); return { ok: true, hecho: "alta" }; }
+      if (b.puesto) u.puesto = b.puesto;
+      return { ok: true, hecho: b.clave ? "contraseña" : "datos" };
     }
     if (b.accion === "usuario_quitar"){ const i = usuariosDemo.findIndex((x) => x.email === b.email && !x.admin); if (i >= 0) usuariosDemo.splice(i, 1); return { ok: true }; }
     return { ok: false, error: "acción desconocida" };
   }
   const usuariosDemo = [
-    { email: "fabrica@demo", nombre: "Tito", admin: true, tiene_clave: true, ultimo_acceso: new Date().toISOString() },
-    { email: "dania@singularwardrobe.com", nombre: "Dania", admin: false, tiene_clave: true, ultimo_acceso: new Date(Date.now() - 864e5).toISOString() },
-    { email: "irene@singularwardrobe.com", nombre: "Irene", admin: false, tiene_clave: true, ultimo_acceso: null } ];
+    { email: "fabrica@demo", nombre: "Tito", admin: true, puesto: null, tiene_clave: true, ultimo_acceso: new Date().toISOString() },
+    { email: "dania@singularwardrobe.com", nombre: "Dania", admin: false, puesto: "produccion", tiene_clave: true, ultimo_acceso: new Date(Date.now() - 864e5).toISOString() },
+    { email: "irene@singularwardrobe.com", nombre: "Irene", admin: false, puesto: "expedicion", tiene_clave: true, ultimo_acceso: null } ];
   const cortados = {};
   function sumarCortados(titulo, variante, n){ const k = titulo + "|" + (variante ?? ""); cortados[k] = Math.max((cortados[k] ?? 0) + n, 0); return cortados[k]; }
   return { pedidos, cfg, fn, cortados, sumarCortados, modelos, picking, viniloMal, hojas };
@@ -1144,6 +1308,8 @@ function imprimir(modo){
 
 // ───── pintar ─────
 function pintar(){
+  if (modoPuesto()) return pintarPuesto();
+  $("#puesto").classList.add("hidden");
   $("#lista").classList.toggle("hidden", vista !== "pedidos");
   $("#plan").classList.toggle("hidden", vista !== "plan");
   $("#resumen").classList.toggle("hidden", vista !== "resumen");
@@ -1869,6 +2035,7 @@ function pintarBarra(){
 // ───── eventos ─────
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.paso){ paso = b.dataset.paso; otrosAbierto = null; pintar(); window.scrollTo(0, 0); return; }
   if (b.dataset.vista){ vista = b.dataset.vista; try { localStorage.setItem("fab_vista", vista); } catch {} sel.clear(); if (vista === "plan") planModo = "plan"; if (vista === "historico") H.cargando = true; pintar(); if (vista === "historico") cargarHistorico(); }
   else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
   else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
@@ -1988,12 +2155,9 @@ $("#claveForm").onsubmit = async (e) => {
 };
 // ───── usuarios (solo administradores): alta, contraseña y quitar acceso, sin correos ─────
 const U = { lista: [], yo: "", editando: null, quitando: null };
-async function comprobarAdmin(){
-  const j = await fn({ accion: "soy_admin" }).catch(() => ({}));
-  $("#bUsuarios").classList.toggle("hidden", !j?.admin);
-}
 async function abrirUsuarios(){
   $("#usuM").classList.remove("hidden"); $("#usuErr").textContent = "";
+  $("#unPuestos").innerHTML = chipsPuestos(null, `name="unpuesto" data-unpuesto="1"`) + `<span class="nota">Puesto: decide su pantalla. Producción: cortar vinilo y estampar. Expedición: empaquetar y enviar.</span>`;
   $("#usuLista").innerHTML = `<p class="ayuda">Cargando…</p>`;
   await cargarUsuarios();
 }
@@ -2007,10 +2171,14 @@ function pintarUsuarios(){
   $("#usuLista").innerHTML = U.lista.map((u, i) => `<div class="usu">
     <div class="fila1"><span class="nom">${esc(u.nombre || u.email.split("@")[0])}</span>${u.admin ? `<span class="b-carril">Administrador</span>` : ""}${u.email === U.yo ? `<span class="b-carril">Tú</span>` : ""}<span class="acc">Último acceso: ${fecha(u.ultimo_acceso)}</span></div>
     <div class="mail">${esc(u.email)}</div>
+    ${u.admin ? `<div class="puestos"><span class="nota">Administrador: ve todo el programa y gestiona los usuarios</span></div>` : `<div class="puestos">${chipsPuestos(u.puesto ?? "administracion", `name="pu${i}" data-usupuesto="${i}"`)}</div>`}
     ${U.editando === i ? `<form class="bots" data-usuclave="${i}" novalidate autocomplete="off"><input id="ucClave" type="text" placeholder="Contraseña nueva (mínimo 8)" autocomplete="new-password" style="flex:1"><button type="button" data-usugen="1">Generar</button><button type="submit" class="go">Guardar</button><button type="button" data-usucancel="1">Cancelar</button></form>`
       : `<div class="bots"><button type="button" data-usueditar="${i}">🔑 Poner contraseña</button>${u.admin || u.email === U.yo ? "" : `<button type="button" class="peligro" data-usuquitar="${i}">${U.quitando === i ? "¿Seguro? Pulsa otra vez" : "Quitar acceso"}</button>`}</div>`}
   </div>`).join("") || `<p class="ayuda">No hay usuarios.</p>`;
   if (U.editando !== null) $("#ucClave")?.focus();
+}
+function chipsPuestos(marcado, attr){
+  return Object.entries(PUESTOS).map(([k, v]) => `<label title="${esc(v.nota)}"><input type="radio" ${attr} value="${k}" ${marcado === k ? "checked" : ""}> ${v.label}</label>`).join("");
 }
 function claveFacil(){
   // Fácil de dictar: Palabra + 4 cifras + palabra (sin letras que se confunden)
@@ -2030,10 +2198,12 @@ $("#unGenerar").onclick = () => { $("#unClave").value = claveFacil(); };
 $("#usuNuevo").onsubmit = async (e) => {
   e.preventDefault();
   const nombre = $("#unNombre").value.trim(), email = $("#unEmail").value.trim(), clave = $("#unClave").value;
+  const puesto = document.querySelector("input[data-unpuesto]:checked")?.value;
+  if (!puesto){ $("#usuErr").textContent = "Elige su puesto: Administración, Producción o Expedición."; return; }
   if (!email){ $("#usuErr").textContent = "Escribe el email (es su nombre de usuario)."; return; }
   if (clave && clave.length < 8){ $("#usuErr").textContent = "La contraseña tiene que tener al menos 8 caracteres."; return; }
-  const hecho = await guardarUsuario({ email, nombre, clave }, (j) => j.hecho === "alta" ? `Alta de ${nombre || email} hecha. Dile su email y su contraseña.` : j.hecho === "contraseña" ? "Contraseña cambiada" : "Acceso dado: entra con su contraseña de siempre");
-  if (hecho){ $("#unNombre").value = $("#unEmail").value = $("#unClave").value = ""; }
+  const hecho = await guardarUsuario({ email, nombre, clave, puesto }, (j) => j.hecho === "alta" ? `Alta de ${nombre || email} hecha. Dile su email y su contraseña.` : j.hecho === "contraseña" ? "Contraseña cambiada" : "Acceso dado: entra con su contraseña de siempre");
+  if (hecho){ $("#unNombre").value = $("#unEmail").value = $("#unClave").value = ""; document.querySelectorAll("input[data-unpuesto]").forEach((x) => x.checked = false); }
 };
 $("#usuLista").addEventListener("click", async (e) => {
   const b = e.target.closest("button"); if (!b) return;
@@ -2048,6 +2218,11 @@ $("#usuLista").addEventListener("click", async (e) => {
     if (!j.ok){ $("#usuErr").textContent = j.error || "No se ha podido quitar"; return; }
     toast(`${u.nombre || u.email} ya no puede entrar`); await cargarUsuarios();
   }
+});
+$("#usuLista").addEventListener("change", async (e) => {
+  const c = e.target.closest("input[data-usupuesto]"); if (!c) return;
+  const u = U.lista[Number(c.dataset.usupuesto)], puesto = c.value;
+  await guardarUsuario({ email: u.email, puesto }, () => `${u.nombre || u.email}: ${PUESTOS[puesto].label}. Lo verá al recargar o volver a entrar.`);
 });
 $("#usuLista").addEventListener("submit", async (e) => {
   const f = e.target.closest("form[data-usuclave]"); if (!f) return;
@@ -2078,7 +2253,7 @@ $("#fLogin").onsubmit = async (e) => {
 
 if (PRUEBAS) document.body.classList.add("pruebas");
 async function iniciar(){
-  if (DEMO){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); await cargar(); comprobarAdmin(); return; }
+  if (DEMO){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); await cargarYo(); await cargar(); return; }
   const { data: { session } } = await sb.auth.getSession();
   if (RECUPERAR && session && !iniciar.recuperado){ iniciar.recuperado = true; abrirClave(true); return; }
   if (ERROR_ENLACE && !session){ $("#loginErr").textContent = "El enlace del correo ha caducado o ya se usó. Escribe tu email y pide otro."; history.replaceState(null, "", location.pathname + location.search); }
@@ -2087,8 +2262,8 @@ async function iniciar(){
   if (!session) return;
   if (iniciar.arrancado) return cargar();
   iniciar.arrancado = true;
+  await cargarYo().catch(() => {});
   await cargar();
-  comprobarAdmin();
   const refrescar = () => { clearTimeout(iniciar.t); iniciar.t = setTimeout(cargar, 400); };
   sb.channel("fab")
     .on("postgres_changes", { event: "*", schema: "public", table: "fab_pedidos" }, refrescar)

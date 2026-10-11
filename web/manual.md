@@ -20,10 +20,20 @@ El botón **👥** de arriba solo le sale al administrador. Sirve para dar de al
 
 1. Pulsa **👥**. Sale la lista de usuarios con su último acceso.
 2. En **Añadir persona** escribe su nombre y un email que hará de nombre de usuario. No hace falta que exista: por ejemplo dania@singularwardrobe.com.
-3. Escribe una contraseña o pulsa **Generar** (sale una fácil de dictar, como «Coral-4821-mar») y pulsa **Añadir**.
+3. Escribe una contraseña o pulsa **Generar** (sale una fácil de dictar, como «Coral-4821-mar»), elige su **puesto** y pulsa **Añadir**.
 4. Dile a esa persona su email y su contraseña. Después puede cambiarla ella con 🔑.
 
-Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. Para que alguien deje de entrar, pulsa **Quitar acceso** dos veces.
+Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. Para cambiarle el puesto, márcalo en su fila: lo verá al recargar la página. Para que alguien deje de entrar, pulsa **Quitar acceso** dos veces.
+
+**Tu pantalla según tu puesto**
+
+| Puesto | Qué ve |
+| --- | --- |
+| Administración | El programa entero: Plan del día, Pedidos, Resumen producción, Histórico y Ayuda. |
+| Producción | Dos pasos. **1 · Cortar vinilo**: la hoja de corte por color. **2 · Estampar**: los pedidos con su vinilo cortado, con los botones ✔ Estampado, ✖ Vinilo mal y Falta la prenda. |
+| Expedición | **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
+
+En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. El buscador de arriba encuentra un pedido: escanea el código de la hoja o escribe su número. Si un pedido lo está haciendo otra compañera, sale en gris y al final de la lista.
 
 **Botones de la parte de arriba**
 

@@ -1,4 +1,4 @@
-// fab v9 — Gestión de producción Singular Wardrobe
+// fab v10 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (vinilo) → estampar → empaquetar, y sin_stock; el pedido (trigger en BD) toma el de su prenda más atrasada.
 // Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir ·
 // shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · diag · prueba_gls
@@ -6,6 +6,7 @@
 // v8 (ola 1): Sin stock marcado a mano manda sobre el stock de Shopify; prendas quitadas con vinilo asignado lo devuelven al almacén;
 //     Shopify (apagado hasta tener permiso de escritura): enviado en Otros envíos y metacampos estampado_por / empaquetado_por.
 // v9: usuarios desde la pantalla (solo fab_usuarios.admin): alta con contraseña, contraseña nueva y quitar acceso, sin correos.
+// v10: puesto por usuario (administracion, produccion, expedicion): cada una tiene su pantalla.
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
@@ -545,6 +546,9 @@ async function pdfDe(p: any): Promise<string | null> {
   return p.gls_codbarras ? await glsEtiquetaEnvio(p.gls_codbarras) : null;
 }
 
+// Puestos (fab_usuarios.puesto): deciden la pantalla de cada persona. Sin puesto = administración (todo).
+const PUESTOS = ["administracion", "produccion", "expedicion"];
+
 // Usuarios de Auth por email (todas las páginas; este Supabase también tiene usuarios de otras aplicaciones)
 async function usuariosAuth() {
   const m = new Map<string, any>();
@@ -698,12 +702,12 @@ Deno.serve(async (req) => {
       if (accion === "soy_admin") return json({ ok: true, admin: !!yo?.admin });
       if (!yo?.admin) return json({ ok: false, error: "Solo un administrador puede gestionar usuarios" }, 403);
       if (accion === "usuarios") {
-        const { data: filas, error } = await sb.from("fab_usuarios").select("email, nombre, admin, creado_at").order("creado_at");
+        const { data: filas, error } = await sb.from("fab_usuarios").select("email, nombre, admin, puesto, creado_at").order("creado_at");
         if (error) throw error;
         const auth = await usuariosAuth();
         return json({ ok: true, yo: usuario.toLowerCase(), usuarios: (filas ?? []).map((f: any) => {
           const u = auth.get(String(f.email).toLowerCase());
-          return { email: f.email, nombre: f.nombre, admin: !!f.admin, tiene_clave: !!u, ultimo_acceso: u?.last_sign_in_at ?? null };
+          return { email: f.email, nombre: f.nombre, admin: !!f.admin, puesto: f.puesto ?? null, tiene_clave: !!u, ultimo_acceso: u?.last_sign_in_at ?? null };
         }) });
       }
       const email = String(body.email ?? "").trim().toLowerCase();
@@ -722,6 +726,12 @@ Deno.serve(async (req) => {
       const clave = String(body.clave ?? "");
       const nombre = body.nombre === undefined ? undefined : (String(body.nombre).trim() || null);
       if (clave && clave.length < 8) return json({ ok: false, error: "La contraseña tiene que tener al menos 8 caracteres" }, 400);
+      // Puesto: decide su pantalla (administracion = todo; produccion y expedicion = pantalla sencilla). Sin puesto = todo.
+      let puesto: string | null | undefined;
+      if (body.puesto !== undefined) {
+        puesto = body.puesto === null || body.puesto === "" ? null : String(body.puesto);
+        if (puesto !== null && !PUESTOS.includes(puesto)) return json({ ok: false, error: "Puesto no válido" }, 400);
+      }
       const u = (await usuariosAuth()).get(email);
       let hecho = "";
       if (!u) {
@@ -736,15 +746,16 @@ Deno.serve(async (req) => {
         if (error) throw error;
         hecho = "contraseña";
       } else {
-        hecho = "acceso";
+        hecho = fila ? "datos" : "acceso";
       }
       if (!fila) {
-        const { error } = await sb.from("fab_usuarios").insert({ email, nombre: nombre ?? null });
+        const { error } = await sb.from("fab_usuarios").insert({ email, nombre: nombre ?? null, puesto: puesto ?? null });
         if (error) throw error;
-      } else if (nombre !== undefined) {
-        await sb.from("fab_usuarios").update({ nombre }).eq("email", email);
+      } else if (nombre !== undefined || puesto !== undefined) {
+        const { error } = await sb.from("fab_usuarios").update({ ...(nombre !== undefined ? { nombre } : {}), ...(puesto !== undefined ? { puesto } : {}) }).eq("email", email);
+        if (error) throw error;
       }
-      await evento(null, "usuario", { accion: hecho, email }, usuario);
+      await evento(null, "usuario", { accion: hecho, email, ...(puesto !== undefined ? { puesto } : {}) }, usuario);
       return json({ ok: true, hecho });
     }
     if (accion === "diag") {
