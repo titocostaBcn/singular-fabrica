@@ -30,7 +30,7 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 | Puesto | Qué ve |
 | --- | --- |
 | Administración | El programa entero: Plan del día, Pedidos, Resumen producción, Histórico y Ayuda. |
-| Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Ha llegado. |
+| Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, y al final las «sin vinilo» que hay que preparar, con ✔ Hechas (o Preparadas), Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas y ✔ Ha llegado todo. |
 | Expedición | **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
 En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
@@ -62,7 +62,7 @@ La pantalla se actualiza sola: lo que hace una compañera aparece en tu pantalla
 
 ![Producción y empaquetado; sale por una de tres vías](ayuda-recorrido.svg)
 
-Cada pedido pasa por dos pasos. En **Producción** se cortan y se estampan sus prendas a la vez, sin papeles. Las prendas hechas esperan en la estantería de hechas y el programa las reparte a los pedidos; cuando un pedido tiene todas, pasa a **Empaquetar**. Allí se juntan sus prendas, se empaqueta y sale por la vía que toca según el destino. Las prendas «sin vinilo» van directas a Empaquetar. Si falta una prenda, el pedido espera en Sin stock hasta que llega.
+Cada pedido pasa por dos pasos. En **Producción** se cortan y se estampan sus prendas a la vez, sin papeles. Las prendas hechas esperan en la estantería de hechas y el programa las reparte a los pedidos; cuando un pedido tiene todas, pasa a **Empaquetar**. Allí se juntan sus prendas, se empaqueta y sale por la vía que toca según el destino. Las prendas «sin vinilo» también pasan por Producción: allí se comprueba que hay y se dejan en la estantería. Si falta una prenda, el pedido espera en Sin stock hasta que llega.
 
 ## 3. El arranque del día: plan y lista de prendas
 
@@ -188,12 +188,11 @@ Quien corta el vinilo también estampa, a la vez y sin papeles. Todo se apunta e
 
 Las prendas que faltan están en **Sin stock** (pantalla de Producción, Resumen producción o la pestaña Sin stock de Pedidos). El pedido espera ahí entero.
 
-Cuando llegue la prenda, pulsa **✔ Ha llegado** en su línea: vuelve a Producción para hacerla. Las prendas «sin vinilo» que llegan pasan solas a Empaquetar (apartado 11).
+Cuando llegue la prenda, escribe cuántas han llegado y pulsa **✔ Han llegado**, o pulsa **Todas** si ha llegado toda la línea: vuelven a Producción, primero las de los pedidos urgentes y más antiguos. Si has repuesto de todo, **✔ Ha llegado todo** (arriba) lo devuelve todo de golpe; pide pulsar dos veces para no hacerlo sin querer.
 
 **Pedidos que se mueven solos.** No te asustes si un pedido cambia de pestaña sin que nadie lo toque:
 
-- Pasa a **Empaquetar** cuando el programa le ha dado todas sus prendas hechas.
-- Pasa a **Empaquetar** si sus prendas son «sin vinilo» y hay stock (apartado 11).
+- Pasa a **Empaquetar** cuando el programa le ha dado todas sus prendas hechas o preparadas.
 
 ## 9. Resumen de producción
 
@@ -247,14 +246,11 @@ Si aparece un error de GLS, el pedido queda en la pestaña Sin etiqueta. No lo e
 
 Algunos productos no se cortan ni se estampan: se venden tal cual, como los pantalones «cupido». En Shopify llevan la etiqueta **sin vinilo**.
 
-- Cada mañana (o al pulsar ↻ Importar) el programa mira el stock de esos productos.
-- **Si hay stock**, la prenda pasa sola a Empaquetar. No hay que cortar ni estampar nada.
-- **Si no hay stock**, la prenda va a Sin stock. Cuando entre stock en Shopify, la siguiente importación la pasa sola a Empaquetar.
-- Si no llega para todos, se sirven primero los urgentes y los más antiguos.
-- En la tarjeta, estas prendas llevan la marca **Sin vinilo · stock N**.
-- Si al recogerla no está, pulsa **✖ No hay** en la lista de recogida: se queda en Sin stock aunque Shopify diga que hay, hasta que pulses **✔ Ha llegado**.
-
-Estos productos no salen en Producción ni en la estantería de hechas.
+- Salen en **Producción**, al final de la lista, en el bloque **«Sin vinilo · mira si hay y déjalas en la estantería»**.
+- Si hay, cógelas, déjalas en la estantería de hechas y pulsa **✔ Preparadas** (o **Todas**). El programa las reparte a los pedidos como las demás.
+- Si no hay, pulsa **✖ No hay**: van a Sin stock. Cuando lleguen, **✔ Han llegado** las devuelve a Producción.
+- Expedición no tiene que mirar el stock: un pedido solo le sale cuando todas sus prendas están hechas o preparadas.
+- En la tarjeta, estas prendas llevan la marca **Sin vinilo · stock N** (el stock que dice Shopify, solo como referencia).
 
 **Producto nuevo que no se corta**: hay que ponerle la etiqueta «sin vinilo» en Shopify. Lo hace quien da de alta los productos; si ves uno que falta, avísale.
 
@@ -337,7 +333,7 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 | No recuerdo la contraseña | Pídele a Tito que te ponga una nueva desde 👥 (apartado 1). También puedes pulsar «¿Has olvidado la contraseña?» en la pantalla de entrada. |
 | Falta un pedido que sí está en Shopify | Pulsa ↻ Importar y búscalo por número en el buscador. |
 | No veo lo que ha hecho una compañera | Recarga la página con Cmd + Shift + R (Mac) o Ctrl + F5 (Windows). |
-| Un pedido ha pasado solo a Empaquetar | Es normal: el programa le ha dado sus prendas hechas, o sus prendas son sin vinilo y hay stock. Apartados 7 y 11. |
+| Un pedido ha pasado solo a Empaquetar | Es normal: el programa le ha dado sus prendas hechas o preparadas. Apartados 7 y 11. |
 | Un pedido ha llegado a Empaquetar sin estar hecho | En su tarjeta pulsa ↶ y vuelve a Producción. |
 | Una prenda ha salido mal | Repítela antes de apuntarla como hecha. |
 | No encuentro una personalizada | Búscala por su texto, que sale en grande en la tarjeta del pedido. |

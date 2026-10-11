@@ -1,4 +1,4 @@
-// fab v10 — Gestión de producción Singular Wardrobe
+// fab v11 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (vinilo) → estampar → empaquetar, y sin_stock; el pedido (trigger en BD) toma el de su prenda más atrasada.
 // Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir ·
 // shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · diag · prueba_gls
@@ -7,6 +7,7 @@
 //     Shopify (apagado hasta tener permiso de escritura): enviado en Otros envíos y metacampos estampado_por / empaquetado_por.
 // v9: usuarios desde la pantalla (solo fab_usuarios.admin): alta con contraseña, contraseña nueva y quitar acceso, sin correos.
 // v10: puesto por usuario (administracion, produccion, expedicion): cada una tiene su pantalla.
+// v11: las prendas «sin vinilo» las revisa Producción (ya no pasan solas a Empaquetar según el stock de Shopify).
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
@@ -312,31 +313,17 @@ async function sincronizar(o: any, p: any, usuario: string, aplicar: boolean) {
 // si es negativo faltan esas unidades y se quedan sin stock los pedidos más nuevos (urgentes y antiguos primero).
 // Una prenda que una persona ha marcado Sin stock (recogida «No hay» o botón Sin stock) NO se saca de Sin stock
 // aunque Shopify diga que hay: manda lo que se ve en la estantería. Vuelve con «¿Ha llegado? Sí».
+// Desde v11 (11-oct, decisión de Tito) las prendas «sin vinilo» las revisa Producción: si hay, «✔ Preparadas» (van a la
+// estantería de hechas y el programa las reparte); si no, «✖ No hay». El programa ya no las pasa solo a Empaquetar ni a Sin
+// stock según el stock de Shopify. Solo devuelve a Producción las que había mandado él a Sin stock con la versión anterior.
 async function repartirSinVinilo(usuario: string) {
-  const { data } = await sb.from("fab_lineas")
-    .select("line_id, order_id, variant_id, cantidad, estado, estado_por, stock, fab_pedidos!inner(creado_shopify, metodo_envio, tags, estado, cancelado, enviado_fuera)")
-    .eq("sin_vinilo", true).in("estado", ["cortar", "sin_stock"])
-    .neq("fab_pedidos.estado", "producido").eq("fab_pedidos.cancelado", false).eq("fab_pedidos.enviado_fuera", false);
-  const urg = (p: any) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t: string) => /urgent/i.test(t));
-  const ls = (data ?? []).filter((l: any) => l.estado !== "sin_stock" || l.estado_por === "auto sin vinilo").sort((a: any, b: any) => (Number(urg(b.fab_pedidos)) - Number(urg(a.fab_pedidos))) ||
-    (new Date(a.fab_pedidos.creado_shopify).getTime() - new Date(b.fab_pedidos.creado_shopify).getTime()));
-  const porVar = new Map<string, any[]>();
-  for (const l of ls) { const k = String(l.variant_id ?? "l" + l.line_id); porVar.set(k, [...(porVar.get(k) ?? []), l]); }
-  const disponibles: number[] = [], agotadas: number[] = [];
-  for (const grupo of porVar.values()) {
-    const stock = grupo[0].stock;
-    const total = grupo.reduce((s, l) => s + l.cantidad, 0);
-    let cubiertas = stock == null || stock >= 0 ? total : Math.max(total + stock, 0);
-    for (const l of grupo) {
-      if (cubiertas >= l.cantidad) { cubiertas -= l.cantidad; if (l.estado !== "empaquetar") disponibles.push(l.line_id); }
-      else if (l.estado !== "sin_stock") agotadas.push(l.line_id);
-    }
+  const { data } = await sb.from("fab_lineas").select("line_id").eq("sin_vinilo", true).eq("estado", "sin_stock").eq("estado_por", "auto sin vinilo");
+  const ids = (data ?? []).map((l: any) => l.line_id);
+  if (ids.length) {
+    await sb.from("fab_lineas").update({ estado: "cortar", estado_at: new Date().toISOString(), estado_por: "a producción" }).in("line_id", ids);
+    await evento(null, "sin_vinilo", { a_produccion: ids }, usuario);
   }
-  const ahora = new Date().toISOString();
-  if (disponibles.length) await sb.from("fab_lineas").update({ estado: "empaquetar", estado_at: ahora, estado_por: "auto sin vinilo" }).in("line_id", disponibles);
-  if (agotadas.length) await sb.from("fab_lineas").update({ estado: "sin_stock", estado_at: ahora, estado_por: "auto sin vinilo" }).in("line_id", agotadas);
-  if (disponibles.length || agotadas.length) await evento(null, "sin_vinilo", { disponibles, agotadas }, usuario);
-  return { disponibles: disponibles.length, sin_stock: agotadas.length };
+  return { disponibles: 0, sin_stock: 0, a_produccion: ids.length };
 }
 
 // ───────── GLS ─────────

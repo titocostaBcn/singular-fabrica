@@ -102,6 +102,7 @@
   .pc .estado{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:17px}
   .pc .ok{color:var(--producido);font-weight:800}
   .pc .no{color:var(--urg);font-weight:800}
+  .ayudacorte .llegtodo{display:block;margin-top:8px;border:0;border-radius:10px;padding:10px 16px;font-weight:800;background:var(--cortar);color:#fff}
   .rhacer button.nohay{background:#fff;color:var(--urg);border:2px solid var(--urg)}
   .puestos{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
   .puestos label{border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:14px;display:flex;gap:6px;align-items:center;cursor:pointer;background:#fff}
@@ -653,7 +654,7 @@ const sinEtiqueta = () => pedidos.filter((p) => p._estado === "producido" && !p.
 const PASOS = {
   produccion: () => [
     { id: "cortar", label: "Por hacer", n: construirResumen("cortar").quedan, c: "cortar", vacio: "" },
-    { id: "sin_stock", label: "Sin stock", n: lineasEnEtapa("sin_stock").filter((l) => !l.sin_vinilo).reduce((s, l) => s + l.cantidad, 0), c: "sin_stock", vacio: "" },
+    { id: "sin_stock", label: "Sin stock", n: lineasEnEtapa("sin_stock").reduce((s, l) => s + l.cantidad, 0), c: "sin_stock", vacio: "" },
     ...(pedidosEn("estampar").length ? [{ id: "estampar", label: "Estampar (antiguos)", n: pedidosEn("estampar").length, c: "estampar", vacio: "" }] : []),
   ],
   expedicion: () => [
@@ -789,7 +790,7 @@ const Demo = (() => {
       const sinVinilo = /cupido|volume/.test(titulo);
       const est = i < 8 ? ["empaquetar","cortar","cortar","empaquetar","cortar","empaquetar","cortar","sin_stock"][i] : "cortar";
       lineas.push({ line_id: lid++, titulo, variante: tallas[rnd(tallas.length)], cantidad: rnd(6) === 0 ? 2 : 1, personalizacion: sinVinilo ? [] : pers, imagen_url: null, sin_vinilo: sinVinilo,
-        estado: sinVinilo && est !== "sin_stock" ? "empaquetar" : est, estado_por: sinVinilo ? "auto sin vinilo" : null });
+        estado: est, estado_por: null });
     }
     const [ciudad, cp] = CIUDADES[rnd(CIUDADES.length)];
     pedidos.push({ order_id: 1000 + i, order_name: "#9" + String(1000 + i).padStart(4, "0"), creado_shopify: hace(h), estado: "pendiente", estado_at: hace(h),
@@ -820,7 +821,7 @@ const Demo = (() => {
   function picking(ids, hay, per){
     for (const [p, l] of lineasDe(ids)){
       if (p.estado === "producido") continue;
-      if (hay){ l.prenda_ok_at = new Date().toISOString(); l.prenda_ok_por = per || "demo"; if (l.estado === "sin_stock") l.estado = l.sin_vinilo ? "empaquetar" : "cortar"; }
+      if (hay){ l.prenda_ok_at = new Date().toISOString(); l.prenda_ok_por = per || "demo"; if (l.estado === "sin_stock") l.estado = "cortar"; }
       else { if (l.estado === "estampar") devolver(l); l.estado = "sin_stock"; l.prenda_ok_at = null; l.estado_por = per || "demo"; }
     }
   }
@@ -904,10 +905,10 @@ const Demo = (() => {
   function sumarCortados(titulo, variante, n){ const k = titulo + "|" + (variante ?? ""); cortados[k] = Math.max((cortados[k] ?? 0) + n, 0); if (n > 0) autoasignar(); return cortados[k]; }
   // Como fab_autoasignar en la BD: las prendas hechas van a los pedidos que quedan completos (urgentes y antiguos primero) → Empaquetar
   function autoasignar(){
-    const est = (l) => !l.sin_vinilo && !(l.personalizacion ?? []).length;
+    const est = (l) => !(l.personalizacion ?? []).length; // estándar y «sin vinilo»: van por la estantería de hechas
     for (const p of pedidos.filter((x) => x.estado !== "producido" && !x.cancelado).sort(porPrioridad)){
       const ls = p.fab_lineas;
-      if (ls.some((l) => ["pendiente", "sin_stock"].includes(l.estado)) || ls.some((l) => !est(l) && !l.sin_vinilo && l.estado === "cortar")) continue;
+      if (ls.some((l) => ["pendiente", "sin_stock"].includes(l.estado)) || ls.some((l) => !est(l) && l.estado === "cortar")) continue;
       const need = {}; for (const l of ls.filter((l) => l.estado === "cortar" && est(l))){ const k = l.titulo + "|" + (l.variante ?? ""); need[k] = (need[k] ?? 0) + l.cantidad; }
       if (!Object.keys(need).length || Object.entries(need).some(([k, v]) => (cortados[k] ?? 0) < v)) continue;
       for (const [k, v] of Object.entries(need)) cortados[k] -= v;
@@ -1603,8 +1604,7 @@ function lineasEnEtapa(etapa){
       const le = l.estado ?? "pendiente";
       if (etapa === "todos") out.push({ ...l, p });
       else if (etapa === "cortar"){
-        // Producción (cortar y estampar a la vez): solo lo que lleva vinilo y tiene la prenda. Lo de Sin stock espera a que llegue.
-        if (l.sin_vinilo) continue;
+        // Producción: lo que hay que cortar y estampar y también las prendas «sin vinilo», que Producción comprueba y deja en la estantería.
         if (le === "cortar") out.push({ ...l, p });
       }
       else if (le === etapa) out.push({ ...l, p });
@@ -1629,15 +1629,17 @@ function pintarResumen(){
   $("#resumen").innerHTML = `<div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
     <div class="rtitulo"><h2>${etapaR === "todos" ? "Todo lo pendiente de producir" : etapaR === "cortar" ? "Producción: cortar y estampar" : E.plural}</h2><span class="tot">${contador ? `<b>${quedan} por hacer</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
       <span style="margin-left:auto;display:flex;gap:8px"><button class="btn-sec" id="bExcel">⬇ Excel</button><button class="btn-sec" id="bImprLista">🖨 Imprimir listado</button></span></div>
-    ${contador ? `<div class="ayudacorte">Por color de vinilo y de la A a la Z. Coge las prendas, corta y estampa, y apunta las <b>hechas</b>: el programa las reparte solo a los pedidos (urgentes y más antiguos primero) y los que quedan completos pasan a <b>Empaquetar</b>. Si falta la prenda, pulsa <b>✖ No hay</b>.</div>` : etapaR === "sin_stock" ? `<div class="ayudacorte">Prendas que faltan. Cuando lleguen, pulsa <b>✔ Ha llegado</b> y vuelven a Producción.</div>` : ""}
+    ${contador ? `<div class="ayudacorte">Por color de vinilo y de la A a la Z. Coge las prendas, corta y estampa, y apunta las <b>hechas</b>: el programa las reparte solo a los pedidos (urgentes y más antiguos primero) y los que quedan completos pasan a <b>Empaquetar</b>. Si falta la prenda, pulsa <b>✖ No hay</b>.</div>` : etapaR === "sin_stock" ? `<div class="ayudacorte">Prendas que faltan. Cuando lleguen, escribe cuántas y pulsa <b>✔ Han llegado</b>, o <b>Todas</b>: vuelven a Producción, urgentes y más antiguos primero.${ls.length ? ` <button class="llegtodo" data-llegtodo="1">${llegTodoConfirmar ? "¿Seguro? Pulsa otra vez" : `✔ Ha llegado todo (${ls.reduce((s, l) => s + l.cantidad, 0)})`}</button>` : ""}</div>` : ""}
     ${lista.length ? lista.map((g, gi) => {
       const ids = g.filas.flatMap((f) => f.ids);
       const todos = ids.length && ids.every((i) => sel.has(i));
-      const cab = contador && (gi === 0 || lista[gi - 1].color !== g.color)
-        ? `<div class="cabcolor"><span class="muestra" style="background:${esc(colorCss(g.color))}"></span>${g.color ? "Vinilo " + esc(g.color) : "Sin color de vinilo asignado"}<small>${lista.filter((x) => x.color === g.color).reduce((s, x) => s + x.quedan, 0)} por hacer</small></div>` : "";
+      const cab = contador && (gi === 0 || lista[gi - 1].color !== g.color || lista[gi - 1].sinVinilo !== g.sinVinilo)
+        ? (g.sinVinilo
+          ? `<div class="cabcolor"><span class="muestra" style="background:#fff;border-style:dashed"></span>Sin vinilo · mira si hay y déjalas en la estantería<small>${lista.filter((x) => x.sinVinilo).reduce((s, x) => s + x.quedan, 0)} por preparar</small></div>`
+          : `<div class="cabcolor"><span class="muestra" style="background:${esc(colorCss(g.color))}"></span>${g.color ? "Vinilo " + esc(g.color) : "Sin color de vinilo asignado"}<small>${lista.filter((x) => !x.sinVinilo && x.color === g.color).reduce((s, x) => s + x.quedan, 0)} por hacer</small></div>`) : "";
       return `${cab}<section class="grupo ${g.urg ? "urgente" : ""}">
         <div class="ghead">${etapaR === "todos" || !ids.length ? `<span></span>` : `<input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>`}
-          <div class="gn">${esc(g.titulo)} ${g.urg ? `<span class="badge b-urg">${g.urg} urgente${g.urg > 1 ? "s" : ""}</span>` : ""}${contador ? ` <button class="gcolor" data-color="${esc(g.titulo)}" title="Color del vinilo de este modelo">🎨 ${g.color ? esc(g.color) : "¿Color?"}</button>` : ""}</div>
+          <div class="gn">${esc(g.titulo)} ${g.urg ? `<span class="badge b-urg">${g.urg} urgente${g.urg > 1 ? "s" : ""}</span>` : ""}${contador && !g.sinVinilo ? ` <button class="gcolor" data-color="${esc(g.titulo)}" title="Color del vinilo de este modelo">🎨 ${g.color ? esc(g.color) : "¿Color?"}</button>` : ""}</div>
           <div class="gq">${contador ? g.quedan : g.uds}<small> ${contador ? "por hacer" : "uds"}</small></div></div>
         ${g.filas.map((f, fi) => { const k = gi + "-" + fi; filasR.set(k, f); return `<div class="rrow ${f.urg ? "urg" : ""}">
           ${etapaR === "todos" || !f.ids.length ? `<span></span>` : `<input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>`}
@@ -1651,13 +1653,13 @@ function pintarResumen(){
             ? `<div class="rhacer" style="${colorVars(E.sig === "producido" ? "producido" : E.sig)}" title="${esc(E.sigTxt)}"><button data-hacer="${k}">${etapaR === "sin_stock" ? "✔ Ha llegado" : etapaR === "estampar" ? "✔ Estampada" : "✔ Hecha"}</button>${etapaR === "cortar" ? `<button class="nohay" data-nohay="${k}" title="Falta la prenda: el pedido pasa a Sin stock">✖ No hay</button>` : ""}</div><div class="rq">1</div>`
             : contador
               ? `<div class="rhacer" style="${colorVars("cortar")}">
-                  ${f.quedan > 0 ? `<input type="number" inputmode="numeric" min="1" max="${f.quedan}" placeholder="0" data-hecho="${k}" aria-label="Prendas hechas"><button data-hacer="${k}">✔ Hechas</button><button class="todos" data-todos="${k}" title="Marcar las ${f.quedan} como hechas">Todas</button><button class="nohay" data-nohay="${k}" title="Faltan prendas: escribe cuántas faltan (o ninguna = todas) y pulsa">✖ No hay</button>` : `<span class="check">✔ Todo hecho</span>`}
+                  ${f.quedan > 0 ? `<input type="number" inputmode="numeric" min="1" max="${f.quedan}" placeholder="0" data-hecho="${k}" aria-label="Prendas hechas"><button data-hacer="${k}">${g.sinVinilo ? "✔ Preparadas" : "✔ Hechas"}</button><button class="todos" data-todos="${k}" title="Marcar las ${f.quedan} como hechas">Todas</button><button class="nohay" data-nohay="${k}" title="Faltan prendas: escribe cuántas faltan (o ninguna = todas) y pulsa">✖ No hay</button>` : `<span class="check">✔ Todo hecho</span>`}
                   ${f.hechas > 0 ? `<button class="menos" data-menos="${k}" title="Corregir: restar 1 hecha">−1</button>` : ""}</div>
                  <div class="rq" title="${f.uds} en pedidos · ${f.hechas} cortadas">${f.quedan}<div class="rqd">${f.hechas ? `${f.hechas} hechas<br>de ${f.uds}` : `en pedidos`}</div></div>`
               : etapaR === "estampar"
                 ? `<div class="rhacer" style="${colorVars("empaquetar")}"><button data-hacer="${k}" title="Pasar estas ${f.uds} a Empaquetar">✔ Estampadas</button></div><div class="rq">${f.uds}</div>`
                 : etapaR === "sin_stock"
-                  ? `<div class="rhacer" style="${colorVars("cortar")}"><button data-llegfila="${k}" title="Las ${f.uds} vuelven a Producción">✔ Ha llegado</button></div><div class="rq">${f.uds}</div>`
+                  ? `<div class="rhacer" style="${colorVars("cortar")}"><input type="number" inputmode="numeric" min="1" max="${f.uds}" placeholder="0" data-llegn="${k}" aria-label="Cuántas han llegado"><button data-llegfila="${k}" title="Escribe cuántas han llegado (urgentes y más antiguos primero)">✔ Han llegado</button><button class="todos" data-llegfila="${k}" data-todas="1" title="Han llegado las ${f.uds}">Todas</button></div><div class="rq">${f.uds}</div>`
                   : `<div></div><div class="rq">${f.uds}</div>`}
           </div>`; }).join("")}
       </section>`;
@@ -1670,7 +1672,7 @@ function construirResumen(etapa){
   const ls = lineasEnEtapa(etapa);
   const grupos = new Map();
   for (const l of ls){
-    if (!grupos.has(l.titulo)) grupos.set(l.titulo, { titulo: l.titulo, filas: new Map(), uds: 0, urg: 0, antiguo: l.p.creado_shopify });
+    if (!grupos.has(l.titulo)) grupos.set(l.titulo, { titulo: l.titulo, filas: new Map(), uds: 0, urg: 0, antiguo: l.p.creado_shopify, sinVinilo: !!l.sin_vinilo });
     const g = grupos.get(l.titulo); g.uds += l.cantidad; if (l.p._urg) g.urg += l.cantidad;
     if (l.p.creado_shopify < g.antiguo) g.antiguo = l.p.creado_shopify;
     const pers = textoPers(l);
@@ -1693,7 +1695,7 @@ function construirResumen(etapa){
   // Hoja de corte: agrupada por color de vinilo (los sin color al final); dentro, urgentes y más cantidad primero
   // Por color de vinilo (en la hoja de corte) y, dentro, los modelos por orden alfabético: la A primero
   const abc = new Intl.Collator("es", { sensitivity: "base", ignorePunctuation: true });
-  const lista = [...grupos.values()].sort((a, b) => (contador ? (!a.color - !b.color) || abc.compare(a.color, b.color) : 0) || abc.compare(a.titulo, b.titulo));
+  const lista = [...grupos.values()].sort((a, b) => (contador ? (a.sinVinilo - b.sinVinilo) || (!a.color - !b.color) || abc.compare(a.color, b.color) : 0) || abc.compare(a.titulo, b.titulo));
   let totalQuedan = 0;
   for (const g of lista){
     g.quedan = 0;
@@ -1737,9 +1739,23 @@ async function noHayFila(k){
   for (const { l } of ls){ if (n && uds >= n) break; ids.push(l.line_id); uds += l.cantidad; }
   await picking(ids, false, `✖ ${uds} sin prenda · ${tituloFila(f)}${f.talla ? " T." + f.talla : ""} → Sin stock`);
 }
-async function llegadoFila(k){
+// ✔ Han llegado en Sin stock: con número, esas (urgentes y más antiguos primero); «Todas», la fila entera
+async function llegadoFila(k, todas){
   const f = filasR.get(k); if (!f) return;
-  await picking(f.ids, true, `✔ Han llegado ${f.uds} · ${tituloFila(f)}${f.talla ? " T." + f.talla : ""} → Producción`);
+  const n = todas ? 0 : Math.floor(Number(document.querySelector(`input[data-llegn="${k}"]`)?.value)) || 0;
+  if (!todas && !n){ toast("Escribe cuántas han llegado o pulsa Todas", true); return; }
+  const ls = pedidos.flatMap((p) => (p.fab_lineas ?? []).filter((l) => f.ids.includes(l.line_id) && l.estado === "sin_stock").map((l) => ({ l, p }))).sort((a, b) => porPrioridad(a.p, b.p));
+  const ids = []; let uds = 0;
+  for (const { l } of ls){ if (n && uds >= n) break; ids.push(l.line_id); uds += l.cantidad; }
+  await picking(ids, true, `✔ Han llegado ${uds} · ${tituloFila(f)}${f.talla ? " T." + f.talla : ""} → Producción`);
+}
+// ✔ Ha llegado todo: todo lo de Sin stock vuelve a Producción de golpe (pide confirmar con una segunda pulsación)
+let llegTodoConfirmar = false;
+async function llegadoTodo(){
+  if (!llegTodoConfirmar){ llegTodoConfirmar = true; pintar(); setTimeout(() => { if (llegTodoConfirmar){ llegTodoConfirmar = false; pintar(); } }, 5000); return; }
+  llegTodoConfirmar = false;
+  const ls = lineasEnEtapa("sin_stock");
+  await picking(ls.map((l) => l.line_id), true, `✔ Han llegado ${ls.reduce((s, l) => s + l.cantidad, 0)} prendas → Producción`);
 }
 const tituloFila = (f) => f.titulo ?? pedidos.flatMap((p) => p.fab_lineas ?? []).find((l) => f.ids.includes(l.line_id))?.titulo ?? "";
 async function sumarCortados(f, n, msg){
@@ -2070,7 +2086,8 @@ function pintarBarra(){
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.nohay){ noHayFila(b.dataset.nohay); return; }
-  if (b.dataset.llegfila){ llegadoFila(b.dataset.llegfila); return; }
+  if (b.dataset.llegfila){ llegadoFila(b.dataset.llegfila, b.dataset.todas === "1"); return; }
+  if (b.dataset.llegtodo){ llegadoTodo(); return; }
   if (b.dataset.paso){ paso = b.dataset.paso; otrosAbierto = null; pintar(); window.scrollTo(0, 0); return; }
   if (b.dataset.vista){ vista = b.dataset.vista; try { localStorage.setItem("fab_vista", vista); } catch {} sel.clear(); if (vista === "plan") planModo = "plan"; if (vista === "historico") H.cargando = true; pintar(); if (vista === "historico") cargarHistorico(); }
   else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
