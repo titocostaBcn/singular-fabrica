@@ -158,13 +158,14 @@
   #resumen{padding:16px 16px 110px;display:grid;gap:12px;max-width:1100px}
   #historico{padding:16px 16px 60px;display:grid;gap:14px}
   #ayuda{padding:16px 16px 80px}
-  .aybarra{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bg,#f4f1ec);padding:8px 0 12px;max-width:860px;margin:0 auto}
+  .aybarra{position:sticky;top:var(--hh,0px);z-index:4;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bg,#f4f1ec);padding:8px 0 12px;max-width:860px;margin:0 auto}
   .aybarra input{flex:1;min-width:220px;padding:11px 16px;border:1px solid var(--line);border-radius:999px;font:inherit;font-size:16px;background:var(--panel);color:inherit}
   .aybarra .cuenta{color:var(--muted);font-size:14px}
   .aybarra button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:10px 14px;font-weight:600}
   .manual{max-width:860px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px 28px 28px;line-height:1.55;font-size:16px}
   .manual h1{font-size:26px;margin:20px 0 6px}
   .manual h2{font-size:21px;margin:30px 0 8px;padding-top:12px;border-top:1px solid var(--line)}
+  .manual section{scroll-margin-top:calc(var(--hh,0px) + 76px)}
   .manual h3{font-size:17px;margin:20px 0 6px}
   .manual p{margin:8px 0}
   .manual ul,.manual ol{margin:8px 0;padding-left:24px}
@@ -420,6 +421,8 @@ const DEMO = new URLSearchParams(location.search).has("demo") || window.FAB_DEMO
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = (s) => document.querySelector(s);
+// La barra de búsqueda de la Ayuda se pega justo debajo de la cabecera (que cambia de alto según la vista y el ancho).
+try { new ResizeObserver(([e]) => document.documentElement.style.setProperty("--hh", e.target.offsetHeight + "px")).observe(document.querySelector("header")); } catch {}
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 // ───── flujo de producción ─────
