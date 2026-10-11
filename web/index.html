@@ -33,6 +33,7 @@
   #avisoError{background:#c62828;color:#fff;padding:12px 16px;font-weight:800;font-size:20px;text-align:center;letter-spacing:.5px}
   #avisoError small{display:block;font-size:13px;font-weight:500;opacity:.9;letter-spacing:0}
   #aviso{background:#fff4c2;border-bottom:1px solid #e6d27a;padding:8px 16px;font-weight:600;font-size:14px}
+  body.pruebas #aviso{background:#ff7a00;color:#fff;border-color:#c25c00;font-size:16px}
   header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;display:grid;gap:10px}
   .fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .marca{display:flex;align-items:center;gap:12px;margin-right:auto;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:var(--muted)}
@@ -120,7 +121,23 @@
   .mod button{justify-self:start;border:1px solid #6d28d9;background:#6d28d9;color:#fff;border-radius:10px;padding:7px 14px;font-weight:700}
   .pedit{margin:4px 0 0 6px;border:1px dashed #b9b2a6;background:none;border-radius:8px;padding:4px 8px;font-size:13px;color:var(--muted);vertical-align:middle}
   .persant{font-size:12px;color:var(--muted);margin-top:3px}
-  .pie2{display:flex;justify-content:flex-end;margin-top:-4px}
+  .pie2{display:flex;justify-content:flex-end;gap:14px;margin-top:-4px}
+  .b-carril{background:#eef2f7;color:#334155}
+  .ayudacorte{background:#e6effa;border:1px solid #bcd3ef;border-radius:12px;padding:10px 14px;font-size:14px}
+  .cabcolor{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;margin:10px 0 0}
+  .cabcolor small{font-size:14px;color:var(--muted);font-weight:600}
+  .muestra{width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:inline-block;flex:0 0 auto}
+  .gcolor{border:1px dashed #b9b2a6;background:#fff;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;margin-left:6px;vertical-align:middle}
+  .rp .sinp{color:#8a8a8a;font-style:italic}
+  #colorM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  #colorM.hidden{display:none}
+  #colorM .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:440px;width:100%;display:grid;gap:12px}
+  #colorM input{font:inherit;font-size:20px;font-weight:700;border:2px solid var(--line);border-radius:10px;padding:10px 12px}
+  #colorM .sug{display:flex;flex-wrap:wrap;gap:6px}
+  #colorM .sug button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-weight:600;display:flex;gap:6px;align-items:center}
+  #colorM .bots{display:flex;gap:8px}
+  #colorM .bots .go{border:0;background:#1b7f4b;color:#fff;border-radius:10px;padding:12px 18px;font-weight:700;flex:1}
+  .b-hueco{background:#1d1b18;color:#fff}
   .mini{border:0;background:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:2px 0}
   .mini[disabled]{opacity:.6;cursor:wait}
   #corregir{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
@@ -221,6 +238,29 @@
   #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-weight:600;max-width:90vw;z-index:20;box-shadow:0 4px 16px #0003}
   #toast.e{background:var(--err)}
 
+  #plan{padding:16px 16px 60px;display:grid;gap:12px}
+  .carga{border-radius:12px;padding:12px 16px;font-weight:800;font-size:18px}
+  .carga.ok{background:var(--producido-bg);color:var(--producido)} .carga.justo{background:#fff4c2;color:#7a5b00} .carga.mucho{background:var(--err-bg);color:var(--err)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .kpis.peq{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid}
+  .kpi b{font-size:30px;line-height:1.1} .kpis.peq .kpi b{font-size:22px}
+  .kpi span{font-weight:700;font-size:14px} .kpi small{color:var(--muted);font-size:12px}
+  .kpi.rojo{border-color:#f3b8b0;background:var(--urg-bg)} .kpi.rojo b{color:var(--urg)} .kpi.lila{border-color:#c9b6f2;background:#f5f0ff}
+  .kpi.et-cortar b{color:var(--cortar)} .kpi.et-estampar b{color:var(--estampar)} .kpi.et-empaquetar b{color:var(--empaquetar)}
+  .planacc{display:flex;gap:8px;flex-wrap:wrap}
+  .planacc .go{border:0;background:#1b7f4b;color:#fff;border-radius:12px;padding:14px 18px;font-weight:800;font-size:16px}
+  .planacc .go[disabled]{opacity:.45;cursor:default}
+  .planacc .go2{border:0;background:var(--cortar);color:#fff;border-radius:12px;padding:14px 18px;font-weight:800;font-size:16px}
+  .ptabla tr.urg td{background:var(--urg-bg)} .ptabla tr.corte td{background:#1d1b18;color:#fff;text-align:center;font-weight:700;font-size:12px}
+  .lnkped{background:none;border:0;padding:0;font:inherit;font-weight:800;text-decoration:underline;color:inherit}
+  .ambito{display:flex;gap:6px;flex-wrap:wrap}
+  .ambito button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 14px;font-weight:600}
+  .ambito button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .rech{margin:8px 0 0;font-size:19px} .rech small{color:var(--muted);font-size:14px;font-weight:600}
+  .rrow.rec{grid-template-columns:minmax(180px,auto) 1fr auto auto}
+  .rhacer .nohay{background:#fff;color:var(--err);border:2px solid var(--err);padding:9px 12px}
+  #zonaHojas{display:none}
   #zonaImpresion{display:none}
   @media print{
     @page{margin:8mm}
@@ -255,13 +295,51 @@
     body.imp-lista .rrow,body.imp-lista .ghead{break-inside:avoid}
     body.imp-lista .ghead{break-after:avoid}
     body.imp-lista #bExcel,body.imp-lista #bImprLista{display:none!important}
+    /* plan del día y lista de recogida */
+    body.imp-plan #app > *:not(#plan),body.imp-plan > *:not(#app){display:none!important}
+    body.imp-plan,html:has(body.imp-plan){background:#fff!important}
+    body.imp-plan .logo-imp{display:block;margin:0 0 8px}
+    body.imp-plan .planacc,body.imp-plan .ambito,body.imp-plan .ayudacorte,body.imp-plan .rhacer{display:none!important}
+    body.imp-plan .htabla{font-size:10px} body.imp-plan .htabla th{background:#000!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;position:static}
+    body.imp-plan tr,body.imp-plan .rrow{break-inside:avoid} body.imp-plan .hwrap{overflow:visible}
+    body.imp-plan .rrow.rec{grid-template-columns:minmax(180px,auto) 1fr auto}
+    body.imp-plan .rrow.rec::before{content:"☐";font-size:22px}
+    body.imp-plan .rrow.rec{grid-template-columns:28px minmax(180px,auto) 1fr auto}
+    /* hojas de pedido: 4 por A4 (A6) */
+    body.imp-hojas > *:not(#zonaHojas){display:none!important}
+    body.imp-hojas,html:has(body.imp-hojas){background:#fff!important}
+    body.imp-hojas #zonaHojas{display:block}
+    #zonaHojas .folio{page:hojas;width:210mm;height:297mm;display:grid;grid-template-columns:105mm 105mm;grid-template-rows:148.5mm 148.5mm;break-after:page;overflow:hidden}
+    #zonaHojas .folio:last-child{break-after:auto}
+    #zonaHojas .hoja{box-sizing:border-box;padding:7mm 8mm 6mm;border-right:1px dashed #bbb;border-bottom:1px dashed #bbb;font:10pt/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#000;display:flex;flex-direction:column;gap:2mm;overflow:hidden;position:relative}
+    #zonaHojas .hurg{background:#000;color:#fff;font-weight:900;text-align:center;padding:1.5mm;letter-spacing:.06em;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #zonaHojas .hcab{display:flex;justify-content:space-between;align-items:center}
+    #zonaHojas .hcab img{height:9mm;width:auto}
+    #zonaHojas .hhueco{border:2px solid #000;border-radius:2mm;padding:1mm 3mm;font-weight:900;font-size:13pt}
+    #zonaHojas .hnum{font-size:30pt;font-weight:900;line-height:1}
+    #zonaHojas .cb{width:70mm;height:13mm;display:block}
+    #zonaHojas .hcod{font-size:9pt;letter-spacing:3pt;margin-top:-1mm}
+    #zonaHojas .hinfo{font-size:9pt;border-top:1px solid #999;padding-top:1.5mm}
+    #zonaHojas .hcarril{display:inline-block;align-self:flex-start;border:1.5px solid #000;border-radius:999px;padding:.5mm 3mm;font-weight:800;font-size:8.5pt}
+    #zonaHojas .hprendas{display:grid;gap:1.5mm;border-top:1px solid #999;padding-top:1.5mm}
+    #zonaHojas .hp{display:grid;grid-template-columns:5mm 1fr;gap:2mm;font-size:9.5pt}
+    #zonaHojas .hp .cas{width:4mm;height:4mm;border:1.5px solid #000;border-radius:.8mm;margin-top:.6mm}
+    #zonaHojas .hp small{display:block;color:#444;font-size:8pt}
+    #zonaHojas .hpers{border:2px solid #000;border-radius:1.5mm;padding:1mm 2mm;margin-top:1mm;font-size:15pt;font-weight:900;line-height:1.15;word-break:break-word}
+    #zonaHojas .hpers span{font-size:7.5pt;font-weight:600;margin-right:2mm;vertical-align:middle}
+    #zonaHojas .hnota{font-size:9pt;font-style:italic}
+    #zonaHojas .hpie{margin-top:auto;font-size:7.5pt;color:#444;border-top:1px solid #999;padding-top:1mm}
+    #zonaHojas .hpie b{color:#000;font-size:10pt}
   }
+  @page hojas{size:A4 portrait;margin:0}
   @media (max-width:640px){
     .rrow{grid-template-columns:36px 1fr auto auto;grid-template-areas:"c t h q" "c p p p"}
     .rrow > input{grid-area:c} .rrow > div:nth-of-type(1){grid-area:t} .rrow > div:nth-of-type(2){grid-area:p} .rrow > .rhacer{grid-area:h} .rrow > .rq{grid-area:q}
     .rhacer input{width:56px}
   }
-  @media (max-width:440px){ #lista{grid-template-columns:1fr;padding:12px} #buscar{width:100%} #resumen{padding:12px 12px 130px} }
+  header{grid-template-columns:minmax(0,1fr)}
+  @media (max-width:640px){ .vistas{order:3;width:100%;min-width:0;overflow-x:auto} .vistas button{padding:8px 11px;white-space:nowrap} .rrow.rec{grid-template-columns:1fr auto;grid-template-areas:none} .rrow.rec > div{grid-area:auto} }
+  @media (max-width:440px){ #lista{grid-template-columns:1fr;padding:12px} #buscar{width:100%} #resumen{padding:12px 12px 130px} #plan{padding:12px} }
 </style>
 </head>
 <body>
@@ -283,7 +361,7 @@
   <header>
     <div class="fila">
       <div class="marca"><img src="logo.png" alt="Singular Wardrobe"><span>Fábrica</span></div>
-      <div class="vistas"><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
+      <div class="vistas"><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec" id="bSalir">Salir</button>
     </div>
@@ -298,6 +376,7 @@
     </div>
   </header>
   <div id="subbar" class="hidden"></div>
+  <main id="plan" class="hidden"></main>
   <main id="lista"></main>
   <main id="resumen" class="hidden"></main>
   <main id="historico" class="hidden"></main>
@@ -318,12 +397,23 @@
   <p class="corr-ayuda">Solo cambia en este programa: en Shopify seguirá el texto que puso la clienta. Queda guardado el texto anterior.</p>
   <div class="corr-bot"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="corrCerrar">Cancelar</button></div>
 </form></div>
+<div id="colorM" class="hidden"><form class="caja" id="colorForm">
+  <h3 style="margin:0" id="colorTit">Color del vinilo</h3>
+  <input id="colorIn" placeholder="Por ejemplo: Blanco, Dorado, Naranja flúor" maxlength="40" autocomplete="off">
+  <div class="sug" id="colorSug"></div>
+  <p class="corr-ayuda" style="margin:0;font-size:13px;color:var(--muted)">Se apunta una vez por modelo. La hoja de corte agrupa los modelos por este color.</p>
+  <div class="bots"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="colorCerrar">Cancelar</button></div>
+</form></div>
 <div id="zonaImpresion"></div>
+<div id="zonaHojas"></div>
 <div id="toast" class="hidden"></div>
 
 <script>
-const SUPABASE_URL = "https://hgvsrmywsfnmvenkfynb.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Kf5d0a1bA9sObsJb4MWtuA_UYAHut4h";
+// Entorno de PRUEBAS: añade ?pruebas a la dirección. Usa el proyecto Supabase «fabrica-pruebas» (copia anonimizada de los
+// pedidos, sin Shopify ni etiquetas reales). Solo con ?pruebas en la dirección: no se recuerda, para no quedarse en pruebas sin querer.
+const PRUEBAS = new URLSearchParams(location.search).has("pruebas");
+const SUPABASE_URL = PRUEBAS ? "https://hwjrwtmsjgxrraiqfwtv.supabase.co" : "https://hgvsrmywsfnmvenkfynb.supabase.co";
+const SUPABASE_KEY = PRUEBAS ? "sb_publishable_I2x6s7A5b2-gS98jftYEqg_9GpmKsev" : "sb_publishable_Kf5d0a1bA9sObsJb4MWtuA_UYAHut4h";
 const FN = SUPABASE_URL + "/functions/v1/fab";
 // Modo demostración: añade ?demo a la dirección. No se conecta a Supabase, GLS ni Shopify.
 const DEMO = new URLSearchParams(location.search).has("demo") || window.FAB_DEMO === true;
@@ -333,14 +423,15 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 // ───── flujo de producción ─────
-// Cada prenda avanza: cortar (vinilo y estampado) ⇄ sin_stock → empaquetar. El pedido pasa a producido al empaquetar: etiqueta GLS, otros envíos o recogida.
-// ('estampar' queda solo por compatibilidad: ya no se usa)
+// Cada prenda avanza: cortar (vinilo) → estampar → empaquetar, y Sin stock si falta la prenda. Las «sin vinilo» van directas a Empaquetar.
+// El pedido pasa a producido al empaquetar: etiqueta GLS, otros envíos o recogida.
+// Vinilo estándar: se corta en el Resumen (almacén de vinilos) y la BD lo asigna a los pedidos, que pasan solos a Estampar.
 const ETAPA = {
   pendiente:  { label: "Pendiente",     plural: "Pendientes",    sig: "cortar",     sigTxt: "A cortar vinilo →",      ant: null },
-  sin_stock:  { label: "Sin stock",     plural: "Sin stock",     sig: "cortar",     sigTxt: "Stock OK · a cortar →",   ant: null },
-  cortar:     { label: "Cortar y estampar", plural: "Cortar y estampar", sig: "empaquetar", sigTxt: "Hecho · a empaquetar →", ant: null },
-  estampar:   { label: "Estampar",      plural: "Estampar",      sig: "empaquetar", sigTxt: "Estampado · a empaquetar →", ant: "cortar" },
-  empaquetar: { label: "Empaquetar",    plural: "Empaquetar",    sig: "producido",  sigTxt: "✔ Etiqueta GLS", ant: "cortar" },
+  sin_stock:  { label: "Sin stock",     plural: "Sin stock",     sig: "cortar",     sigTxt: "✔ Ha llegado",             ant: null },
+  cortar:     { label: "Cortar vinilo", plural: "Cortar vinilo", sig: "estampar",   sigTxt: "Vinilo cortado · a estampar →", ant: null },
+  estampar:   { label: "Estampar",      plural: "Estampar",      sig: "empaquetar", sigTxt: "Estampado · a empaquetar →", ant: null },
+  empaquetar: { label: "Empaquetar",    plural: "Empaquetar",    sig: "producido",  sigTxt: "✔ Etiqueta GLS", ant: "estampar" },
   producido:  { label: "Producido",     plural: "Producidos",    sig: null,         sigTxt: null,                       ant: null },
   todos:      { label: "Todos",         plural: "Todos",         sig: null,         sigTxt: null,                       ant: null }, // pseudo-etapa del Resumen
 };
@@ -371,11 +462,29 @@ function partes(variante){
 const ORDEN_TALLAS = ["XXS","XS","S","S/M","M","M/L","L","L/XL","XL","2XL","XXL","3XL","Única"];
 const rangoTalla = (t) => { const i = ORDEN_TALLAS.indexOf(String(t ?? "").split(" ")[0]); return i < 0 ? 50 : i; };
 const textoPers = (l) => (l.personalizacion ?? []).map((x) => x.value).filter(Boolean).join(" · ");
+// Carril (tipo de trabajo): lo decide el programa. Solo empaquetar (etiqueta «sin vinilo»), Estándar (vinilo igual para todas) o Personal.
+const carrilLinea = (l) => l.sin_vinilo ? "solo" : (l.personalizacion ?? []).length ? "personal" : "estandar";
+const CARRIL = { solo: "Solo empaquetar", estandar: "Estándar", personal: "Personal", mixto: "Mixto" };
+const ORDEN_CARRIL = ["solo", "estandar", "personal", "mixto"];
+function carrilPedido(p){ const s = new Set((p.fab_lineas ?? []).map(carrilLinea)); return s.size > 1 ? "mixto" : [...s][0] ?? "solo"; }
+const estandar = (l) => carrilLinea(l) === "estandar";
 const urgente = (p) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t) => /urgent/i.test(t));
 const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_shopify) - new Date(b.creado_shopify));
 
-let vista = "pedidos", tab = "cortar", etapaR = "cortar";
+let vista = (() => { try { return localStorage.getItem("fab_vista") || "pedidos"; } catch { return "pedidos"; } })(), tab = "cortar", etapaR = "cortar";
+if (!["plan", "pedidos", "resumen", "historico", "ayuda"].includes(vista)) vista = "pedidos";
 let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null, actualizando = new Set(), corrLinea = null;
+let modelos = new Map(); // titulo → color de vinilo (fab_modelos)
+const colorDe = (titulo) => modelos.get(titulo) || "";
+// Muestra de color para la hoja de corte (por el nombre que se apunte)
+function colorCss(n){
+  const t = String(n ?? "").toLowerCase();
+  const M = [["blanc", "#ffffff"], ["negr", "#111111"], ["dorad", "#c9a227"], ["oro", "#c9a227"], ["plat", "#c0c0c0"], ["gris", "#8f8f8f"], ["rojo", "#d32f2f"], ["roja", "#d32f2f"],
+    ["burdeos", "#7b1e2b"], ["granate", "#7b1e2b"], ["rosa", "#f48fb1"], ["fucsia", "#d81b60"], ["naranja", "#ff7a00"], ["amarill", "#fdd835"], ["verde", "#2e7d32"],
+    ["azul marino", "#1a237e"], ["marino", "#1a237e"], ["azul", "#1e88e5"], ["morad", "#6a1b9a"], ["lila", "#b39ddb"], ["beige", "#e6d3b3"], ["crema", "#f3e9d2"], ["marr", "#6d4c41"]];
+  return (M.find(([k]) => t.includes(k)) ?? [null, t ? "#d9d4ca" : "transparent"])[1];
+}
+const capacidad = () => ({ min: Number(cfg.capacidad_min) || 70, max: Number(cfg.capacidad_max) || 90 });
 // Reparto: cada dispositivo dice quién es (mismo login para todas). Se puede coger un pedido en cualquier etapa.
 // Pensado para un PC compartido: no hay "usuario" del dispositivo. Arriba se elige Todos / Libres / una persona;
 // al coger un pedido se dice para quién. Si una tablet se queda fija en una persona, se recuerda (localStorage).
@@ -386,7 +495,7 @@ const ajeno = (p) => !!persona() && !!p.asignado_a && p.asignado_a !== persona()
 const PALETA = ["#1b7f4b", "#6a3fb5", "#c2410c", "#0e7490", "#be185d", "#4d7c0f", "#1d4ed8", "#a16207"];
 function colorPersona(n){ const l = equipo(); let i = l.indexOf(n); if (i < 0) i = [...n].reduce((a, c) => a + c.charCodeAt(0), 0); return PALETA[i % PALETA.length]; }
 function equipo(){ return [...new Set([...nombresEquipo(), ...pedidos.map((p) => p.asignado_a).filter(Boolean)])]; }
-const ETAPAS_REPARTO = ["pendiente", "sin_stock", "cortar", "empaquetar"];
+const ETAPAS_REPARTO = ["pendiente", "sin_stock", "cortar", "estampar", "empaquetar"];
 
 const activo = (p) => !p.cancelado && !p.enviado_fuera;
 // Destino → tipo de envío automático: UE (península, Baleares y países UE) = etiqueta GLS; Canarias, Ceuta, Melilla, Reino Unido y todo lo que no sea UE (Suiza, Noruega, Andorra…) = Otros envíos.
@@ -413,7 +522,7 @@ function toast(msg, err = false){ const t = $("#toast"); t.textContent = msg; t.
 const TABS = [
   { id: "retrasados",   label: "⚠ Retrasados",   f: (p) => retrasado(p) },
   { id: "modificados",  label: "✏️ Modificados", f: (p) => modificado(p) },
-  ...["pendiente", "sin_stock", "cortar", "empaquetar"].map((e) => ({ id: e, label: ETAPA[e].plural, f: (p) => p._estado === e && activo(p) })),
+  ...["pendiente", "sin_stock", "cortar", "estampar", "empaquetar"].map((e) => ({ id: e, label: ETAPA[e].plural, f: (p) => p._estado === e && activo(p) })),
   { id: "producido",    label: "Producidos hoy", f: (p) => p._estado === "producido" && esHoy(p.estado_at) },
   { id: "otros",        label: "Otros envíos",   f: (p) => p._estado === "producido" && p.envio_tipo === "otros" },
   { id: "recogida",     label: "Recogida en tienda", f: (p) => p.recogida && !p.cancelado, cuenta: (p) => !p.entregado_at },
@@ -442,8 +551,10 @@ const Demo = (() => {
     for (let k = 0; k < nl; k++){
       const [titulo, tallas, pk] = MODELOS[rnd(MODELOS.length)];
       const pers = pk && (pk === "Personalización" ? k % 2 === 0 || i % 3 === 0 : rnd(2)) ? [{ key: pk, value: pk === "Personalización" ? ["STAR","ROCK","1973","MSN","Singular","RT","LOVE"][rnd(7)] : pk.startsWith("Inicial ") ? "ABCDEFGHLMNPS"[rnd(13)] : "ABCDEFGHLMNPS"[rnd(13)] + "ABCDEFGHLMNPS"[rnd(13)] }] : [];
-      lineas.push({ line_id: lid++, titulo, variante: tallas[rnd(tallas.length)], cantidad: rnd(6) === 0 ? 2 : 1, personalizacion: pers, imagen_url: null,
-        estado: i < 8 ? ["empaquetar","cortar","cortar","empaquetar","cortar","empaquetar","cortar","sin_stock"][i] : "cortar" });
+      const sinVinilo = /cupido|volume/.test(titulo);
+      const est = i < 8 ? ["empaquetar","cortar","estampar","empaquetar","estampar","empaquetar","cortar","sin_stock"][i] : "cortar";
+      lineas.push({ line_id: lid++, titulo, variante: tallas[rnd(tallas.length)], cantidad: rnd(6) === 0 ? 2 : 1, personalizacion: sinVinilo ? [] : pers, imagen_url: null, sin_vinilo: sinVinilo,
+        estado: sinVinilo && est !== "sin_stock" ? "empaquetar" : est, estado_por: sinVinilo ? "auto sin vinilo" : null });
     }
     const [ciudad, cp] = CIUDADES[rnd(CIUDADES.length)];
     pedidos.push({ order_id: 1000 + i, order_name: "#9" + String(1000 + i).padStart(4, "0"), creado_shopify: hace(h), estado: "pendiente", estado_at: hace(h),
@@ -465,7 +576,29 @@ const Demo = (() => {
     modificado: [`Cambio de ${lm.titulo}: ${lm.variante === "S" ? "M" : "S"} → ${lm.variante}`, "Dirección de envío: Calle Nueva 3 · 46001 Valencia"] });
   Object.assign(pedidos[3], { ciudad: "Las Palmas de Gran Canaria", cp: "35001", provincia: "Las Palmas" });
   Object.assign(pedidos[5], { ciudad: "London", cp: "SW1A 1AA", pais: "GB" });
-  const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no", empaquetadoras: "Dania, Irene, Andrea, Mica, Cristina, Carlota" };
+  const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no", empaquetadoras: "Dania, Irene, Andrea, Mica, Cristina, Carlota", capacidad_min: "20", capacidad_max: "25" };
+  const modelos = { "Camisa “Why not?” blanca": "Negro", "Camisa “Why not?” azul": "Blanco", "Blazer “Calavera” azul": "Blanco", "Blazer “estudio 54”": "Dorado" };
+  // hojas ya impresas en algunos pedidos
+  [11, 13, 14].forEach((i, k) => Object.assign(pedidos[i], { hueco: k + 1, hoja_impresa_at: hace(30), hoja_version: 1 }));
+  const esEstandar = (l) => !l.sin_vinilo && !(l.personalizacion ?? []).length;
+  const devolver = (l) => { if (esEstandar(l)){ const k = l.titulo + "|" + (l.variante ?? ""); cortados[k] = (cortados[k] ?? 0) + l.cantidad; } };
+  function picking(ids, hay, per){
+    for (const [p, l] of lineasDe(ids)){
+      if (p.estado === "producido") continue;
+      if (hay){ l.prenda_ok_at = new Date().toISOString(); l.prenda_ok_por = per || "demo"; if (l.estado === "sin_stock") l.estado = l.sin_vinilo ? "empaquetar" : "cortar"; }
+      else { if (l.estado === "estampar") devolver(l); l.estado = "sin_stock"; l.prenda_ok_at = null; l.estado_por = per || "demo"; }
+    }
+  }
+  function viniloMal(ids){ for (const [, l] of lineasDe(ids)) if (l.estado === "estampar") l.estado = "cortar"; }
+  function hojas(ids){
+    const activos = pedidos.filter((p) => p.estado !== "producido" && !p.cancelado);
+    return ids.map((id) => {
+      const p = pedidos.find((x) => x.order_id === id); if (!p) return null;
+      if (!p.hueco){ let h = 1; while (activos.some((q) => q.hueco === h)) h++; p.hueco = h; }
+      p.hoja_impresa_at = new Date().toISOString(); p.hoja_version = (p.hoja_version ?? 0) + 1;
+      return { r_order_id: id, r_hueco: p.hueco, r_version: p.hoja_version };
+    }).filter(Boolean);
+  }
   const PDF = "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyODMgNDI1XSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4gPj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA2NTUgPj4Kc3RyZWFtCkJUIC9GMSAyNiBUZiAzMCAzNzAgVGQgKEdMUyAgREVNTykgVGogRVQKQlQgL0YxIDEyIFRmIDMwIDM0MCBUZCAoRVRJUVVFVEEgREUgUFJVRUJBIC0gTk8gVkFMSURBKSBUaiBFVApCVCAvRjEgMTQgVGYgMzAgMzAwIFRkIChEZXN0aW5hdGFyaW86IENsaWVudGUgRGVtbykgVGogRVQKQlQgL0YxIDE0IFRmIDMwIDI4MCBUZCAoQ2FsbGUgTWF5b3IgMSwgMjgwMTMgTWFkcmlkKSBUaiBFVAowIDAgMCByZyAzMCAxMjAgbSAzMCAyMzAgbCAzNCAyMzAgbCAzNCAxMjAgbCBmCjQwIDEyMCA2IDExMCByZSBmIDUyIDEyMCAyIDExMCByZSBmIDYwIDEyMCA4IDExMCByZSBmIDc0IDEyMCAzIDExMCByZSBmIDgyIDEyMCA1IDExMCByZSBmIDk0IDEyMCAyIDExMCByZSBmIDEwMCAxMjAgNyAxMTAgcmUgZiAxMTIgMTIwIDMgMTEwIHJlIGYgMTIwIDEyMCA2IDExMCByZSBmIDEzMiAxMjAgMiAxMTAgcmUgZiAxNDAgMTIwIDggMTEwIHJlIGYgMTU0IDEyMCA0IDExMCByZSBmIDE2NCAxMjAgMiAxMTAgcmUgZiAxNzIgMTIwIDYgMTEwIHJlIGYgMTg0IDEyMCAzIDExMCByZSBmIDE5MiAxMjAgNyAxMTAgcmUgZiAyMDQgMTIwIDIgMTEwIHJlIGYgMjEyIDEyMCA1IDExMCByZSBmIDIyNCAxMjAgNCAxMTAgcmUgZiAyMzQgMTIwIDYgMTEwIHJlIGYgMjQ2IDEyMCAzIDExMCByZSBmCkJUIC9GMSAxNCBUZiA2MCA5NSBUZCAoNjE3NzEzMTUzMDk1MDIpIFRqIEVUCgplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MyAwMDAwMCBuIAowMDAwMDAwOTUwIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKMTAyNgolJUVPRgo=";
   let cb = 61771315309503, n = 2000;
   const espera = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -474,6 +607,7 @@ const Demo = (() => {
     await espera(250);
     if (b.accion === "lineas"){
       for (const [p, l] of lineasDe(b.line_ids)) if (p.estado !== "producido"){
+        if (l.estado === "estampar" && ["cortar", "sin_stock", "pendiente"].includes(b.estado)) devolver(l);
         if (l.estado === "cortar" && ["estampar", "empaquetar"].includes(b.estado) && !(l.personalizacion ?? []).length){
           const k = l.titulo + "|" + (l.variante ?? ""); if (cortados[k]) cortados[k] = Math.max(cortados[k] - l.cantidad, 0);
         }
@@ -517,7 +651,7 @@ const Demo = (() => {
   }
   const cortados = {};
   function sumarCortados(titulo, variante, n){ const k = titulo + "|" + (variante ?? ""); cortados[k] = Math.max((cortados[k] ?? 0) + n, 0); return cortados[k]; }
-  return { pedidos, cfg, fn, cortados, sumarCortados };
+  return { pedidos, cfg, fn, cortados, sumarCortados, modelos, picking, viniloMal, hojas };
 })();
 
 // ───── datos ─────
@@ -547,13 +681,16 @@ async function cargar(){
     data = JSON.parse(JSON.stringify(Demo.pedidos));
     c = { data: Object.entries(Demo.cfg).map(([clave, valor]) => ({ clave, valor })) };
     cortados = new Map(Object.entries(Demo.cortados));
+    modelos = new Map(Object.entries(Demo.modelos));
   } else {
-    const [r, cc, ct] = await Promise.all([
+    const [r, cc, ct, cm] = await Promise.all([
       // los producidos de hace más de 30 días ya no se cargan aquí (se consultan en el Histórico)
       sb.from("fab_pedidos").select("*, fab_lineas(*)").or(`estado.neq.producido,estado_at.gte.${new Date(Date.now() - 30 * 864e5).toISOString()}`).order("creado_shopify", { ascending: true }).limit(3000),
       sb.from("fab_config").select("clave,valor"),
       sb.from("fab_cortados").select("clave,hechas"),
+      sb.from("fab_modelos").select("titulo,color_vinilo"),
     ]);
+    modelos = new Map((cm.data ?? []).filter((x) => x.color_vinilo).map((x) => [x.titulo, x.color_vinilo]));
     cortados = new Map((ct.data ?? []).map((x) => [x.clave, x.hechas]));
     if (r.error){ toast("Error cargando pedidos: " + r.error.message, true); return; }
     data = r.data; c = cc;
@@ -564,6 +701,7 @@ async function cargar(){
   cfg = Object.fromEntries((c.data ?? []).map((r) => [r.clave, r.valor]));
   const avisos = [];
   if (DEMO) avisos.push("DEMOSTRACIÓN con pedidos ficticios: no se conecta a Shopify ni a GLS.");
+  else if (PRUEBAS) avisos.push("ENTORNO DE PRUEBAS: copia anonimizada de los pedidos. Lo que hagas aquí no llega al taller ni a Shopify.");
   else {
     if (cfg.gls_modo !== "real") avisos.push("MODO PRUEBAS: las etiquetas GLS son de prueba y no sirven para enviar.");
     if (cfg.shopify_crear_envio !== "si") avisos.push("Shopify no se actualiza todavía (envío al cliente desactivado).");
@@ -676,6 +814,8 @@ async function marcarPersona(ids, tipo, persona){
   }
   const { error } = await sb.rpc("fab_marcar_persona", { p_order_ids: ids, p_tipo: tipo, p_persona: persona || null });
   if (error) toast("No se ha guardado quién lo ha hecho: " + error.message, true);
+  // En Shopify (metacampos del pedido), solo cuando haya permiso de escritura y se active fab_config.shopify_guardar_personas
+  else if (cfg.shopify_guardar_personas === "si") for (const id of ids) fn({ accion: "shopify_personas", order_id: id });
 }
 // Pide la persona (si no hay una fija arriba). Al estampar vale la que lo tiene cogido; al empaquetar siempre se pregunta.
 // Al acabar cada etapa el pedido vuelve a quedar LIBRE (estampa una persona, empaqueta otra).
@@ -700,7 +840,11 @@ async function otrosCon(id, info){
   const p = pedidos.find((x) => x.order_id === id); if (!p) return;
   preguntarQuien(p, "empaquetado", async (per) => {
     await otroEnvio(id, info, true);
-    if (pedidos.find((x) => x.order_id === id)?._estado === "producido"){ await marcarPersona([id], "empaquetado", per); await cargar(); }
+    if (pedidos.find((x) => x.order_id === id)?._estado === "producido"){
+      await marcarPersona([id], "empaquetado", per);
+      if (cfg.shopify_crear_envio === "si"){ const j = await fn({ accion: "shopify_otros", order_id: id }); if (!j.ok) toast(j.error, true); }
+      await cargar();
+    }
   });
 }
 
@@ -777,6 +921,113 @@ async function guardarCorreccion(l, nueva, per){
   await cargar();
 }
 
+// ───── ola 1: color de vinilo, Sin stock / Ha llegado, vinilo mal, recogida de prendas ─────
+let colorTitulo = null;
+function abrirColor(titulo){
+  colorTitulo = titulo;
+  $("#colorTit").textContent = `Color del vinilo · ${titulo}`;
+  $("#colorIn").value = colorDe(titulo);
+  const usados = [...new Set([...modelos.values()])].sort((a, b) => a.localeCompare(b, "es"));
+  $("#colorSug").innerHTML = usados.map((c) => `<button type="button" data-colorsug="${esc(c)}"><span class="muestra" style="width:16px;height:16px;background:${esc(colorCss(c))}"></span>${esc(c)}</button>`).join("");
+  $("#colorM").classList.remove("hidden");
+  $("#colorIn").select();
+}
+async function guardarColor(color){
+  const t = colorTitulo; if (!t) return;
+  $("#colorM").classList.add("hidden"); colorTitulo = null;
+  let error = null;
+  if (DEMO){ if (color) Demo.modelos[t] = color; else delete Demo.modelos[t]; }
+  else ({ error } = await sb.rpc("fab_color_modelo", { p_titulos: [t], p_color: color || null }));
+  if (error){ toast(error.message, true); return; }
+  toast(color ? `${t}: vinilo ${color}` : `${t}: sin color`);
+  await cargar();
+}
+// Recogida de prendas: hay (y si estaba en Sin stock, vuelve) / no hay (a Sin stock). En la BD: fab_picking.
+async function picking(ids, hay, msg){
+  if (!ids.length) return;
+  let error = null;
+  if (DEMO) Demo.picking(ids, hay, persona());
+  else ({ error } = await sb.rpc("fab_picking", { p_line_ids: ids, p_hay: hay, p_persona: persona() || null }));
+  if (error){ toast(error.message, true); return; }
+  toast(msg); await cargar();
+}
+function llegado(id){
+  const p = pedidos.find((x) => x.order_id === id); if (!p) return;
+  const ids = p.fab_lineas.filter((l) => l.estado === "sin_stock").map((l) => l.line_id);
+  return picking(ids, true, `${p.order_name}: prendas recibidas`);
+}
+async function viniloMal(id){
+  const p = pedidos.find((x) => x.order_id === id); if (!p) return;
+  const ids = p.fab_lineas.filter((l) => l.estado === "estampar").map((l) => l.line_id);
+  let error = null;
+  if (DEMO) Demo.viniloMal(ids);
+  else ({ error } = await sb.rpc("fab_vinilo_mal", { p_line_ids: ids, p_persona: persona() || null }));
+  if (error){ toast(error.message, true); return; }
+  toast(`${p.order_name}: vuelve a Cortar vinilo (vinilo descartado)`); await cargar();
+}
+function atrasEstampar(id){
+  const p = pedidos.find((x) => x.order_id === id); if (!p) return;
+  return moverLineas(p.fab_lineas.filter((l) => l.estado === "empaquetar" && !l.sin_vinilo).map((l) => l.line_id), "estampar", `${p.order_name} vuelve a Estampar`);
+}
+
+// ───── hoja de pedido (4 por A4, tamaño A6) con código de barras ─────
+// Se imprime una vez, por la mañana con el plan; se reimprime si el pedido cambia (MODIFICADA) o si se pierde (COPIA).
+const hojaPendiente = (p) => activo(p) && p._estado !== "producido" && (!p.hoja_impresa_at || (p.modificado_at && new Date(p.modificado_at) > new Date(p.hoja_impresa_at)));
+// Code 128 (juego B): el número de pedido solo con cifras, para que lo lea cualquier lector
+const C128 = "212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112".split(" ");
+function codigoBarras(txt, alto = 46){
+  const vals = [104, ...[...txt].map((c) => c.charCodeAt(0) - 32)];
+  const check = vals.reduce((s, v, i) => s + v * (i || 1), 0) % 103;
+  const pat = [...vals, check, 106].map((v) => C128[v]).join("");
+  let x = 10, rects = "";
+  [...pat].forEach((w, i) => { w = Number(w); if (i % 2 === 0) rects += `<rect x="${x}" y="0" width="${w}" height="${alto}"/>`; x += w; });
+  return `<svg class="cb" viewBox="0 0 ${x + 10} ${alto}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+const numPedido = (p) => String(p.order_name ?? "").replace(/\D/g, "") || String(p.order_id);
+function hojaHtml(p, marca){
+  const zona = p.recogida ? "Recogida en taller" : destinoOtros(p) ? `Otros envíos · ${destinoOtros(p)}` : "GLS";
+  const d = diasDesde(p.creado_shopify);
+  const prendas = (p.fab_lineas ?? []).map((l) => {
+    const v = partes(l.variante), c = carrilLinea(l);
+    return `<div class="hp"><span class="cas"></span><div><b>${l.cantidad > 1 ? l.cantidad + " × " : ""}${esc(l.titulo)}</b> · ${v.talla ? "Talla " + esc(v.talla) : "Sin talla"}${v.resto ? " · " + esc(v.resto) : ""}<small>${CARRIL[c]}</small>
+      ${(l.personalizacion ?? []).length ? `<div class="hpers">${(l.personalizacion ?? []).map((x) => `<span>${esc(x.key)}</span>${esc(x.value)}`).join("<br>")}</div>` : ""}</div></div>`;
+  }).join("");
+  return `<div class="hoja ${p._urg ? "urg" : ""}">
+    ${p._urg ? `<div class="hurg">URGENTE · ${esc(p.metodo_envio ?? "")}</div>` : ""}
+    <div class="hcab"><img src="logo.png" alt=""><span class="hhueco">${p.hueco ? "Hueco " + p.hueco : "Sin hueco"}</span></div>
+    <div class="hnum">${esc(p.order_name)}</div>
+    ${codigoBarras(numPedido(p))}<div class="hcod">${numPedido(p)}</div>
+    <div class="hinfo">Entró ${fecha(p.creado_shopify)} · ${d === 0 ? "hoy" : d === 1 ? "hace 1 día" : `hace ${d} días`}<br><b>Sale por: ${esc(zona)}</b> · ${esc(p.cliente_nombre ?? "")}${p.ciudad ? " · " + esc(p.cp ?? "") + " " + esc(p.ciudad) : ""}</div>
+    <div class="hcarril">${CARRIL[carrilPedido(p)].toUpperCase()}</div>
+    <div class="hprendas">${prendas}</div>
+    ${p.nota ? `<div class="hnota">Nota: «${esc(p.nota)}»</div>` : ""}
+    <div class="hpie">Impresa ${new Date().toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}${marca ? ` · <b>${marca}</b>` : ""}</div>
+  </div>`;
+}
+// Orden de impresión: urgentes, luego por carril (solo empaquetar, estándar, personal, mixto) y por modelo y talla → el montón sale clasificado
+function ordenHojas(a, b){
+  const m = (p) => { const l = (p.fab_lineas ?? [])[0] ?? {}; return [l.titulo ?? "", rangoTalla(partes(l.variante).talla)]; };
+  const [ta, ra] = m(a), [tb, rb] = m(b);
+  return (b._urg - a._urg) || ORDEN_CARRIL.indexOf(carrilPedido(a)) - ORDEN_CARRIL.indexOf(carrilPedido(b)) || ta.localeCompare(tb, "es") || ra - rb || porPrioridad(a, b);
+}
+async function imprimirHojas(lista, { copia = false } = {}){
+  lista = lista.filter((p) => activo(p) && p._estado !== "producido").sort(ordenHojas);
+  if (!lista.length){ toast("No hay hojas que imprimir"); return; }
+  const marca = new Map(lista.map((p) => [p.order_id, copia ? (hojaPendiente(p) && p.hoja_impresa_at ? "MODIFICADA" : p.hoja_impresa_at ? "COPIA" : "") : (p.hoja_impresa_at ? "MODIFICADA" : "")]));
+  let filas, error = null;
+  if (DEMO) filas = Demo.hojas(lista.map((p) => p.order_id));
+  else { const r = await sb.rpc("fab_hojas_impresas", { p_order_ids: lista.map((p) => p.order_id), p_copia: copia }); filas = r.data; error = r.error; }
+  if (error){ toast(error.message, true); return; }
+  for (const f of filas ?? []){ const p = lista.find((x) => x.order_id === Number(f.r_order_id)); if (p) p.hueco = f.r_hueco; }
+  const folios = [];
+  for (let i = 0; i < lista.length; i += 4) folios.push(`<div class="folio">${lista.slice(i, i + 4).map((p) => hojaHtml(p, marca.get(p.order_id))).join("")}</div>`);
+  $("#zonaHojas").innerHTML = folios.join("");
+  await Promise.all([...$("#zonaHojas").querySelectorAll("img")].map((im) => im.complete ? 0 : new Promise((ok) => { im.onload = im.onerror = ok; })));
+  imprimir("imp-hojas");
+  toast(`${lista.length} hoja${lista.length > 1 ? "s" : ""} de pedido${copia ? " (copia)" : ""}`);
+  await cargar();
+}
+
 async function reimprimir(id){
   const j = await fn({ accion: "reimprimir", order_id: id });
   if (!j.ok){ toast(j.error, true); return; }
@@ -811,15 +1062,137 @@ function imprimir(modo){
 // ───── pintar ─────
 function pintar(){
   $("#lista").classList.toggle("hidden", vista !== "pedidos");
+  $("#plan").classList.toggle("hidden", vista !== "plan");
   $("#resumen").classList.toggle("hidden", vista !== "resumen");
   $("#historico").classList.toggle("hidden", vista !== "historico");
   $("#ayuda").classList.toggle("hidden", vista !== "ayuda");
-  $("#tabs").classList.toggle("hidden", vista === "historico" || vista === "ayuda");
+  $("#tabs").classList.toggle("hidden", vista === "historico" || vista === "ayuda" || vista === "plan");
   if (vista !== "pedidos") $("#subbar").classList.add("hidden");
   $("#buscar").classList.toggle("hidden", vista !== "pedidos");
   $("#fFecha").classList.toggle("hidden", vista !== "resumen");
   document.querySelectorAll(".vistas button").forEach((b) => b.classList.toggle("on", b.dataset.vista === vista));
-  vista === "pedidos" ? pintarPedidos() : vista === "resumen" ? pintarResumen() : vista === "historico" ? pintarHistorico() : pintarAyuda();
+  vista === "plan" ? pintarPlan() : vista === "pedidos" ? pintarPedidos() : vista === "resumen" ? pintarResumen() : vista === "historico" ? pintarHistorico() : pintarAyuda();
+}
+
+// ───── Plan del día (ola 1): cuadro del día, plan con lo pendiente primero y lista de recogida de prendas ─────
+let planModo = "plan", recAmbito = "plan", filasRec = new Map();
+const planOrden = () => pedidos.filter((p) => activo(p) && p._estado !== "producido").sort(porPrioridad);
+const entroHoy = (p) => { const h = new Date(); h.setHours(0, 0, 0, 0); return new Date(p.importado_at ?? p.creado_shopify) >= h; };
+// Previsión de salida: posición en la cola ÷ capacidad de un día normal, en días laborables
+function diaPrevisto(i){
+  const n = Math.floor(i / capacidad().max);
+  if (n === 0) return "Hoy";
+  const d = new Date(); d.setHours(12, 0, 0, 0); let k = 0;
+  while (k < n){ d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) k++; }
+  const man = new Date(); man.setDate(man.getDate() + 1);
+  return d.toDateString() === man.toDateString() ? "Mañana" : d.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "numeric" });
+}
+// Prendas que hay que sacar de la estantería: las del plan (o de todos) aún sin recoger
+function lineasRecoger(){
+  const orden = planOrden();
+  const ambito = recAmbito === "plan" ? orden.slice(0, capacidad().max) : orden;
+  const out = [];
+  for (const p of ambito) for (const l of p.fab_lineas ?? []){
+    if (l.prenda_ok_at) continue;
+    if (["cortar", "estampar", "pendiente"].includes(l.estado) || (l.estado === "empaquetar" && l.sin_vinilo)) out.push({ ...l, p });
+  }
+  return out;
+}
+function agruparPrendas(ls){
+  const g = new Map();
+  for (const l of ls){
+    const k = l.titulo + "|" + (l.variante ?? "");
+    if (!g.has(k)) g.set(k, { titulo: l.titulo, variante: l.variante, v: partes(l.variante), lineas: [], uds: 0, urg: false });
+    const x = g.get(k); x.lineas.push(l); x.uds += l.cantidad; x.urg ||= l.p._urg;
+  }
+  const filas = [...g.values()];
+  for (const f of filas) f.lineas.sort((a, b) => porPrioridad(a.p, b.p));
+  return filas.sort((a, b) => a.titulo.localeCompare(b.titulo, "es") || rangoTalla(a.v.talla) - rangoTalla(b.v.talla) || String(a.v.resto).localeCompare(String(b.v.resto), "es"));
+}
+function pintarPlan(){
+  const el = $("#plan");
+  const cap = capacidad(), orden = planOrden(), cola = orden.length;
+  const hojas = orden.filter(hojaPendiente), recoger = lineasRecoger();
+  if (planModo === "recogida") return pintarRecogida(el, recoger);
+  const salidos = pedidos.filter((p) => p._estado === "producido" && esHoy(p.estado_at) && !p.cancelado).length;
+  const entrados = pedidos.filter((p) => !p.cancelado && entroHoy(p)).length;
+  const arrastrados = orden.filter((p) => !entroHoy(p)).length;
+  const porCarril = Object.fromEntries(ORDEN_CARRIL.map((c) => [c, orden.filter((p) => carrilPedido(p) === c).length]));
+  const porEtapa = Object.fromEntries(["sin_stock", "cortar", "estampar", "empaquetar"].map((e) => [e, orden.filter((p) => p._estado === e).length]));
+  const dias = Math.ceil(cola / cap.max);
+  const carga = cola <= cap.min ? ["ok", `Hoy se puede sacar todo (${cola} de ${cap.min}–${cap.max})`]
+    : cola <= cap.max ? ["justo", `Día justo: ${cola} pedidos para una capacidad de ${cap.min}–${cap.max}`]
+    : ["mucho", `Hay trabajo para ${dias} días al ritmo normal (${cola} pedidos; capacidad ${cap.min}–${cap.max} al día). Hace falta reforzar o priorizar.`];
+  const kpi = (n, t, extra = "", cls = "") => `<div class="kpi ${cls}"><b>${n}</b><span>${t}</span>${extra ? `<small>${extra}</small>` : ""}</div>`;
+  const hoyTxt = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+  el.innerHTML = `<div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
+    <div class="rtitulo"><h2>Plan del día</h2><span class="tot">${hoyTxt}</span></div>
+    <div class="carga ${carga[0]}">${carga[1]}</div>
+    <div class="kpis">
+      ${kpi(cola, "en cola", `${arrastrados} de días anteriores`)}
+      ${kpi(entrados, "entrados hoy")}
+      ${kpi(salidos, "salidos hoy", salidos && entrados ? (salidos >= entrados ? "la cola baja" : "la cola sube") : "")}
+      ${kpi(orden.filter(retrasado).length, "retrasados", "más de 7 días (urgentes 3)", orden.some(retrasado) ? "rojo" : "")}
+      ${kpi(orden.filter((p) => p._urg).length, "urgentes")}
+      ${kpi(porEtapa.sin_stock, "en Sin stock")}
+      ${kpi(orden.filter(modificado).length, "modificados", "", orden.some(modificado) ? "lila" : "")}
+    </div>
+    <div class="kpis peq">
+      ${ORDEN_CARRIL.map((c) => kpi(porCarril[c], CARRIL[c])).join("")}
+      ${["cortar", "estampar", "empaquetar"].map((e) => kpi(porEtapa[e], ETAPA[e].label, "", "et-" + e)).join("")}
+    </div>
+    <div class="planacc">
+      <button class="go" data-hojasnuevas ${hojas.length ? "" : "disabled"}>🖨 Imprimir hojas nuevas (${hojas.length})</button>
+      <button class="go2" data-planmodo="recogida">📋 Lista de recogida (${recoger.reduce((s, l) => s + l.cantidad, 0)} prendas)</button>
+      <button class="btn-sec" data-imprplan>🖨 Imprimir plan</button>
+    </div>
+    <div class="ayudacorte">Orden del plan: urgentes primero y después del más antiguo al más nuevo; lo que no salió ayer va delante de lo de hoy. La columna «Sale» es una previsión con la capacidad de un día normal (${cap.max} pedidos).</div>
+    <div class="hwrap"><table class="htabla ptabla"><thead><tr><th>#</th><th>Pedido</th><th>Sale</th><th>Carril</th><th>Etapa</th><th>Hueco / hoja</th><th>Cliente</th><th>Lo tiene</th></tr></thead><tbody>
+      ${orden.map((p, i) => `${i === cap.max ? `<tr class="corte"><td colspan="8">— Hasta aquí, la capacidad de un día normal (${cap.max} pedidos) —</td></tr>` : ""}<tr class="${p._urg ? "urg" : ""}">
+        <td>${i + 1}</td>
+        <td class="hnum"><button class="lnkped" data-irped="${esc(p.order_name)}">${esc(p.order_name)}</button>${p._urg ? `<small style="color:var(--urg);font-weight:700">Urgente</small>` : ""}${retrasado(p) ? `<small style="color:#7a1010;font-weight:700">Retrasado · ${diasDesde(p.creado_shopify)} días</small>` : `<small>${diasDesde(p.creado_shopify) ? "hace " + diasDesde(p.creado_shopify) + " d" : "hoy"}</small>`}</td>
+        <td>${diaPrevisto(i)}</td>
+        <td>${CARRIL[carrilPedido(p)]}</td>
+        <td><span class="chip" style="${colorVars(p._estado)}">${ETAPA[p._estado]?.label ?? p._estado}</span>${modificado(p) ? ` <span class="badge b-mod">✏️</span>` : ""}</td>
+        <td>${p.hueco ? `<b>${p.hueco}</b>` : "—"}${hojaPendiente(p) ? `<small>${p.hoja_impresa_at ? "hoja por reimprimir" : "sin hoja"}</small>` : ""}</td>
+        <td>${esc(p.cliente_nombre ?? "")}<small>${esc([p.cp, p.ciudad].filter(Boolean).join(" ") || (p.recogida ? "Recogida en taller" : ""))}</small></td>
+        <td>${p.asignado_a ? `<span style="color:${colorPersona(p.asignado_a)};font-weight:700">${esc(p.asignado_a)}</span>` : ""}</td></tr>`).join("")}
+    </tbody></table></div>`;
+}
+function pintarRecogida(el, recoger){
+  filasRec = new Map();
+  const cap = capacidad();
+  const sinStock = agruparPrendas(planOrden().flatMap((p) => (p.fab_lineas ?? []).filter((l) => l.estado === "sin_stock").map((l) => ({ ...l, p }))));
+  const filas = agruparPrendas(recoger);
+  const fila = (f, k, tipo) => { filasRec.set(k, f); return `<div class="rrow rec ${f.urg ? "urg" : ""}">
+      <div><div class="rv">${esc(f.titulo)}</div><div>${f.v.talla ? `<span class="talla">Talla ${esc(f.v.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}${f.v.resto ? `<span class="resto">${esc(f.v.resto)}</span>` : ""}</div></div>
+      <div class="rp">${[...new Set(f.lineas.map((l) => l.p))].map((p) => { const n = f.lineas.filter((l) => l.p === p).reduce((s, l) => s + l.cantidad, 0); return (p._urg ? "⚡" : "") + esc(p.order_name) + (n > 1 ? ` (${n})` : "") + (p.hueco ? ` · h${p.hueco}` : ""); }).join(", ")}</div>
+      <div class="rhacer" style="${colorVars(tipo === "llega" ? "cortar" : "producido")}">
+        ${f.uds > 1 ? `<input type="number" inputmode="numeric" min="1" max="${f.uds}" placeholder="${f.uds}" data-recn="${k}" aria-label="Cuántas hay">` : ""}
+        <button data-rechay="${k}">${tipo === "llega" ? "✔ Ha llegado" : "✔ Hay"}</button>
+        ${tipo === "llega" ? "" : `<button class="nohay" data-recno="${k}">✖ No hay</button>`}
+      </div>
+      <div class="rq">${f.uds}</div></div>`; };
+  el.innerHTML = `<div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
+    <div class="rtitulo"><h2>Lista de recogida de prendas</h2><span class="tot">${new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}</span>
+      <span class="planacc" style="margin-left:auto"><button class="btn-sec" data-planmodo="plan">← Volver al plan</button><button class="btn-sec" data-imprplan>🖨 Imprimir</button></span></div>
+    <div class="ambito"><button class="${recAmbito === "plan" ? "on" : ""}" data-recambito="plan">Pedidos del plan de hoy (${Math.min(cap.max, planOrden().length)})</button><button class="${recAmbito === "todo" ? "on" : ""}" data-recambito="todo">Todos los pedidos</button></div>
+    <div class="ayudacorte">Saca de la estantería cada prenda y pulsa <b>✔ Hay</b>. Si solo hay algunas, escribe cuántas y pulsa ✔ Hay: las demás pasan a Sin stock (los urgentes y más antiguos se quedan las que hay). <b>✖ No hay</b> manda el pedido a Sin stock aunque Shopify diga que hay stock.</div>
+    ${sinStock.length ? `<h3 class="rech">Sin stock · ¿ha llegado? <small>${sinStock.reduce((s, f) => s + f.uds, 0)} prendas</small></h3>
+      <section class="grupo">${sinStock.map((f, i) => fila(f, "s" + i, "llega")).join("")}</section>` : ""}
+    <h3 class="rech">Prendas a recoger <small>${filas.reduce((s, f) => s + f.uds, 0)} prendas · ${filas.length} modelos y tallas</small></h3>
+    ${filas.length ? `<section class="grupo">${filas.map((f, i) => fila(f, "r" + i, "recoger")).join("")}</section>` : `<div class="vacio">No queda nada por recoger.</div>`}`;
+}
+// «✔ Hay» con número: las N primeras unidades (urgentes y antiguas primero) están; el resto, a Sin stock
+async function recogerFila(k, hay){
+  const f = filasRec.get(k); if (!f) return;
+  const inp = document.querySelector(`input[data-recn="${k}"]`);
+  const n = hay && inp && inp.value !== "" ? Math.max(0, Math.min(f.uds, Math.floor(Number(inp.value)))) : hay ? f.uds : 0;
+  const si = [], no = []; let acum = 0;
+  for (const l of f.lineas){ if (acum + l.cantidad <= n){ si.push(l.line_id); acum += l.cantidad; } else no.push(l.line_id); }
+  const llega = k.startsWith("s");
+  if (si.length) await picking(si, true, `${f.titulo}${f.v.talla ? " T." + f.v.talla : ""}: ${acum} ${llega ? "recibida" : "recogida"}${acum > 1 ? "s" : ""}`);
+  if (no.length && !llega) await picking(no, false, `${f.titulo}${f.v.talla ? " T." + f.v.talla : ""}: ${f.uds - acum} a Sin stock`);
 }
 
 // Pedidos de la pestaña actual; en etapas de producción aplica el filtro Todos / Mis pedidos / Libres
@@ -871,6 +1244,8 @@ function card(p){
     retrasado(p) ? `<span class="badge b-ret">Retrasado · ${diasDesde(p.creado_shopify)} días</span>` : "",
     modificado(p) ? `<span class="badge b-mod">✏️ Modificado</span>` : "",
     `<span class="chip" style="${colorVars(e)}">${E.label}</span>`,
+    e !== "producido" && activo(p) ? `<span class="badge b-carril">${CARRIL[carrilPedido(p)]}</span>` : "",
+    p.hueco && e !== "producido" && activo(p) ? `<span class="badge b-hueco" title="Hueco de la estantería">Hueco ${p.hueco}</span>` : "",
     p.recogida ? `<span class="badge">Recogida taller</span>` : "",
     p.pais && p.pais !== "ES" ? `<span class="badge">${esc(p.pais)}</span>` : "",
     destinoOtros(p) && p._estado !== "producido" ? `<span class="badge">📦 ${esc(destinoOtros(p))}</span>` : "",
@@ -915,10 +1290,13 @@ function card(p){
   } else if (activo(p)){
     const id = p.order_id, busy = ocupado.has(id);
     const btns = [];
-    if (E.ant) btns.push(`<button class="atras" title="Volver a ${ETAPA[E.ant].label}" data-mover="${id}" data-desde="${e}" data-hacia="${E.ant}">↶</button>`);
-    if (e === "pendiente" || e === "cortar") btns.push(`<button class="sec" data-mover="${id}" data-desde="${e}" data-hacia="sin_stock">Sin stock</button>`);
+    // ↶ en Empaquetar: las prendas con vinilo vuelven a Estampar (las «sin vinilo» se quedan)
+    if (e === "empaquetar" && (p.fab_lineas ?? []).some((l) => !l.sin_vinilo)) btns.push(`<button class="atras" title="Volver a Estampar" data-atras="${id}">↶</button>`);
+    if (["pendiente", "cortar", "estampar"].includes(e)) btns.push(`<button class="sec" data-mover="${id}" data-desde="${e}" data-hacia="sin_stock" title="Falta la prenda: el pedido espera en Sin stock">Sin stock</button>`);
+    if (e === "estampar") btns.push(`<button class="sec" data-vmal="${id}" title="El vinilo ha salido mal: vuelve a Cortar vinilo y se descarta">✖ Vinilo mal</button>`);
     const sigC = colorVars(E.sig === "producido" ? "producido" : E.sig);
-    if (e === "empaquetar"){
+    if (e === "sin_stock") btns.push(`<button class="go" style="${colorVars("cortar")}" data-llegado="${id}">✔ Ha llegado</button>`);
+    else if (e === "empaquetar"){
       const zona = destinoOtros(p);
       if (zona) btns.push(`<button class="go" style="${sigC}" data-otros="${id}">📦 Otros envíos · ${esc(zona)}</button>`);
       else btns.push(`<button class="go" style="${sigC}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Generando etiqueta…" : p.recogida ? "✔ Listo para recoger" : E.sigTxt}</button>`);
@@ -946,7 +1324,7 @@ function card(p){
     ${p.nota ? `<div class="nota"><b>📝 Nota del cliente:</b> ${esc(p.nota)}</div>` : ""}
     ${errores.length ? `<div class="err">${errores.join("<br>")}</div>` : ""}
     ${pie}
-    ${editable ? `<div class="pie2"><button class="mini" data-actualizar="${p.order_id}" ${actualizando.has(p.order_id) ? "disabled" : ""} title="Recoger ahora los cambios hechos en Shopify (talla, prendas, dirección…)">${actualizando.has(p.order_id) ? "Leyendo Shopify…" : "🔄 Actualizar desde Shopify"}</button></div>` : ""}
+    ${editable ? `<div class="pie2"><button class="mini" data-hoja="${p.order_id}" title="${p.hoja_impresa_at ? "Volver a imprimir la hoja del pedido (sale marcada COPIA)" : "Imprimir la hoja del pedido"}">🖨 ${p.hoja_impresa_at ? (hojaPendiente(p) ? "Hoja (modificada)" : "Reimprimir hoja") : "Imprimir hoja"}</button><button class="mini" data-actualizar="${p.order_id}" ${actualizando.has(p.order_id) ? "disabled" : ""} title="Recoger ahora los cambios hechos en Shopify (talla, prendas, dirección…)">${actualizando.has(p.order_id) ? "Leyendo Shopify…" : "🔄 Actualizar desde Shopify"}</button></div>` : ""}
   </article>`;
 }
 
@@ -957,12 +1335,21 @@ function lineasEnEtapa(etapa){
     if (!activo(p) || p._estado === "producido") continue;
     if (f === "hoy" && !esHoy(p.creado_shopify)) continue;
     if (f === "atrasados" && esHoy(p.creado_shopify)) continue;
-    for (const l of p.fab_lineas ?? []) if (etapa === "todos" || (l.estado ?? "pendiente") === etapa) out.push({ ...l, p });
+    for (const l of p.fab_lineas ?? []){
+      const le = l.estado ?? "pendiente";
+      if (etapa === "todos") out.push({ ...l, p });
+      else if (etapa === "cortar"){
+        // Hoja de corte: solo lo que lleva vinilo. El estándar suma también lo que está en Sin stock: se corta y se guarda en el almacén.
+        if (l.sin_vinilo) continue;
+        if (le === "cortar" || (le === "sin_stock" && estandar(l))) out.push({ ...l, p, sinPrenda: le === "sin_stock" });
+      }
+      else if (le === etapa) out.push({ ...l, p });
+    }
   }
   return out;
 }
 function pintarResumen(){
-  const R = ["pendiente", "sin_stock", "cortar", "todos"]; // empaquetar es por pedido (vista Pedidos)
+  const R = ["pendiente", "sin_stock", "cortar", "estampar", "todos"]; // empaquetar es por pedido (vista Pedidos)
   $("#tabs").innerHTML = R.map((e) => {
     const ls = lineasEnEtapa(e); const u = ls.filter((l) => l.p._urg).reduce((s, l) => s + l.cantidad, 0);
     const uds = e === "cortar" ? construirResumen("cortar").quedan : ls.reduce((s, l) => s + l.cantidad, 0);
@@ -976,31 +1363,36 @@ function pintarResumen(){
   const hoyTxt = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
   const E = ETAPA[etapaR];
   $("#resumen").innerHTML = `<div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
-    <div class="rtitulo"><h2>${etapaR === "todos" ? "Todo lo pendiente de producir" : E.plural}</h2><span class="tot">${contador ? `<b>${quedan} por cortar</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
+    <div class="rtitulo"><h2>${etapaR === "todos" ? "Todo lo pendiente de producir" : etapaR === "cortar" ? "Hoja de corte de vinilo" : E.plural}</h2><span class="tot">${contador ? `<b>${quedan} por cortar</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
       <span style="margin-left:auto;display:flex;gap:8px"><button class="btn-sec" id="bExcel">⬇ Excel</button><button class="btn-sec" id="bImprLista">🖨 Imprimir listado</button></span></div>
+    ${contador ? `<div class="ayudacorte">Cortad por color de vinilo, todo de una vez. Las prendas estándar llevan contador: al apuntar las cortadas, el vinilo va al almacén y el programa lo reparte solo a los pedidos completos, que pasan a <b>Estampar</b>. Lo de pedidos <b>sin prenda</b> también se corta y se guarda.</div>` : ""}
     ${lista.length ? lista.map((g, gi) => {
       const ids = g.filas.flatMap((f) => f.ids);
-      const todos = ids.every((i) => sel.has(i));
-      return `<section class="grupo ${g.urg ? "urgente" : ""}">
-        <div class="ghead">${etapaR === "todos" ? `<span></span>` : `<input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>`}
-          <div class="gn">${esc(g.titulo)} ${g.urg ? `<span class="badge b-urg">${g.urg} urgente${g.urg > 1 ? "s" : ""}</span>` : ""}</div>
+      const todos = ids.length && ids.every((i) => sel.has(i));
+      const cab = contador && (gi === 0 || lista[gi - 1].color !== g.color)
+        ? `<div class="cabcolor"><span class="muestra" style="background:${esc(colorCss(g.color))}"></span>${g.color ? "Vinilo " + esc(g.color) : "Sin color de vinilo asignado"}<small>${lista.filter((x) => x.color === g.color).reduce((s, x) => s + x.quedan, 0)} por cortar</small></div>` : "";
+      return `${cab}<section class="grupo ${g.urg ? "urgente" : ""}">
+        <div class="ghead">${etapaR === "todos" || !ids.length ? `<span></span>` : `<input type="checkbox" data-selg="${ids.join(",")}" ${todos ? "checked" : ""}>`}
+          <div class="gn">${esc(g.titulo)} ${g.urg ? `<span class="badge b-urg">${g.urg} urgente${g.urg > 1 ? "s" : ""}</span>` : ""}${contador ? ` <button class="gcolor" data-color="${esc(g.titulo)}" title="Color del vinilo de este modelo">🎨 ${g.color ? esc(g.color) : "¿Color?"}</button>` : ""}</div>
           <div class="gq">${contador ? g.quedan : g.uds}<small> ${contador ? "por cortar" : "uds"}</small></div></div>
         ${g.filas.map((f, fi) => { const k = gi + "-" + fi; filasR.set(k, f); return `<div class="rrow ${f.urg ? "urg" : ""}">
-          ${etapaR === "todos" ? `<span></span>` : `<input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>`}
+          ${etapaR === "todos" || !f.ids.length ? `<span></span>` : `<input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>`}
           <div><div class="rv">${f.talla ? `<span class="talla">Talla ${esc(f.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}</div>${f.resto ? `<div class="resto" style="margin:4px 0 0">${esc(f.resto)}</div>` : ""}</div>
           <div>${f.pers ? `<div class="rpers"><small>${esc(f.persKey || "Personalización")}${f.unidad ? " · " + f.unidad : ""}</small>${esc(f.pers)}</div>` : (g.conPers ? `<div class="rpers vacia">Sin personalización</div>` : "")}
-            <div class="rp">${f.pedidosOrd.map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</div>
+            <div class="rp">${f.pedidosOrd.map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}${f.sinPrenda ? `<span class="sinp">${f.pedidosOrd.length ? " · " : ""}sin prenda (${f.sinPrenda}): ${f.pedidosSinOrd.map((p) => esc(p.order_name)).join(", ")}</span>` : ""}</div>
             ${f.pers && f.nota ? `<div class="nota" style="margin-top:6px;font-size:14px"><b>📝 Nota del cliente:</b> ${esc(f.nota)}</div>` : ""}</div>
           ${etapaR === "todos"
             ? `<div class="retapas">${ORDEN_LINEA.filter((e) => f.porEtapa?.[e]).map((e) => `<span class="chip" style="${colorVars(e)}">${ETAPA[e].label} ${f.porEtapa[e]}</span>`).join(" ")}</div><div class="rq">${f.uds}</div>`
             : f.pers
-            ? `<div class="rhacer" style="${colorVars(E.sig === "producido" ? "producido" : E.sig)}" title="${esc(E.sigTxt)}"><button data-hacer="${k}">✔ Hecha</button></div><div class="rq">1</div>`
+            ? `<div class="rhacer" style="${colorVars(E.sig === "producido" ? "producido" : E.sig)}" title="${esc(E.sigTxt)}"><button data-hacer="${k}">${etapaR === "cortar" ? "✔ Cortada" : etapaR === "estampar" ? "✔ Estampada" : "✔ Hecha"}</button></div><div class="rq">1</div>`
             : contador
               ? `<div class="rhacer" style="${colorVars("cortar")}">
                   ${f.quedan > 0 ? `<input type="number" inputmode="numeric" min="1" max="${f.quedan}" placeholder="0" data-hecho="${k}" aria-label="Vinilos cortados"><button data-hacer="${k}">✔ Cortadas</button><button class="todos" data-todos="${k}" title="Marcar las ${f.quedan} como cortadas">Todos</button>` : `<span class="check">✔ Todo cortado</span>`}
                   ${f.hechas > 0 ? `<button class="menos" data-menos="${k}" title="Corregir: restar 1 cortada">−1</button>` : ""}</div>
                  <div class="rq" title="${f.uds} en pedidos · ${f.hechas} cortadas">${f.quedan}<div class="rqd">${f.hechas ? `${f.hechas} cortadas<br>de ${f.uds}` : `en pedidos`}</div></div>`
-              : `<div></div><div class="rq">${f.uds}</div>`}
+              : etapaR === "estampar"
+                ? `<div class="rhacer" style="${colorVars("empaquetar")}"><button data-hacer="${k}" title="Pasar estas ${f.uds} a Empaquetar">✔ Estampadas</button></div><div class="rq">${f.uds}</div>`
+                : `<div></div><div class="rq">${f.uds}</div>`}
           </div>`; }).join("")}
       </section>`;
     }).join("") : `<div class="vacio">No hay prendas en esta etapa.</div>`}`;
@@ -1025,12 +1417,15 @@ function construirResumen(etapa){
       continue;
     }
     const key = `v:${l.variante ?? ""}`;
-    if (!g.filas.has(key)) g.filas.set(key, { talla: v.talla, resto: v.resto, pers: "", variante: l.variante ?? null, titulo: l.titulo, clave: l.titulo + "|" + (l.variante ?? ""), ids: [], uds: 0, urg: false, pedidos: [] });
-    const fl = g.filas.get(key); fl.ids.push(l.line_id); fl.uds += l.cantidad; fl.urg ||= l.p._urg; fl.pedidos.push(l.p);
+    if (!g.filas.has(key)) g.filas.set(key, { talla: v.talla, resto: v.resto, pers: "", variante: l.variante ?? null, titulo: l.titulo, clave: l.titulo + "|" + (l.variante ?? ""), ids: [], uds: 0, urg: false, pedidos: [], sinPrenda: 0, pedidosSin: [] });
+    const fl = g.filas.get(key); fl.uds += l.cantidad;
+    if (l.sinPrenda){ fl.sinPrenda += l.cantidad; fl.pedidosSin.push(l.p); } else { fl.ids.push(l.line_id); fl.urg ||= l.p._urg; fl.pedidos.push(l.p); }
     fl.porEtapa ??= {}; const le = l.estado ?? "pendiente"; fl.porEtapa[le] = (fl.porEtapa[le] ?? 0) + l.cantidad;
   }
-  const lista = [...grupos.values()].sort((a, b) => (b.urg > 0) - (a.urg > 0) || b.uds - a.uds);
-  const contador = etapa === "cortar"; // en Cortar vinilo las genéricas llevan contador de cortadas
+  const contador = etapa === "cortar"; // en Cortar vinilo las estándar llevan contador (almacén de vinilos cortados)
+  for (const g of grupos.values()) g.color = colorDe(g.titulo);
+  // Hoja de corte: agrupada por color de vinilo (los sin color al final); dentro, urgentes y más cantidad primero
+  const lista = [...grupos.values()].sort((a, b) => (contador ? (!a.color - !b.color) || a.color.localeCompare(b.color, "es") : 0) || (b.urg > 0) - (a.urg > 0) || b.uds - a.uds);
   let totalQuedan = 0;
   for (const g of lista){
     g.quedan = 0;
@@ -1041,7 +1436,7 @@ function construirResumen(etapa){
     totalQuedan += g.quedan;
     g.conPers = [...g.filas.values()].some((f) => f.pers);
     g.filas = [...g.filas.values()].sort((a, b) => (b.urg - a.urg) || (a.pers ? 1 : 0) - (b.pers ? 1 : 0) || rangoTalla(a.talla) - rangoTalla(b.talla) || String(a.resto).localeCompare(String(b.resto), "es"));
-    for (const f of g.filas) f.pedidosOrd = [...new Set(f.pedidos)].sort(porPrioridad);
+    for (const f of g.filas){ f.pedidosOrd = [...new Set(f.pedidos)].sort(porPrioridad); f.pedidosSinOrd = [...new Set(f.pedidosSin ?? [])].sort(porPrioridad); }
   }
   return { ls, lista, total: ls.reduce((s, l) => s + l.cantidad, 0), quedan: totalQuedan, contador };
 }
@@ -1052,6 +1447,10 @@ async function hacerUnidades(k, n){
   const E = ETAPA[etapaR];
   if (f.pers){ // personalizada: se sabe el pedido → avanza esa prenda
     await moverLineas(f.ids, E.sig, `✔ ${f.pers} (${f.pedidosOrd[0]?.order_name ?? ""}) → ${ETAPA[E.sig].label}`);
+    return;
+  }
+  if (etapaR === "estampar"){ // estándar ya estampadas: todas las de esa fila a Empaquetar
+    await moverLineas(f.ids, "empaquetar", `✔ ${f.uds} estampada${f.uds > 1 ? "s" : ""} · ${f.titulo}${f.talla ? " T." + f.talla : ""} → Empaquetar`);
     return;
   }
   // genérica: suma al contador; la BD (fab_autoasignar) pasa sola a Empaquetar los pedidos que quedan completos (urgentes y antiguos primero)
@@ -1387,7 +1786,7 @@ function pintarBarra(){
 // ───── eventos ─────
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.vista){ vista = b.dataset.vista; sel.clear(); if (vista === "historico") H.cargando = true; pintar(); if (vista === "historico") cargarHistorico(); }
+  if (b.dataset.vista){ vista = b.dataset.vista; try { localStorage.setItem("fab_vista", vista); } catch {} sel.clear(); if (vista === "plan") planModo = "plan"; if (vista === "historico") H.cargando = true; pintar(); if (vista === "historico") cargarHistorico(); }
   else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
   else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
   else if (b.dataset.mover && b.dataset.hacia === "empaquetar") estampar(Number(b.dataset.mover), b.dataset.desde);
@@ -1415,6 +1814,20 @@ document.addEventListener("click", (e) => {
   else if (b.dataset.irsec){ document.getElementById(b.dataset.irsec)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (b.dataset.reimp) reimprimir(Number(b.dataset.reimp));
   else if (b.dataset.actualizar) actualizarPedido(Number(b.dataset.actualizar));
+  else if (b.dataset.atras) atrasEstampar(Number(b.dataset.atras));
+  else if (b.dataset.vmal) viniloMal(Number(b.dataset.vmal));
+  else if (b.dataset.llegado) llegado(Number(b.dataset.llegado));
+  else if (b.dataset.hoja){ const p = pedidos.find((x) => x.order_id === Number(b.dataset.hoja)); if (p) imprimirHojas([p], { copia: !!p.hoja_impresa_at }); }
+  else if (b.dataset.hojasnuevas !== undefined) imprimirHojas(planOrden().filter(hojaPendiente));
+  else if (b.dataset.planmodo){ planModo = b.dataset.planmodo; pintar(); window.scrollTo(0, 0); }
+  else if (b.dataset.recambito){ recAmbito = b.dataset.recambito; pintar(); }
+  else if (b.dataset.imprplan !== undefined) imprimir("imp-plan");
+  else if (b.dataset.irped){ vista = "pedidos"; tab = "todos"; $("#buscar").value = b.dataset.irped; pintar(); window.scrollTo(0, 0); }
+  else if (b.dataset.rechay) recogerFila(b.dataset.rechay, true);
+  else if (b.dataset.recno) recogerFila(b.dataset.recno, false);
+  else if (b.dataset.color) abrirColor(b.dataset.color);
+  else if (b.dataset.colorsug){ $("#colorIn").value = b.dataset.colorsug; $("#colorIn").focus(); }
+  else if (b.id === "colorCerrar"){ colorTitulo = null; $("#colorM").classList.add("hidden"); }
   else if (b.dataset.visto) marcarVisto(Number(b.dataset.visto));
   else if (b.dataset.pers) abrirCorregir(Number(b.dataset.pers));
   else if (b.id === "corrCerrar"){ corrLinea = null; $("#corregir").classList.add("hidden"); }
@@ -1435,8 +1848,10 @@ document.addEventListener("change", (e) => {
 $("#buscar").addEventListener("input", pintar);
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.otrosinfo){ e.preventDefault(); const id = Number(e.target.dataset.otrosinfo); otrosAbierto === id ? otrosCon(id, e.target.value) : otroEnvio(id, e.target.value, false); return; } });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.hecho){ e.preventDefault(); hacerUnidades(e.target.dataset.hecho, e.target.value); } });
+document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.recn){ e.preventDefault(); recogerFila(e.target.dataset.recn, true); } });
 $("#bImportar").onclick = async () => { toast("Importando de Shopify…"); const j = await fn({ accion: "importar" }); j.ok ? toast(`${j.nuevos} pedidos nuevos`) : toast(j.error, true); cargar(); };
 $("#quienForm").onsubmit = (e) => { e.preventDefault(); elegirNombre($("#quienOtro").value); };
+$("#colorForm").onsubmit = (e) => { e.preventDefault(); guardarColor($("#colorIn").value.trim()); };
 $("#corrForm").onsubmit = (e) => {
   e.preventDefault();
   const { p, l } = corrLinea ?? {}; if (!l) return;
@@ -1457,6 +1872,7 @@ $("#fLogin").onsubmit = async (e) => {
   iniciar();
 };
 
+if (PRUEBAS) document.body.classList.add("pruebas");
 async function iniciar(){
   if (DEMO){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); await cargar(); return; }
   const { data: { session } } = await sb.auth.getSession();

@@ -1,7 +1,10 @@
-// fab v7 — Gestión de producción Singular Wardrobe
-// Estados por prenda: (pendiente) → cortar (cortar y estampar) ⇄ sin_stock → empaquetar; el pedido (trigger en BD) toma el de su prenda más atrasada.
-// Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir · diag · prueba_gls
+// fab v8 — Gestión de producción Singular Wardrobe
+// Estados por prenda: (pendiente) → cortar (vinilo) → estampar → empaquetar, y sin_stock; el pedido (trigger en BD) toma el de su prenda más atrasada.
+// Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir ·
+// shopify_otros · shopify_personas · diag · prueba_gls
 // v7: recoge los cambios hechos en Shopify en pedidos ya importados (talla/prenda, cantidad, dirección, nota, envío).
+// v8 (ola 1): Sin stock marcado a mano manda sobre el stock de Shopify; prendas quitadas con vinilo asignado lo devuelven al almacén;
+//     Shopify (apagado hasta tener permiso de escritura): enviado en Otros envíos y metacampos estampado_por / empaquetado_por.
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
@@ -235,7 +238,8 @@ async function sincronizar(o: any, p: any, usuario: string, aplicar: boolean) {
     if (db.size) cambios.push("En Shopify este pedido ya no tiene prendas: revisar con la tienda antes de hacerlo");
     quitadas = [];
   } else {
-    const yaHecha = (l: any) => l.estado !== "empaquetar" ? "" : l.sin_vinilo ? " (ya estaba preparada: devuélvela a la estantería)" : " (ya estaba hecha: apártala)";
+    const yaHecha = (l: any) => l.estado === "estampar" ? " (tenía su vinilo cortado: vuelve al almacén)"
+      : l.estado !== "empaquetar" ? "" : l.sin_vinilo ? " (ya estaba preparada: devuélvela a la estantería)" : " (ya estaba hecha: apártala)";
     // Cambio de talla o color de la misma prenda (se quita una y se añade otra del mismo modelo): un solo aviso
     const emparejadas = new Set<any>();
     for (const n of nuevas) {
@@ -290,6 +294,9 @@ async function sincronizar(o: any, p: any, usuario: string, aplicar: boolean) {
       .eq("line_id", c.line_id);
   }
   if (quitadas.length) {
+    // Las que ya tenían vinilo asignado (Estampar) pasan antes a Sin stock: así su vinilo vuelve al almacén (trigger en BD)
+    const conVinilo = quitadas.filter((l) => l.estado === "estampar").map((l) => l.line_id);
+    if (conVinilo.length) await sb.from("fab_lineas").update({ estado: "sin_stock", estado_at: ahora, estado_por: "cambio en Shopify" }).in("line_id", conVinilo);
     const { error } = await sb.from("fab_lineas").delete().in("line_id", quitadas.map((l) => l.line_id));
     if (error) throw new Error(`${p.order_name} (prendas quitadas): ${error.message}`);
     await sb.rpc("fab_recalcular_estado", { p_order_id: order_id }); // la etapa del pedido y la asignación automática
@@ -301,13 +308,15 @@ async function sincronizar(o: any, p: any, usuario: string, aplicar: boolean) {
 // Prendas "sin vinilo" en Cortar / Sin stock → Empaquetar si hay stock, si no Sin stock.
 // El stock de Shopify ("disponible") ya descuenta todos los pedidos sin enviar: si es >= 0 hay para todos;
 // si es negativo faltan esas unidades y se quedan sin stock los pedidos más nuevos (urgentes y antiguos primero).
+// Una prenda que una persona ha marcado Sin stock (recogida «No hay» o botón Sin stock) NO se saca de Sin stock
+// aunque Shopify diga que hay: manda lo que se ve en la estantería. Vuelve con «¿Ha llegado? Sí».
 async function repartirSinVinilo(usuario: string) {
   const { data } = await sb.from("fab_lineas")
-    .select("line_id, order_id, variant_id, cantidad, estado, stock, fab_pedidos!inner(creado_shopify, metodo_envio, tags, estado, cancelado, enviado_fuera)")
+    .select("line_id, order_id, variant_id, cantidad, estado, estado_por, stock, fab_pedidos!inner(creado_shopify, metodo_envio, tags, estado, cancelado, enviado_fuera)")
     .eq("sin_vinilo", true).in("estado", ["cortar", "sin_stock"])
     .neq("fab_pedidos.estado", "producido").eq("fab_pedidos.cancelado", false).eq("fab_pedidos.enviado_fuera", false);
   const urg = (p: any) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t: string) => /urgent/i.test(t));
-  const ls = (data ?? []).sort((a: any, b: any) => (Number(urg(b.fab_pedidos)) - Number(urg(a.fab_pedidos))) ||
+  const ls = (data ?? []).filter((l: any) => l.estado !== "sin_stock" || l.estado_por === "auto sin vinilo").sort((a: any, b: any) => (Number(urg(b.fab_pedidos)) - Number(urg(a.fab_pedidos))) ||
     (new Date(a.fab_pedidos.creado_shopify).getTime() - new Date(b.fab_pedidos.creado_shopify).getTime()));
   const porVar = new Map<string, any[]>();
   for (const l of ls) { const k = String(l.variant_id ?? "l" + l.line_id); porVar.set(k, [...(porVar.get(k) ?? []), l]); }
@@ -422,13 +431,26 @@ async function shopifyEnviar(p: any) {
   const m = await gql(`mutation Envio($f: FulfillmentInput!) { fulfillmentCreate(fulfillment: $f) { fulfillment { id } userErrors { field message } } }`, {
     f: {
       lineItemsByFulfillmentOrder: fos.map((f: any) => ({ fulfillmentOrderId: f.id })),
-      trackingInfo: { company: "GLS Spain, S.A.", number: p.gls_codbarras, url: `https://mygls.gls-spain.es/e/${p.gls_codbarras}/${(p.cp ?? "").replace(/\s/g, "")}` },
+      // GLS: con su número de seguimiento. Otros envíos: sin seguimiento (la anotación queda en la fábrica).
+      ...(p.gls_codbarras ? { trackingInfo: { company: "GLS Spain, S.A.", number: p.gls_codbarras, url: `https://mygls.gls-spain.es/e/${p.gls_codbarras}/${(p.cp ?? "").replace(/\s/g, "")}` } } : {}),
       notifyCustomer: true,
     },
   });
   const ue = m.fulfillmentCreate.userErrors;
   if (ue.length) throw new Error(ue.map((e: any) => e.message).join("; "));
   return m.fulfillmentCreate.fulfillment.id as string;
+}
+
+// Quién lo estampó y quién lo empaquetó, en el pedido de Shopify (metacampos singular.estampado_por / empaquetado_por).
+// Solo con fab_config.shopify_guardar_personas = si (necesita permiso de escritura de pedidos en la app de Shopify).
+async function shopifyPersonas(p: any) {
+  const metafields = [["estampado_por", p.estampado_por], ["empaquetado_por", p.empaquetado_por]]
+    .filter(([, v]) => v).map(([key, value]) => ({ ownerId: gidOrder(p.order_id), namespace: "singular", key, type: "single_line_text_field", value }));
+  if (!metafields.length) return 0;
+  const m = await gql(`mutation Personas($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { metafields { key } userErrors { field message } } }`, { m: metafields });
+  const ue = m.metafieldsSet.userErrors;
+  if (ue.length) throw new Error(ue.map((e: any) => e.message).join("; "));
+  return metafields.length;
 }
 
 // Destinos que NO llevan etiqueta GLS (van por "Otros envíos"): Canarias, Ceuta, Melilla, Reino Unido y todo lo que no sea UE.
@@ -614,6 +636,38 @@ Deno.serve(async (req) => {
       return json({ ok: true, n: ok.length, omitidas: ids.length - ok.length });
     }
     if (accion === "producido") return json(await producido(order_id, usuario));
+    if (accion === "shopify_otros") {
+      // Pedido que ha salido por Otros envíos: marcarlo como enviado en Shopify (si está activado)
+      const cfg = await config();
+      if (cfg.shopify_crear_envio !== "si") return json({ ok: true, shopify: "desactivado" });
+      const { data: p } = await sb.from("fab_pedidos").select().eq("order_id", order_id).maybeSingle();
+      if (!p || p.estado !== "producido" || p.envio_tipo !== "otros") return json({ ok: false, error: "El pedido no ha salido por Otros envíos" }, 409);
+      if (p.shopify_fulfillment_id) return json({ ok: true, shopify: "ok" });
+      try {
+        const fid = await shopifyEnviar(p);
+        await sb.from("fab_pedidos").update({ shopify_fulfillment_id: fid, shopify_error: null }).eq("order_id", order_id);
+        await evento(order_id, "shopify_enviado", { fulfillment: fid, otros: true }, usuario);
+        return json({ ok: true, shopify: "ok" });
+      } catch (e) {
+        await sb.from("fab_pedidos").update({ shopify_error: String((e as Error).message) }).eq("order_id", order_id);
+        await evento(order_id, "shopify_error", { error: String((e as Error).message), otros: true }, usuario);
+        return json({ ok: false, error: `Shopify: ${(e as Error).message}` });
+      }
+    }
+    if (accion === "shopify_personas") {
+      const cfg = await config();
+      if (cfg.shopify_guardar_personas !== "si") return json({ ok: true, shopify: "desactivado" });
+      const { data: p } = await sb.from("fab_pedidos").select("order_id, estampado_por, empaquetado_por").eq("order_id", order_id).maybeSingle();
+      if (!p) return json({ ok: false, error: "Pedido no encontrado" }, 404);
+      try {
+        const n = await shopifyPersonas(p);
+        await evento(order_id, "shopify_personas", { n }, usuario);
+        return json({ ok: true, n });
+      } catch (e) {
+        await evento(order_id, "shopify_error", { error: String((e as Error).message), personas: true }, usuario);
+        return json({ ok: false, error: `Shopify: ${(e as Error).message}` });
+      }
+    }
     if (accion === "impresa") {
       await sb.from("fab_pedidos").update({ etiqueta_impresa: true, etiqueta_impresa_at: new Date().toISOString() }).eq("order_id", order_id);
       await evento(order_id, "etiqueta_impresa", null, usuario);
