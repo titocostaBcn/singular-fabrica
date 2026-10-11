@@ -1,27 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="Cada pedido pasa por el plan, el corte, el estampado y el empaquetado, y sale por una de tres vías" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="13">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="Cada pedido pasa por producción y empaquetado, y sale por una de tres vías" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="13">
 <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b9b4aa"/></marker></defs>
-<text x="24" y="30" font-size="15" font-weight="600" fill="#1d1b18">Plan, corte, estampado y empaquetado; sale por una de tres vías</text>
+<text x="24" y="30" font-size="15" font-weight="600" fill="#1d1b18">Producción y empaquetado; sale por una de tres vías</text>
 <g fill="none" stroke="#b9b4aa" stroke-width="1.25">
-  <path d="M144 150H168" marker-end="url(#a)"/>
-  <path d="M288 150H312" marker-end="url(#a)"/>
-  <path d="M432 150H456" marker-end="url(#a)"/>
-  <path d="M576 150H600" marker-end="url(#a)"/>
-  <path d="M588 150V78H600" marker-end="url(#a)"/>
-  <path d="M588 150V222H600" marker-end="url(#a)"/>
-  <path d="M84 122V92H516V122" marker-end="url(#a)"/>
-  <path d="M212 178V254" marker-end="url(#a)"/>
-  <path d="M372 178V254" marker-end="url(#a)"/>
-  <path d="M250 254V178" marker-end="url(#a)"/>
+  <path d="M144 150H184" marker-end="url(#a)"/>
+  <path d="M344 150H408" marker-end="url(#a)"/>
+  <path d="M552 150H600" marker-end="url(#a)"/>
+  <path d="M576 150V78H600" marker-end="url(#a)"/>
+  <path d="M576 150V222H600" marker-end="url(#a)"/>
+  <path d="M84 122V92H480V122" marker-end="url(#a)"/>
+  <path d="M234 178V254" marker-end="url(#a)"/>
+  <path d="M294 254V178" marker-end="url(#a)"/>
 </g>
-<text x="300" y="86" text-anchor="middle" font-size="11.5" fill="#6f6a62">sin vinilo: directo a empaquetar</text>
-<text x="378" y="222" font-size="11.5" fill="#6f6a62">falta la prenda</text>
-<text x="256" y="222" font-size="11.5" fill="#6f6a62">ha llegado</text>
-<rect x="24" y="122" width="120" height="56" rx="8" fill="none" stroke="#b9b4aa" stroke-width="1.25"/><text x="84" y="146" text-anchor="middle" font-weight="600" fill="#1d1b18">Plan del día</text><text x="84" y="164" text-anchor="middle" font-size="11.5" fill="#6f6a62">hoja y recogida</text>
-<rect x="168" y="122" width="120" height="56" rx="8" fill="#2f6fd0" fill-opacity="0.12" stroke="#2f6fd0" stroke-width="2"/><text x="228" y="146" text-anchor="middle" font-weight="600" fill="#1d1b18">Cortar vinilo</text><text x="228" y="164" text-anchor="middle" font-size="11.5" fill="#6f6a62">por color</text>
-<rect x="312" y="122" width="120" height="56" rx="8" fill="#7a4fb3" fill-opacity="0.12" stroke="#7a4fb3" stroke-width="2"/><text x="372" y="146" text-anchor="middle" font-weight="600" fill="#1d1b18">Estampar</text><text x="372" y="164" text-anchor="middle" font-size="11.5" fill="#6f6a62">quien estampa</text>
-<rect x="456" y="122" width="120" height="56" rx="8" fill="#0f7f86" fill-opacity="0.12" stroke="#0f7f86" stroke-width="2"/><text x="516" y="146" text-anchor="middle" font-weight="600" fill="#1d1b18">Empaquetar</text><text x="516" y="164" text-anchor="middle" font-size="11.5" fill="#6f6a62">otra persona</text>
+<text x="282" y="86" text-anchor="middle" font-size="11.5" fill="#6f6a62">sin vinilo: directo a empaquetar</text>
+<text x="228" y="222" text-anchor="end" font-size="11.5" fill="#6f6a62">falta la prenda</text>
+<text x="300" y="222" font-size="11.5" fill="#6f6a62">ha llegado</text>
+<text x="376" y="142" text-anchor="middle" font-size="11.5" fill="#6f6a62">prendas</text>
+<text x="376" y="168" text-anchor="middle" font-size="11.5" fill="#6f6a62">hechas</text>
+<rect x="24" y="122" width="120" height="56" rx="8" fill="none" stroke="#b9b4aa" stroke-width="1.25"/><text x="84" y="146" text-anchor="middle" font-weight="600" fill="#1d1b18">Plan del día</text><text x="84" y="164" text-anchor="middle" font-size="11.5" fill="#6f6a62">lista de prendas</text>
+<rect x="184" y="122" width="160" height="56" rx="8" fill="#2f6fd0" fill-opacity="0.12" stroke="#2f6fd0" stroke-width="2"/><text x="264" y="146" text-anchor="middle" font-weight="600" fill="#1d1b18">Producción</text><text x="264" y="164" text-anchor="middle" font-size="11.5" fill="#6f6a62">cortar y estampar a la vez</text>
+<rect x="408" y="122" width="144" height="56" rx="8" fill="#0f7f86" fill-opacity="0.12" stroke="#0f7f86" stroke-width="2"/><text x="480" y="146" text-anchor="middle" font-weight="600" fill="#1d1b18">Empaquetar</text><text x="480" y="164" text-anchor="middle" font-size="11.5" fill="#6f6a62">Expedición</text>
 <rect x="600" y="50" width="136" height="56" rx="8" fill="none" stroke="#b9b4aa" stroke-width="1.25"/><text x="668" y="74" text-anchor="middle" font-weight="600" fill="#1d1b18">Etiqueta GLS</text><text x="668" y="92" text-anchor="middle" font-size="11.5" fill="#6f6a62">península y UE</text>
 <rect x="600" y="122" width="136" height="56" rx="8" fill="none" stroke="#b9b4aa" stroke-width="1.25"/><text x="668" y="146" text-anchor="middle" font-weight="600" fill="#1d1b18">Otros envíos</text><text x="668" y="164" text-anchor="middle" font-size="11.5" fill="#6f6a62">Canarias, UK, no UE</text>
 <rect x="600" y="194" width="136" height="56" rx="8" fill="none" stroke="#b9b4aa" stroke-width="1.25"/><text x="668" y="218" text-anchor="middle" font-weight="600" fill="#1d1b18">Recogida en taller</text><text x="668" y="236" text-anchor="middle" font-size="11.5" fill="#6f6a62">pedido sin dirección</text>
-<rect x="192" y="254" width="200" height="56" rx="8" fill="#8a8a8a" fill-opacity="0.12" stroke="#8a8a8a" stroke-width="1.25"/><text x="292" y="278" text-anchor="middle" font-weight="600" fill="#1d1b18">Sin stock</text><text x="292" y="296" text-anchor="middle" font-size="11.5" fill="#6f6a62">el vinilo espera en el almacén</text>
+<rect x="184" y="254" width="160" height="56" rx="8" fill="#8a8a8a" fill-opacity="0.12" stroke="#8a8a8a" stroke-width="1.25"/><text x="264" y="278" text-anchor="middle" font-weight="600" fill="#1d1b18">Sin stock</text><text x="264" y="296" text-anchor="middle" font-size="11.5" fill="#6f6a62">espera a que llegue</text>
 </svg>

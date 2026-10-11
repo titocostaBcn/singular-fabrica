@@ -30,19 +30,19 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 | Puesto | Qué ve |
 | --- | --- |
 | Administración | El programa entero: Plan del día, Pedidos, Resumen producción, Histórico y Ayuda. |
-| Producción | Dos pasos. **1 · Cortar vinilo**: la hoja de corte por color. **2 · Estampar**: los pedidos con su vinilo cortado, con los botones ✔ Estampado, ✖ Vinilo mal y Falta la prenda. |
+| Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Ha llegado. |
 | Expedición | **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
-En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. El buscador de arriba encuentra un pedido: escanea el código de la hoja o escribe su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
+En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
 
 **Botones de la parte de arriba**
 
 | Botón | Para qué sirve |
 | --- | --- |
-| Plan del día | Lo primero de cada mañana: el cuadro del día, el orden de trabajo, las hojas de pedido y la lista de recogida de prendas. |
+| Plan del día | Lo primero de cada mañana: el cuadro del día, el orden de trabajo y la lista de prendas del día. |
 | Pedidos | La pantalla de trabajo: todos los pedidos ordenados por pestañas. |
-| Resumen producción | La hoja de corte de vinilo por color y lo que hay que estampar, agrupado por modelo y talla. |
-| Histórico | Los pedidos ya estampados o enviados, con quién lo hizo. |
+| Resumen producción | Lo que hay que producir (cortar y estampar), por color de vinilo y de la A a la Z. |
+| Histórico | Los pedidos ya producidos o enviados, con quién lo hizo. |
 | Ayuda | Este manual, con buscador por palabras y botón para imprimirlo en PDF. |
 | ↻ Importar | Trae ahora los pedidos nuevos de la tienda y los cambios de los que ya están, sin esperar a mañana. |
 | 👥 | Solo le sale al administrador: dar de alta a las personas, ponerles contraseña o quitarles el acceso (ver arriba). |
@@ -60,13 +60,13 @@ La pantalla se actualiza sola: lo que hace una compañera aparece en tu pantalla
 
 ## 2. El recorrido de un pedido
 
-![Plan, corte, estampado y empaquetado; sale por una de tres vías](ayuda-recorrido.svg)
+![Producción y empaquetado; sale por una de tres vías](ayuda-recorrido.svg)
 
-Por la mañana se imprimen las hojas de pedido y se recogen las prendas. El vinilo se corta por color y espera en el almacén de vinilos; cuando un pedido tiene el suyo, pasa a Estampar, y después lo empaqueta otra persona. El programa decide por qué vía sale según el destino. Las prendas «sin vinilo» van directas a Empaquetar. Si falta la prenda, el pedido espera en Sin stock (y su vinilo, en el almacén) hasta que llega.
+Cada pedido pasa por dos pasos. En **Producción** se cortan y se estampan sus prendas a la vez, sin papeles. Las prendas hechas esperan en la estantería de hechas y el programa las reparte a los pedidos; cuando un pedido tiene todas, pasa a **Empaquetar**. Allí se juntan sus prendas, se empaqueta y sale por la vía que toca según el destino. Las prendas «sin vinilo» van directas a Empaquetar. Si falta una prenda, el pedido espera en Sin stock hasta que llega.
 
-## 3. El arranque del día: plan, hojas y recogida
+## 3. El arranque del día: plan y lista de prendas
 
-La pantalla **Plan del día** es lo primero que se mira cada mañana. Dice cuánto trabajo hay, en qué orden se hace y prepara el papel y las prendas.
+La pantalla **Plan del día** la mira Administración cada mañana. Dice cuánto trabajo hay y en qué orden se hace.
 
 **El cuadro del día**
 
@@ -78,31 +78,20 @@ La pantalla **Plan del día** es lo primero que se mira cada mañana. Dice cuán
 | Tipo | Qué lleva |
 | --- | --- |
 | Solo empaquetar | Prendas «sin vinilo»: se cogen de la estantería y se empaquetan. |
-| Estándar | Vinilo igual para todas las clientas: se corta en tanda, por color. |
+| Estándar | Vinilo igual para todas las clientas: se hace en tanda, por color. |
 | Personal | Vinilo hecho para esa clienta (nombre, iniciales…). |
 | Mixto | Prendas de más de un tipo. |
 
 **El plan.** La tabla de abajo es el orden de trabajo: urgentes primero y después del más antiguo al más nuevo. Lo que no salió ayer va siempre delante de lo de hoy. La columna **Sale** es una previsión: con la capacidad de un día normal, qué día debería salir cada pedido. La raya negra marca hasta dónde llega un día normal. Pulsa un número de pedido para ver su tarjeta.
 
-**Primero: imprimir las hojas de pedido (8:15)**
+**La lista de prendas del día**
 
-1. Pulsa **🖨 Imprimir hojas nuevas (N)**. Salen solo los pedidos que aún no tienen hoja; los de días anteriores ya la tienen en su bolsa.
-2. Se imprimen 4 hojas por folio A4, ya ordenadas: urgentes primero, después por tipo de trabajo y por modelo y talla.
-3. Cada hoja lleva el número de pedido en grande, su **código de barras**, el **hueco** de la estantería, por dónde sale, las prendas con una casilla, la personalización en grande y la nota de la clienta. Los urgentes llevan una franja negra «URGENTE».
-4. Cada hoja va en una bolsa. Si el pedido no se acaba hoy, la bolsa espera en su hueco.
+1. Pulsa **📋 Lista de recogida**. Salen las prendas de los pedidos del plan de hoy, agrupadas por modelo y talla. **🖨 Imprimir** la saca en papel.
+2. Si hay la prenda, pulsa **✔ Hay**. Si solo hay algunas, escribe cuántas y pulsa ✔ Hay: los urgentes y más antiguos se quedan las que hay y el resto pasa a Sin stock.
+3. Si no hay ninguna, pulsa **✖ No hay**: el pedido pasa a Sin stock aunque Shopify diga que hay stock.
+4. Arriba salen las prendas en **Sin stock**: si ya han llegado, pulsa **✔ Ha llegado**.
 
-Si un pedido cambia después de imprimir su hoja (por ejemplo, la clienta cambia la talla), vuelve a salir en «Imprimir hojas nuevas» y la hoja nueva lleva la marca **MODIFICADA**: tira la vieja. Si una hoja se pierde, en la tarjeta del pedido pulsa **🖨 Reimprimir hoja**: sale marcada **COPIA**.
-
-**Después: recoger las prendas (8:15 a 8:45)**
-
-1. Pulsa **📋 Lista de recogida**. Salen las prendas de los pedidos del plan de hoy, agrupadas por modelo y talla, con sus pedidos y su hueco.
-2. Saca cada prenda de la estantería, métela en la bolsa de su pedido y pulsa **✔ Hay**.
-3. Si solo hay algunas, escribe cuántas hay y pulsa ✔ Hay: los urgentes y más antiguos se quedan las que hay y el resto pasa a Sin stock.
-4. Si no hay ninguna, pulsa **✖ No hay**: el pedido pasa a Sin stock aunque Shopify diga que hay stock. Manda lo que se ve en la estantería.
-5. Arriba de la lista salen las prendas en **Sin stock**: si ya han llegado, pulsa **✔ Ha llegado** y el pedido vuelve al trabajo.
-6. **Todos los pedidos** enseña la lista completa, no solo la de hoy. **🖨 Imprimir** la saca en papel.
-
-**Los huecos de la estantería.** Cada pedido recibe un número de hueco al imprimir su hoja. Sale en la hoja, en la tarjeta (recuadro negro «Hueco N») y en el plan. Cuando el pedido sale, su hueco queda libre para otro.
+Ya no se imprime una hoja por pedido: Producción trabaja con su pantalla y Expedición ve cada pedido en la suya.
 
 ## 4. Las pestañas de Pedidos
 
@@ -114,8 +103,7 @@ Cada pestaña muestra un grupo de pedidos y, al lado, cuántos hay. La etiqueta 
 | ✏️ Modificados | Pedidos que la clienta ha cambiado en Shopify después de entrar (talla, prendas, dirección…) o con el texto de personalización corregido. Solo aparece si hay alguno. |
 | Pendientes | Solo aparece si alguien ha apartado un pedido a mano. |
 | Sin stock | Pedidos con alguna prenda que no está. Cuando llegue, pulsa ✔ Ha llegado. |
-| Cortar vinilo | Pedidos que esperan su vinilo. El estándar se corta en el Resumen; el personal, prenda a prenda. |
-| Estampar | Pedidos con el vinilo ya cortado: hay que estamparlos. |
+| Producción | Pedidos con prendas por cortar y estampar. |
 | Empaquetar | Pedidos con todas las prendas hechas, listos para empaquetar y dar salida. |
 | Producidos hoy | Lo que ha salido hoy. |
 | Otros envíos | Pedidos que salieron sin etiqueta GLS (Canarias, fuera de la UE…), con la anotación de cómo salieron. |
@@ -137,9 +125,8 @@ Cada pedido es una tarjeta con todo lo necesario para hacerlo sin abrir Shopify.
 - **Tarjeta roja y etiqueta URGENTE**: el cliente pagó envío Exprés o el pedido lleva la etiqueta «urgente». Se hace antes que los demás.
 - **RETRASADO · N días**: lleva demasiado tiempo en el taller. Prioridad máxima.
 - **✏️ MODIFICADO**: el pedido ha cambiado después de entrar. Debajo sale un recuadro morado con los cambios (apartado 12).
-- **Etapa** en la que está (Cortar vinilo, Estampar, Empaquetar…).
+- **Etapa** en la que está (Producción, Empaquetar…).
 - **Tipo de trabajo**: Solo empaquetar, Estándar, Personal o Mixto (apartado 3).
-- **Hueco N**, en negro: el hueco de la estantería donde espera su bolsa.
 - **Otras marcas**: Recogida taller, el país si no es España, 📦 Canarias / Reino Unido / Fuera de la UE si va por Otros envíos, o el nombre de quien lo tiene cogido.
 
 **Debajo, el cliente**: nombre, ciudad y código postal. En los urgentes también el tipo de envío.
@@ -149,11 +136,11 @@ Cada pedido es una tarjeta con todo lo necesario para hacerlo sin abrir Shopify.
 - Foto y nombre del modelo. Si hay más de una unidad, delante pone «2×».
 - **Talla** dentro de un recuadro. Si pone «Sin talla», revisa el pedido antes de hacerlo.
 - **Personalización** en negro (iniciales, nombre, número…): es exactamente lo que hay que cortar. Comprueba letra por letra. Al lado, el botón **✏️ Corregir texto** sirve para arreglarla si la clienta se ha equivocado (apartado 12).
-- **Sin vinilo · stock N**: prenda que no se corta (ver apartado 9).
+- **Sin vinilo · stock N**: prenda que no se corta (ver apartado 11).
 
 **📝 Nota del cliente**, en amarillo: lo que el cliente escribió al comprar (por ejemplo «envolver para regalo»). Léela siempre. Los clientes no pueden cambiarla después.
 
-**Abajo, los botones** de la etapa en la que está el pedido. Se explican en los apartados 6 a 10. Debajo de todo, **🖨 Imprimir hoja** (o Reimprimir) saca su hoja de pedido y **🔄 Actualizar desde Shopify** trae al momento los cambios que se hayan hecho en ese pedido en Shopify.
+**Abajo, los botones** de la etapa en la que está el pedido. Se explican en los apartados 7, 8 y 10. Debajo de todo, **🔄 Actualizar desde Shopify** trae al momento los cambios que se hayan hecho en ese pedido en Shopify.
 
 ## 6. Repartirse el trabajo
 
@@ -170,91 +157,56 @@ Encima de la lista de pedidos hay una barra con: **Todos · Libres · Dania · I
 | Pasar un pedido a otra compañera | En la tarjeta pulso Cambiar y toco su nombre. |
 | Devolver un pedido que no voy a hacer | En la tarjeta pulso Soltar. Vuelve a Libres. |
 
-**Al terminar cada parte, el pedido vuelve a quedar libre.** Quien estampa lo coge en Estampar; al pulsar «Estampado» llega libre a Empaquetar, y allí lo coge quien empaqueta. Al darle salida, también queda libre.
+**Al terminar cada parte, el pedido vuelve a quedar libre.** Cuando sus prendas están hechas llega libre a Empaquetar, y allí lo coge quien empaqueta. Al darle salida, también queda libre.
 
 **Si compartís un ordenador**, cuando llegues al PC toca tu nombre en la barra, y al irte toca Todos. En una tablet personal puedes dejar tu nombre marcado: la tablet lo recuerda.
 
 El nombre del pedido cogido sale en grande en la tarjeta. Si ves uno con el nombre de otra persona, no lo toques sin hablar con ella.
 
-## 7. Paso 1 · Cortar vinilo
+## 7. Producción: cortar y estampar
 
-Todos los pedidos nuevos con vinilo entran en **Cortar vinilo**. Aquí solo se corta; el estampado es el paso siguiente.
+Quien corta el vinilo también estampa, a la vez y sin papeles. Todo se apunta en **Por hacer** (en la pantalla de Producción) o en **Resumen producción → Producción**.
 
-**Vinilo estándar (igual para todas): en el Resumen**
+**Cómo está ordenado.** Por **color de vinilo**, para cortar cada color de una vez, y dentro de cada color los modelos de la A a la Z. Cada línea es un modelo y talla, con cuántas faltan y los pedidos que las llevan (⚡ = urgente).
 
-1. Ve a **Resumen producción → Cortar vinilo**. Es la **hoja de corte**: agrupa los modelos por **color de vinilo** para cortar cada color de una vez y, dentro de cada color, los ordena por orden alfabético.
-2. Corta lo que pone «por cortar» en cada modelo y talla. Incluye lo de pedidos **sin prenda**: se corta igual y se guarda.
-3. Apunta las cortadas (**✔ Cortadas** o **Todos**). El vinilo entra en el **almacén de vinilos** y el programa lo reparte solo: cuando un pedido tiene todo su vinilo y ninguna prenda en Sin stock, pasa solo a **Estampar**. Primero los urgentes y los más antiguos.
-4. El vinilo que no se reparte se queda en el almacén hasta que llega su prenda.
+**Prendas sin personalizar (estándar)**
 
-**Vinilo personal (para una clienta)**
+1. Coge las prendas de la estantería, corta el vinilo y estámpalas.
+2. Escribe cuántas has hecho y pulsa **✔ Hechas**. Si las has hecho todas, pulsa **Todas**.
+3. Deja las prendas en la **estantería de hechas**, por modelo y talla. El programa las reparte solo a los pedidos, urgentes y más antiguos primero. Cuando un pedido tiene todas sus prendas hechas, pasa a **Empaquetar**.
+4. ¿Te has equivocado al apuntar? Pulsa **−1** para restar una.
 
-1. En el Resumen, en Cortar vinilo, cada prenda personalizada sale en su línea con el texto en grande. Compruébalo letra por letra.
-2. Córtalo y pulsa **✔ Cortada**: esa prenda pasa a Estampar.
-3. También se puede desde la tarjeta del pedido: **Vinilo cortado · a estampar →**.
+**Prendas personalizadas.** Salen una por línea, con el texto en grande y el número de pedido. Compruébalo letra por letra, hazla y pulsa **✔ Hecha**. Se dejan aparte para que Expedición las encuentre por su texto. Un pedido con una personalizada no pasa a Empaquetar hasta que esa prenda está hecha.
+
+**Si falta la prenda**, pulsa **✖ No hay** en su línea. Si escribes un número antes, solo pasan a Sin stock esas (las de los pedidos más nuevos); si no, todas las de la línea.
 
 **Color de cada modelo.** Si un modelo sale en «Sin color de vinilo asignado», pulsa **🎨 ¿Color?** junto a su nombre y escribe el color, o elige uno de los que ya hay. Se apunta una vez y se queda.
 
-**Si falta la prenda**, pulsa **Sin stock** en la tarjeta. El pedido espera en la pestaña Sin stock; su vinilo, si ya estaba cortado, espera en el almacén.
+**🖨 Imprimir listado** saca la lista en papel, por si se quiere apuntar a mano lo que no hay.
 
-## 8. Paso 2 · Estampar
+## 8. Cuando falta la prenda (Sin stock)
 
-En la pestaña **Estampar** están los pedidos que ya tienen su vinilo cortado.
+Las prendas que faltan están en **Sin stock** (pantalla de Producción, Resumen producción o la pestaña Sin stock de Pedidos). El pedido espera ahí entero.
 
-1. Coge el pedido (apartado 6).
-2. Estampa cada prenda tal como pone la tarjeta: modelo, talla y personalización.
-3. Pulsa **Estampado · a empaquetar →**.
-4. Si el pedido estaba cogido por ti, se guarda solo que lo has estampado tú. Si no, sale «¿Quién lo ha estampado?»: toca tu nombre.
-5. El pedido desaparece de Estampar y aparece **libre** en Empaquetar.
-
-**Si el vinilo sale mal** (se rompe, queda torcido…), pulsa **✖ Vinilo mal**: ese vinilo se descarta y la prenda vuelve a Cortar vinilo. Si hay otro igual en el almacén, el programa se lo da enseguida y vuelve a Estampar.
-
-**Si falta la prenda**, pulsa **Sin stock**: el pedido espera en Sin stock y su vinilo vuelve al almacén.
-
-En el Resumen, pestaña **Estampar**, se ven todas las prendas por estampar agrupadas por modelo y talla; **✔ Estampadas** pasa las de esa línea a Empaquetar.
+Cuando llegue la prenda, pulsa **✔ Ha llegado** en su línea: vuelve a Producción para hacerla. Las prendas «sin vinilo» que llegan pasan solas a Empaquetar (apartado 11).
 
 **Pedidos que se mueven solos.** No te asustes si un pedido cambia de pestaña sin que nadie lo toque:
 
-- Pasa a **Estampar** cuando el almacén tiene su vinilo (apartado 9).
+- Pasa a **Empaquetar** cuando el programa le ha dado todas sus prendas hechas.
 - Pasa a **Empaquetar** si sus prendas son «sin vinilo» y hay stock (apartado 11).
-
-En el Histórico esos pedidos aparecen con «Estampado por: Sin indicar» si nadie lo indicó.
 
 ## 9. Resumen de producción
 
-El Resumen dice cuántos vinilos hay que cortar de cada modelo y talla, sumando todos los pedidos, y qué falta por estampar. Es la hoja de trabajo de la mesa de corte y de la plancha.
+El Resumen dice cuántas prendas hay que hacer de cada modelo y talla, sumando todos los pedidos. Es la hoja de trabajo de la mesa de corte y la plancha.
 
-**Cómo está ordenado**
-
-- Pestañas arriba: **Sin stock**, **Cortar vinilo** (la hoja de corte), **Estampar** y **Todos** (todo lo que falta por hacer, con la etapa de cada prenda).
-- En Cortar vinilo los modelos van agrupados por **color de vinilo**, con lo que falta por cortar de cada color. Las prendas estándar de pedidos sin prenda también cuentan: se cortan y se guardan.
-- Cada bloque es un modelo; dentro, una línea por talla y color, con el número que falta y los pedidos que lo llevan (⚡ = urgente).
-- Las prendas **personalizadas** salen una por línea, con la personalización en grande y la nota del cliente si la hay.
+- Pestañas arriba: **Sin stock**, **Producción** (lo que hay que hacer) y **Todos** (todo lo que falta, con la etapa de cada prenda).
 - El desplegable de fechas permite ver todos los días, solo lo entrado hasta ayer o solo lo de hoy.
+- **Mover varias a la vez**: marca las casillas de la izquierda (de una línea o de un modelo entero). Abajo sale una barra para pasarlas todas juntas a la etapa siguiente o a Sin stock.
+- **🖨 Imprimir listado** saca el Resumen en papel y **⬇ Excel** descarga un Excel con el resumen por modelo y el detalle prenda a prenda.
 
-**Apuntar vinilos cortados (prendas sin personalización)**
+## 10. Empaquetar y dar salida
 
-1. Escribe en la casilla de esa línea cuántos vinilos has cortado y pulsa **✔ Cortadas**. Si los has cortado todos, pulsa **Todos**.
-2. El número «por cortar» baja y debajo pone cuántos llevas cortados.
-3. Los vinilos entran en el **almacén** y el programa los reparte solos entre los pedidos, urgentes y más antiguos primero. Un pedido pasa a **Estampar** cuando tiene todo su vinilo estándar y ninguna prenda en Sin stock. Si no, se salta y el vinilo queda para el siguiente.
-4. ¿Te has equivocado al apuntar? Pulsa **−1** para restar una.
-
-**Prendas personalizadas**
-
-En Cortar vinilo, **✔ Cortada** pasa esa prenda a Estampar. En Estampar, **✔ Estampada** la pasa a Empaquetar. El pedido pasa entero cuando todas sus prendas están hechas.
-
-**Mover varias a la vez**
-
-Marca las casillas de la izquierda (de una línea o de un modelo entero). Abajo sale una barra para pasarlas todas juntas a la etapa siguiente o a Sin stock.
-
-**Imprimir y Excel**
-
-- **🖨 Imprimir listado**: saca el Resumen en papel para la mesa de corte.
-- **⬇ Excel**: descarga un Excel con dos hojas, el resumen por modelo y el detalle prenda a prenda.
-
-## 10. Paso 3 · Empaquetar y dar salida
-
-En Empaquetar cada tarjeta muestra un solo botón de salida. El programa ya ha decidido cómo sale el pedido según el destino; tú solo empaquetas y pulsas.
+En Empaquetar están los pedidos con todas sus prendas hechas. Las prendas sin personalizar se cogen de la estantería de hechas, por modelo y talla; las personalizadas se buscan por su texto. Cada tarjeta muestra un solo botón de salida. El programa ya ha decidido cómo sale el pedido según el destino; tú solo empaquetas y pulsas.
 
 | Destino del pedido | Botón que aparece |
 | --- | --- |
@@ -274,7 +226,7 @@ En los tres casos, al pulsar sale **«¿Quién lo ha empaquetado?»**: toca tu n
 
 Si aparece un error de GLS, el pedido queda en la pestaña Sin etiqueta. No lo envíes sin etiqueta: avisa a Tito.
 
-**Si te has equivocado** y un pedido ha llegado a Empaquetar sin estar terminado, pulsa **↶** en su tarjeta: las prendas con vinilo vuelven a Estampar.
+**Si te has equivocado** y un pedido ha llegado a Empaquetar sin estar terminado, pulsa **↶** en su tarjeta: las prendas con vinilo vuelven a Producción.
 
 **Otros envíos (sin GLS)**
 
@@ -302,7 +254,7 @@ Algunos productos no se cortan ni se estampan: se venden tal cual, como los pant
 - En la tarjeta, estas prendas llevan la marca **Sin vinilo · stock N**.
 - Si al recogerla no está, pulsa **✖ No hay** en la lista de recogida: se queda en Sin stock aunque Shopify diga que hay, hasta que pulses **✔ Ha llegado**.
 
-Estos productos no salen en la hoja de corte ni usan el almacén de vinilos.
+Estos productos no salen en Producción ni en la estantería de hechas.
 
 **Producto nuevo que no se corta**: hay que ponerle la etiqueta «sin vinilo» en Shopify. Lo hace quien da de alta los productos; si ves uno que falta, avísale.
 
@@ -325,12 +277,12 @@ Si una clienta se equivoca y pide un cambio, **la talla, las prendas y la direcc
 **Qué hace el programa con un cambio**
 
 - La tarjeta lleva la marca **✏️ Modificado** y un recuadro morado con la lista de cambios. El pedido sale también en la pestaña ✏️ Modificados.
-- **Talla cambiada**: la prenda nueva entra en Cortar vinilo. Si la antigua ya estaba hecha, el aviso dice «apártala»; si solo tenía el vinilo cortado, el vinilo vuelve al almacén.
-- **Prenda añadida**: entra en Cortar vinilo.
+- **Talla cambiada**: la prenda nueva entra en Producción. Si la antigua ya estaba hecha, el aviso dice «apártala».
+- **Prenda añadida**: entra en Producción.
 - **Prenda quitada**: desaparece del pedido. Si ya estaba hecha o preparada, el aviso lo dice: apártala.
-- **Más unidades de una prenda ya hecha**: la prenda vuelve a Cortar vinilo. Si hay menos unidades, el aviso dice cuántas sobran.
+- **Más unidades de una prenda ya hecha**: la prenda vuelve a Producción. Si hay menos unidades, el aviso dice cuántas sobran.
 - **Dirección nueva**: se actualiza, y con ella el tipo de salida (GLS u Otros envíos).
-- Si su hoja ya estaba impresa, vuelve a salir en «Imprimir hojas nuevas» marcada MODIFICADA.
+- Expedición ve el cambio en la tarjeta del pedido.
 - Cuando lo hayas leído y hecho lo necesario, pulsa **✔ Visto**. El recuadro desaparece; el cambio queda guardado en el registro.
 
 **Corregir el texto de personalización**
@@ -385,30 +337,30 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 | No recuerdo la contraseña | Pídele a Tito que te ponga una nueva desde 👥 (apartado 1). También puedes pulsar «¿Has olvidado la contraseña?» en la pantalla de entrada. |
 | Falta un pedido que sí está en Shopify | Pulsa ↻ Importar y búscalo por número en el buscador. |
 | No veo lo que ha hecho una compañera | Recarga la página con Cmd + Shift + R (Mac) o Ctrl + F5 (Windows). |
-| Un pedido ha pasado solo a Estampar o a Empaquetar | Es normal: el almacén tenía su vinilo (pasa a Estampar) o sus prendas son sin vinilo y hay stock (pasa a Empaquetar). Apartados 9 y 11. |
-| He pulsado «Estampado» por error | En Empaquetar pulsa ↶ y el pedido vuelve a Estampar. |
-| El vinilo ha salido mal | En la tarjeta, en Estampar, pulsa ✖ Vinilo mal (apartado 8). |
-| Se ha perdido la hoja de un pedido | En su tarjeta pulsa 🖨 Reimprimir hoja: sale marcada COPIA. |
-| Shopify dice que hay stock pero no está | En la lista de recogida pulsa ✖ No hay (apartado 3). |
-| Un modelo sale «Sin color de vinilo asignado» | En la hoja de corte pulsa 🎨 ¿Color? y escribe su color (apartado 7). |
-| He apuntado vinilos cortados de más | En el Resumen pulsa −1 tantas veces como haga falta. |
+| Un pedido ha pasado solo a Empaquetar | Es normal: el programa le ha dado sus prendas hechas, o sus prendas son sin vinilo y hay stock. Apartados 7 y 11. |
+| Un pedido ha llegado a Empaquetar sin estar hecho | En su tarjeta pulsa ↶ y vuelve a Producción. |
+| Una prenda ha salido mal | Repítela antes de apuntarla como hecha. |
+| No encuentro una personalizada | Búscala por su texto, que sale en grande en la tarjeta del pedido. |
+| Shopify dice que hay stock pero no está | En Producción pulsa ✖ No hay en esa línea (apartado 7). |
+| Un modelo sale «Sin color de vinilo asignado» | En Producción pulsa 🎨 ¿Color? y escribe su color (apartado 7). |
+| He apuntado prendas hechas de más | En Producción pulsa −1 tantas veces como haga falta. |
 | No sale el botón de Etiqueta GLS | El destino va por Otros envíos (Canarias, Reino Unido, fuera de la UE…). Es correcto. |
 | La etiqueta no se ha impreso | En la tarjeta pulsa Reimprimir. Si no aparece, mira la pestaña Sin etiqueta y avisa a Tito. |
 | Error de GLS al pedir la etiqueta | No envíes el paquete. Avisa a Tito con el número de pedido. |
 | He elegido mal quién lo ha hecho | Avisa a Tito para corregirlo en el Histórico. |
-| La talla pone «Sin talla» | Revisa el pedido en Shopify antes de cortar. |
+| La talla pone «Sin talla» | Revisa el pedido en Shopify antes de hacerlo. |
 | La clienta ha cambiado la talla y aquí sigue la antigua | Cámbiala en Shopify y en la tarjeta pulsa 🔄 Actualizar desde Shopify (apartado 12). |
 | La personalización está mal escrita | En la tarjeta pulsa ✏️ Corregir texto (apartado 12). |
 | Un pedido sale con ✏️ Modificado | Lee el recuadro morado, haz lo que diga y pulsa ✔ Visto. |
 
 ## 16. Reglas de oro
 
-1. **Empieza el día por el Plan del día:** hojas nuevas, recogida de prendas y retrasados.
+1. **Empieza el día por el Plan del día:** lista de prendas y retrasados.
 2. **Coge antes de trabajar.** Un pedido con tu nombre es tuyo; uno con el nombre de otra, no se toca sin hablar.
 3. **Comprueba la personalización letra por letra** antes de cortar.
 4. **Lee siempre la nota del cliente y los cambios marcados con ✏️.**
 5. **Toca tu nombre cuando el programa pregunte quién lo ha hecho.** Así el Histórico es fiable.
-6. **Pulsa «Estampado» solo cuando todas las prendas del pedido estén estampadas.**
+6. **Apunta las hechas en cuanto las termines**, y deja cada prenda en la estantería de hechas.
 7. **Ningún paquete sale sin etiqueta impresa** o sin anotar cómo sale en Otros envíos.
 8. **Si algo no cuadra, para y avisa** antes de enviar.
-9. **Cada pedido, en su bolsa con su hoja y en su hueco.**
+9. **Las personalizadas, aparte y con el texto a la vista**, para que Expedición las encuentre.
