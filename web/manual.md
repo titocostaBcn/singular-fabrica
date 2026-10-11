@@ -12,7 +12,18 @@ Cada mañana a las 8:00 el programa trae los pedidos nuevos de la tienda y recog
 2. Escribe el email y la contraseña de la fábrica y pulsa Entrar.
 3. Si el ordenador se queda encendido, la sesión sigue abierta al día siguiente.
 
-**¿No recuerdas la contraseña?** En la pantalla de entrada escribe tu email y pulsa **¿Has olvidado la contraseña?**. Te llega un correo con un enlace (mira también en correo no deseado). Al abrirlo, el programa te pide la contraseña nueva dos veces. El enlace solo vale una vez y caduca al cabo de un rato: si no funciona, pide otro.
+**¿No recuerdas la contraseña?** Pídele a Tito que te ponga una nueva desde 👥. También puedes escribir tu email en la pantalla de entrada y pulsar **¿Has olvidado la contraseña?**: te llega un correo con un enlace (mira también en correo no deseado) y, al abrirlo, el programa te pide la contraseña nueva dos veces. El enlace solo vale una vez y caduca al cabo de un rato.
+
+**Dar de alta a una persona (solo el administrador)**
+
+El botón **👥** de arriba solo le sale al administrador. Sirve para dar de alta a cada persona y ponerle contraseña, sin correos.
+
+1. Pulsa **👥**. Sale la lista de usuarios con su último acceso.
+2. En **Añadir persona** escribe su nombre y un email que hará de nombre de usuario. No hace falta que exista: por ejemplo dania@singularwardrobe.com.
+3. Escribe una contraseña o pulsa **Generar** (sale una fácil de dictar, como «Coral-4821-mar») y pulsa **Añadir**.
+4. Dile a esa persona su email y su contraseña. Después puede cambiarla ella con 🔑.
+
+Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. Para que alguien deje de entrar, pulsa **Quitar acceso** dos veces.
 
 **Botones de la parte de arriba**
 
@@ -24,6 +35,7 @@ Cada mañana a las 8:00 el programa trae los pedidos nuevos de la tienda y recog
 | Histórico | Los pedidos ya estampados o enviados, con quién lo hizo. |
 | Ayuda | Este manual, con buscador por palabras y botón para imprimirlo en PDF. |
 | ↻ Importar | Trae ahora los pedidos nuevos de la tienda y los cambios de los que ya están, sin esperar a mañana. |
+| 👥 | Solo le sale al administrador: dar de alta a las personas, ponerles contraseña o quitarles el acceso (ver arriba). |
 | 🔑 | Cambia la contraseña con la que se entra: escribe la nueva dos veces (mínimo 8 caracteres) y pulsa Guardar. Si ese usuario lo usáis varias, avisa a las demás. |
 | Salir | Cierra la sesión. Úsalo solo si el ordenador lo usa otra gente. |
 
@@ -360,7 +372,7 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 | Qué pasa | Qué hacer |
 | --- | --- |
 | Franja roja «ERROR: no actualizado hoy» | Pulsa ↻ Importar. Si sigue saliendo, avisa a Tito. |
-| No recuerdo la contraseña | En la pantalla de entrada escribe tu email y pulsa «¿Has olvidado la contraseña?» (apartado 1). Si no llega el correo, avisa a Tito. |
+| No recuerdo la contraseña | Pídele a Tito que te ponga una nueva desde 👥 (apartado 1). También puedes pulsar «¿Has olvidado la contraseña?» en la pantalla de entrada. |
 | Falta un pedido que sí está en Shopify | Pulsa ↻ Importar y búscalo por número en el buscador. |
 | No veo lo que ha hecho una compañera | Recarga la página con Cmd + Shift + R (Mac) o Ctrl + F5 (Windows). |
 | Un pedido ha pasado solo a Estampar o a Empaquetar | Es normal: el almacén tenía su vinilo (pasa a Estampar) o sus prendas son sin vinilo y hay stock (pasa a Empaquetar). Apartados 9 y 11. |

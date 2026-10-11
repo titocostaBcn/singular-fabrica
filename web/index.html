@@ -40,6 +40,29 @@
   #claveM .bots{display:flex;gap:8px}
   #claveM .bots .go{border:0;background:#1b7f4b;color:#fff;border-radius:10px;padding:12px 18px;font-weight:700;flex:1}
   #claveErr{color:var(--err);min-height:1.2em;font-size:14px}
+  #usuM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;z-index:60;padding:16px;overflow:auto}
+  #usuM.hidden{display:none}
+  #usuM .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:620px;width:100%;display:grid;gap:14px;margin:auto 0}
+  #usuM .cab{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  #usuM .ayuda{margin:0;font-size:14px;color:var(--muted)}
+  #usuLista{display:grid;gap:8px}
+  .usu{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+  .usu .fila1{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .usu .nom{font-weight:700}
+  .usu .mail{color:var(--muted);font-size:14px;word-break:break-all}
+  .usu .acc{font-size:13px;color:var(--muted);margin-left:auto}
+  .usu .bots,.usu-nuevo .bots{display:flex;gap:8px;flex-wrap:wrap}
+  .usu .bots button,.usu-nuevo .bots button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-weight:600}
+  .usu .bots .peligro{color:var(--err);border-color:var(--err)}
+  .usu .bots .go,.usu-nuevo .bots .go{border:0;background:#1b7f4b;color:#fff}
+  .usu input,.usu-nuevo input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:0}
+  .usu-nuevo{border:2px dashed var(--line);border-radius:12px;padding:12px;display:grid;gap:8px}
+  .usu-nuevo h4{margin:0}
+  .usu-nuevo .campos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .usu-nuevo .clave{display:flex;gap:8px}
+  .usu-nuevo .clave input{flex:1}
+  #usuErr{color:var(--err);min-height:1.2em;font-size:14px}
+  @media (max-width:560px){ .usu-nuevo .campos{grid-template-columns:1fr} }
 
   #avisoError{background:#c62828;color:#fff;padding:12px 16px;font-weight:800;font-size:20px;text-align:center;letter-spacing:.5px}
   #avisoError small{display:block;font-size:13px;font-weight:500;opacity:.9;letter-spacing:0}
@@ -376,6 +399,7 @@
       <div class="marca"><img src="logo.png" alt="Singular Wardrobe"><span>Fábrica</span></div>
       <div class="vistas"><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
+      <button class="btn-sec hidden" id="bUsuarios" title="Usuarios: dar de alta y poner contraseñas" aria-label="Usuarios">👥</button>
       <button class="btn-sec" id="bClave" title="Cambiar la contraseña" aria-label="Cambiar la contraseña">🔑</button>
       <button class="btn-sec" id="bSalir">Salir</button>
     </div>
@@ -428,6 +452,18 @@
   <div id="claveErr"></div>
   <div class="bots"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="claveCerrar">Cancelar</button></div>
 </form></div>
+<div id="usuM" class="hidden"><div class="caja">
+  <div class="cab"><h3 style="margin:0">Usuarios de la fábrica</h3><button type="button" class="btn-sec" id="usuCerrar">Cerrar</button></div>
+  <p class="ayuda">Aquí das de alta a cada persona y le pones la contraseña, sin correos. El email es solo su nombre de usuario: no hace falta que exista (por ejemplo dania@singularwardrobe.com). Dile a cada una su email y su contraseña; luego puede cambiarla con 🔑.</p>
+  <div id="usuLista"></div>
+  <form class="usu-nuevo" id="usuNuevo" novalidate autocomplete="off">
+    <h4>Añadir persona</h4>
+    <div class="campos"><input id="unNombre" placeholder="Nombre (Dania, Irene…)" maxlength="30"><input id="unEmail" type="email" placeholder="Email (usuario)" autocomplete="off"></div>
+    <div class="clave"><input id="unClave" type="text" placeholder="Contraseña (mínimo 8)" autocomplete="new-password"><button type="button" class="btn-sec" id="unGenerar">Generar</button></div>
+    <div class="bots"><button type="submit" class="go">Añadir</button></div>
+  </form>
+  <div id="usuErr"></div>
+</div></div>
 <div id="zonaImpresion"></div>
 <div id="zonaHojas"></div>
 <div id="toast" class="hidden"></div>
@@ -679,8 +715,23 @@ const Demo = (() => {
         fab_lineas: [{ line_id: lid++, titulo: "Camisa “Why not?” blanca", variante: "M", cantidad: 1, personalizacion: [], estado: "cortar" }] });
       n++; return { ok: true, nuevos: 1 };
     }
+    if (b.accion === "soy_admin") return { ok: true, admin: true };
+    if (b.accion === "usuarios") return { ok: true, yo: "fabrica@demo", usuarios: usuariosDemo.map((u) => ({ ...u })) };
+    if (b.accion === "usuario_guardar"){
+      const email = String(b.email ?? "").trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "El email no es válido" };
+      if (b.clave && b.clave.length < 8) return { ok: false, error: "La contraseña tiene que tener al menos 8 caracteres" };
+      const u = usuariosDemo.find((x) => x.email === email);
+      if (!u){ if (!b.clave) return { ok: false, error: "Pon una contraseña para el usuario nuevo" }; usuariosDemo.push({ email, nombre: b.nombre || null, admin: false, tiene_clave: true, ultimo_acceso: null }); return { ok: true, hecho: "alta" }; }
+      return { ok: true, hecho: b.clave ? "contraseña" : "acceso" };
+    }
+    if (b.accion === "usuario_quitar"){ const i = usuariosDemo.findIndex((x) => x.email === b.email && !x.admin); if (i >= 0) usuariosDemo.splice(i, 1); return { ok: true }; }
     return { ok: false, error: "acción desconocida" };
   }
+  const usuariosDemo = [
+    { email: "fabrica@demo", nombre: "Tito", admin: true, tiene_clave: true, ultimo_acceso: new Date().toISOString() },
+    { email: "dania@singularwardrobe.com", nombre: "Dania", admin: false, tiene_clave: true, ultimo_acceso: new Date(Date.now() - 864e5).toISOString() },
+    { email: "irene@singularwardrobe.com", nombre: "Irene", admin: false, tiene_clave: true, ultimo_acceso: null } ];
   const cortados = {};
   function sumarCortados(titulo, variante, n){ const k = titulo + "|" + (variante ?? ""); cortados[k] = Math.max((cortados[k] ?? 0) + n, 0); return cortados[k]; }
   return { pedidos, cfg, fn, cortados, sumarCortados, modelos, picking, viniloMal, hojas };
@@ -1935,6 +1986,78 @@ $("#claveForm").onsubmit = async (e) => {
   }
   cerrarClave(); toast("Contraseña cambiada. La próxima vez entra con la nueva.");
 };
+// ───── usuarios (solo administradores): alta, contraseña y quitar acceso, sin correos ─────
+const U = { lista: [], yo: "", editando: null, quitando: null };
+async function comprobarAdmin(){
+  const j = await fn({ accion: "soy_admin" }).catch(() => ({}));
+  $("#bUsuarios").classList.toggle("hidden", !j?.admin);
+}
+async function abrirUsuarios(){
+  $("#usuM").classList.remove("hidden"); $("#usuErr").textContent = "";
+  $("#usuLista").innerHTML = `<p class="ayuda">Cargando…</p>`;
+  await cargarUsuarios();
+}
+async function cargarUsuarios(){
+  const j = await fn({ accion: "usuarios" });
+  if (!j.ok){ $("#usuLista").innerHTML = ""; $("#usuErr").textContent = j.error || "No se ha podido cargar la lista"; return; }
+  U.lista = j.usuarios; U.yo = j.yo; pintarUsuarios();
+}
+function pintarUsuarios(){
+  const fecha = (t) => t ? new Date(t).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "nunca ha entrado";
+  $("#usuLista").innerHTML = U.lista.map((u, i) => `<div class="usu">
+    <div class="fila1"><span class="nom">${esc(u.nombre || u.email.split("@")[0])}</span>${u.admin ? `<span class="b-carril">Administrador</span>` : ""}${u.email === U.yo ? `<span class="b-carril">Tú</span>` : ""}<span class="acc">Último acceso: ${fecha(u.ultimo_acceso)}</span></div>
+    <div class="mail">${esc(u.email)}</div>
+    ${U.editando === i ? `<form class="bots" data-usuclave="${i}" novalidate autocomplete="off"><input id="ucClave" type="text" placeholder="Contraseña nueva (mínimo 8)" autocomplete="new-password" style="flex:1"><button type="button" data-usugen="1">Generar</button><button type="submit" class="go">Guardar</button><button type="button" data-usucancel="1">Cancelar</button></form>`
+      : `<div class="bots"><button type="button" data-usueditar="${i}">🔑 Poner contraseña</button>${u.admin || u.email === U.yo ? "" : `<button type="button" class="peligro" data-usuquitar="${i}">${U.quitando === i ? "¿Seguro? Pulsa otra vez" : "Quitar acceso"}</button>`}</div>`}
+  </div>`).join("") || `<p class="ayuda">No hay usuarios.</p>`;
+  if (U.editando !== null) $("#ucClave")?.focus();
+}
+function claveFacil(){
+  // Fácil de dictar: Palabra + 4 cifras + palabra (sin letras que se confunden)
+  const p = ["Sol", "Mar", "Luna", "Rosa", "Lino", "Seda", "Hilo", "Taller", "Verde", "Azul", "Coral", "Perla"];
+  const r = (n) => crypto.getRandomValues(new Uint32Array(1))[0] % n;
+  return p[r(p.length)] + "-" + String(1000 + r(9000)) + "-" + p[r(p.length)].toLowerCase();
+}
+async function guardarUsuario(datos, ok){
+  $("#usuErr").textContent = "Guardando…";
+  const j = await fn({ accion: "usuario_guardar", ...datos });
+  if (!j.ok){ $("#usuErr").textContent = j.error || "No se ha podido guardar"; return false; }
+  $("#usuErr").textContent = ""; toast(ok(j)); await cargarUsuarios(); return true;
+}
+$("#bUsuarios").onclick = abrirUsuarios;
+$("#usuCerrar").onclick = () => { $("#usuM").classList.add("hidden"); U.editando = U.quitando = null; };
+$("#unGenerar").onclick = () => { $("#unClave").value = claveFacil(); };
+$("#usuNuevo").onsubmit = async (e) => {
+  e.preventDefault();
+  const nombre = $("#unNombre").value.trim(), email = $("#unEmail").value.trim(), clave = $("#unClave").value;
+  if (!email){ $("#usuErr").textContent = "Escribe el email (es su nombre de usuario)."; return; }
+  if (clave && clave.length < 8){ $("#usuErr").textContent = "La contraseña tiene que tener al menos 8 caracteres."; return; }
+  const hecho = await guardarUsuario({ email, nombre, clave }, (j) => j.hecho === "alta" ? `Alta de ${nombre || email} hecha. Dile su email y su contraseña.` : j.hecho === "contraseña" ? "Contraseña cambiada" : "Acceso dado: entra con su contraseña de siempre");
+  if (hecho){ $("#unNombre").value = $("#unEmail").value = $("#unClave").value = ""; }
+};
+$("#usuLista").addEventListener("click", async (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.usueditar){ U.editando = Number(b.dataset.usueditar); U.quitando = null; pintarUsuarios(); }
+  else if (b.dataset.usucancel){ U.editando = null; pintarUsuarios(); }
+  else if (b.dataset.usugen){ $("#ucClave").value = claveFacil(); }
+  else if (b.dataset.usuquitar){
+    const i = Number(b.dataset.usuquitar);
+    if (U.quitando !== i){ U.quitando = i; U.editando = null; pintarUsuarios(); return; }
+    U.quitando = null;
+    const u = U.lista[i]; const j = await fn({ accion: "usuario_quitar", email: u.email });
+    if (!j.ok){ $("#usuErr").textContent = j.error || "No se ha podido quitar"; return; }
+    toast(`${u.nombre || u.email} ya no puede entrar`); await cargarUsuarios();
+  }
+});
+$("#usuLista").addEventListener("submit", async (e) => {
+  const f = e.target.closest("form[data-usuclave]"); if (!f) return;
+  e.preventDefault();
+  const u = U.lista[Number(f.dataset.usuclave)], clave = $("#ucClave").value;
+  if (clave.length < 8){ $("#usuErr").textContent = "La contraseña tiene que tener al menos 8 caracteres."; return; }
+  U.editando = null;
+  await guardarUsuario({ email: u.email, clave }, () => `Contraseña de ${u.nombre || u.email} cambiada. Díselo.`);
+});
+
 $("#bOlvido").onclick = async () => {
   const email = $("#email").value.trim(), out = $("#loginErr");
   out.classList.remove("ok");
@@ -1955,7 +2078,7 @@ $("#fLogin").onsubmit = async (e) => {
 
 if (PRUEBAS) document.body.classList.add("pruebas");
 async function iniciar(){
-  if (DEMO){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); await cargar(); return; }
+  if (DEMO){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); await cargar(); comprobarAdmin(); return; }
   const { data: { session } } = await sb.auth.getSession();
   if (RECUPERAR && session && !iniciar.recuperado){ iniciar.recuperado = true; abrirClave(true); return; }
   if (ERROR_ENLACE && !session){ $("#loginErr").textContent = "El enlace del correo ha caducado o ya se usó. Escribe tu email y pide otro."; history.replaceState(null, "", location.pathname + location.search); }
@@ -1965,6 +2088,7 @@ async function iniciar(){
   if (iniciar.arrancado) return cargar();
   iniciar.arrancado = true;
   await cargar();
+  comprobarAdmin();
   const refrescar = () => { clearTimeout(iniciar.t); iniciar.t = setTimeout(cargar, 400); };
   sb.channel("fab")
     .on("postgres_changes", { event: "*", schema: "public", table: "fab_pedidos" }, refrescar)

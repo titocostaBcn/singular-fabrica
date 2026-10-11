@@ -1,10 +1,11 @@
-// fab v8 — Gestión de producción Singular Wardrobe
+// fab v9 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (vinilo) → estampar → empaquetar, y sin_stock; el pedido (trigger en BD) toma el de su prenda más atrasada.
 // Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir ·
-// shopify_otros · shopify_personas · diag · prueba_gls
+// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · diag · prueba_gls
 // v7: recoge los cambios hechos en Shopify en pedidos ya importados (talla/prenda, cantidad, dirección, nota, envío).
 // v8 (ola 1): Sin stock marcado a mano manda sobre el stock de Shopify; prendas quitadas con vinilo asignado lo devuelven al almacén;
 //     Shopify (apagado hasta tener permiso de escritura): enviado en Otros envíos y metacampos estampado_por / empaquetado_por.
+// v9: usuarios desde la pantalla (solo fab_usuarios.admin): alta con contraseña, contraseña nueva y quitar acceso, sin correos.
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
@@ -544,6 +545,18 @@ async function pdfDe(p: any): Promise<string | null> {
   return p.gls_codbarras ? await glsEtiquetaEnvio(p.gls_codbarras) : null;
 }
 
+// Usuarios de Auth por email (todas las páginas; este Supabase también tiene usuarios de otras aplicaciones)
+async function usuariosAuth() {
+  const m = new Map<string, any>();
+  for (let page = 1; page < 50; page++) {
+    const { data, error } = await sb.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw error;
+    for (const u of data.users) if (u.email) m.set(u.email.toLowerCase(), u);
+    if (data.users.length < 1000) break;
+  }
+  return m;
+}
+
 // ───────── servidor ─────────
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -678,6 +691,61 @@ Deno.serve(async (req) => {
       const pdf = await pdfDe(p);
       await evento(order_id, "reimpresion", { ok: !!pdf }, usuario);
       return json({ ok: !!pdf, pdf, error: pdf ? undefined : "No se pudo recuperar la etiqueta" });
+    }
+    // ───── usuarios (solo administradores, fab_usuarios.admin): alta, contraseña y quitar acceso, sin correos ─────
+    if (accion === "soy_admin" || accion === "usuarios" || accion === "usuario_guardar" || accion === "usuario_quitar") {
+      const yo = usuario === "cron" ? null : (await sb.from("fab_usuarios").select("email, admin").eq("email", usuario.toLowerCase()).maybeSingle()).data;
+      if (accion === "soy_admin") return json({ ok: true, admin: !!yo?.admin });
+      if (!yo?.admin) return json({ ok: false, error: "Solo un administrador puede gestionar usuarios" }, 403);
+      if (accion === "usuarios") {
+        const { data: filas, error } = await sb.from("fab_usuarios").select("email, nombre, admin, creado_at").order("creado_at");
+        if (error) throw error;
+        const auth = await usuariosAuth();
+        return json({ ok: true, yo: usuario.toLowerCase(), usuarios: (filas ?? []).map((f: any) => {
+          const u = auth.get(String(f.email).toLowerCase());
+          return { email: f.email, nombre: f.nombre, admin: !!f.admin, tiene_clave: !!u, ultimo_acceso: u?.last_sign_in_at ?? null };
+        }) });
+      }
+      const email = String(body.email ?? "").trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false, error: "El email no es válido" }, 400);
+      const { data: fila } = await sb.from("fab_usuarios").select("email, admin").eq("email", email).maybeSingle();
+      if (accion === "usuario_quitar") {
+        if (!fila) return json({ ok: true, aviso: "Ya no tenía acceso" });
+        if (email === usuario.toLowerCase()) return json({ ok: false, error: "No puedes quitarte el acceso a ti mismo" }, 400);
+        if (fila.admin) return json({ ok: false, error: "No se puede quitar el acceso a un administrador desde aquí" }, 400);
+        const { error } = await sb.from("fab_usuarios").delete().eq("email", email);
+        if (error) throw error;
+        await evento(null, "usuario", { accion: "quitar", email }, usuario);
+        return json({ ok: true });
+      }
+      // usuario_guardar: alta (con contraseña) o contraseña nueva. La contraseña no se guarda ni se registra en ningún sitio.
+      const clave = String(body.clave ?? "");
+      const nombre = body.nombre === undefined ? undefined : (String(body.nombre).trim() || null);
+      if (clave && clave.length < 8) return json({ ok: false, error: "La contraseña tiene que tener al menos 8 caracteres" }, 400);
+      const u = (await usuariosAuth()).get(email);
+      let hecho = "";
+      if (!u) {
+        if (!clave) return json({ ok: false, error: "Pon una contraseña para el usuario nuevo" }, 400);
+        const { error } = await sb.auth.admin.createUser({ email, password: clave, email_confirm: true, user_metadata: { nombre: nombre ?? null, alta: "fabrica" } });
+        if (error) throw error;
+        hecho = "alta";
+      } else if (clave) {
+        // Este Supabase tiene usuarios de otras aplicaciones (TDP): solo se cambia la contraseña de quien ya es de la fábrica.
+        if (!fila && u.user_metadata?.alta !== "fabrica") return json({ ok: false, error: "Ese email ya tiene usuario en otra aplicación. No se le cambia la contraseña desde aquí: añádelo sin contraseña y entrará con la suya de siempre." }, 409);
+        const { error } = await sb.auth.admin.updateUserById(u.id, { password: clave });
+        if (error) throw error;
+        hecho = "contraseña";
+      } else {
+        hecho = "acceso";
+      }
+      if (!fila) {
+        const { error } = await sb.from("fab_usuarios").insert({ email, nombre: nombre ?? null });
+        if (error) throw error;
+      } else if (nombre !== undefined) {
+        await sb.from("fab_usuarios").update({ nombre }).eq("email", email);
+      }
+      await evento(null, "usuario", { accion: hecho, email }, usuario);
+      return json({ ok: true, hecho });
     }
     if (accion === "diag") {
       const d = await gql(`query { currentAppInstallation { accessScopes { handle } } }`);
