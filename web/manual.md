@@ -198,7 +198,7 @@ Cuando llegue la prenda, escribe cuántas han llegado y pulsa **✔ Han llegado*
 
 El Resumen dice cuántas prendas hay que hacer de cada modelo y talla, sumando todos los pedidos. Es la hoja de trabajo de la mesa de corte y la plancha.
 
-- Pestañas arriba: **Sin stock**, **Producción** (lo que hay que hacer) y **Todos** (todo lo que falta, con la etapa de cada prenda).
+- Pestañas arriba: **Producción** (lo que hay que cortar y estampar), **Prendas sin vinilo** (lo que solo hay que preparar), **Sin stock** y **Todos** (todo lo que falta, con la etapa de cada prenda).
 - El desplegable de fechas permite ver todos los días, solo lo entrado hasta ayer o solo lo de hoy.
 - **Mover varias a la vez**: marca las casillas de la izquierda (de una línea o de un modelo entero). Abajo sale una barra para pasarlas todas juntas a la etapa siguiente o a Sin stock.
 - **🖨 Imprimir listado** saca el Resumen en papel y **⬇ Excel** descarga un Excel con el resumen por modelo y el detalle prenda a prenda.
