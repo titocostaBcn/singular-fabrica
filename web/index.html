@@ -29,6 +29,17 @@
   #login input{font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
   #login button{padding:14px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600}
   #loginErr{color:var(--err);min-height:1.2em;font-size:14px}
+  #loginErr.ok{color:var(--producido)}
+  #login button.olvido{background:none;color:var(--muted);padding:2px;font-weight:500;text-decoration:underline;font-size:14px;justify-self:center}
+  #claveM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+  #claveM.hidden{display:none}
+  #claveM .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:400px;width:100%;display:grid;gap:12px}
+  #claveM input[type=password],#claveM input[type=text]{font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
+  #claveM .quien{margin:0;font-size:14px;color:var(--muted)}
+  #claveM .ver{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+  #claveM .bots{display:flex;gap:8px}
+  #claveM .bots .go{border:0;background:#1b7f4b;color:#fff;border-radius:10px;padding:12px 18px;font-weight:700;flex:1}
+  #claveErr{color:var(--err);min-height:1.2em;font-size:14px}
 
   #avisoError{background:#c62828;color:#fff;padding:12px 16px;font-weight:800;font-size:20px;text-align:center;letter-spacing:.5px}
   #avisoError small{display:block;font-size:13px;font-weight:500;opacity:.9;letter-spacing:0}
@@ -353,6 +364,7 @@
     <input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password" required>
     <button type="submit">Entrar</button>
     <div id="loginErr"></div>
+    <button type="button" class="olvido" id="bOlvido">¿Has olvidado la contraseña?</button>
   </form>
 </section>
 
@@ -364,6 +376,7 @@
       <div class="marca"><img src="logo.png" alt="Singular Wardrobe"><span>Fábrica</span></div>
       <div class="vistas"><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
+      <button class="btn-sec" id="bClave" title="Cambiar la contraseña" aria-label="Cambiar la contraseña">🔑</button>
       <button class="btn-sec" id="bSalir">Salir</button>
     </div>
     <div class="fila">
@@ -405,6 +418,16 @@
   <p class="corr-ayuda" style="margin:0;font-size:13px;color:var(--muted)">Se apunta una vez por modelo. La hoja de corte agrupa los modelos por este color.</p>
   <div class="bots"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="colorCerrar">Cancelar</button></div>
 </form></div>
+<div id="claveM" class="hidden"><form class="caja" id="claveForm" novalidate>
+  <h3 style="margin:0" id="claveTit">Cambiar contraseña</h3>
+  <p class="quien" id="claveQuien"></p>
+  <input type="email" id="claveUsuario" autocomplete="username" class="hidden" readonly tabindex="-1">
+  <input id="clave1" type="password" placeholder="Contraseña nueva (mínimo 8 caracteres)" autocomplete="new-password" minlength="8" required>
+  <input id="clave2" type="password" placeholder="Repite la contraseña nueva" autocomplete="new-password" minlength="8" required>
+  <label class="ver"><input type="checkbox" id="claveVer"> Ver lo que escribo</label>
+  <div id="claveErr"></div>
+  <div class="bots"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="claveCerrar">Cancelar</button></div>
+</form></div>
 <div id="zonaImpresion"></div>
 <div id="zonaHojas"></div>
 <div id="toast" class="hidden"></div>
@@ -419,7 +442,13 @@ const FN = SUPABASE_URL + "/functions/v1/fab";
 // Modo demostración: añade ?demo a la dirección. No se conecta a Supabase, GLS ni Shopify.
 const DEMO = new URLSearchParams(location.search).has("demo") || window.FAB_DEMO === true;
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+// Enlace del correo «He olvidado la contraseña»: vuelve con #...type=recovery (o con un error si ha caducado).
+// Se lee ANTES de crear el cliente, que limpia la dirección al recoger la sesión.
+const HASH = new URLSearchParams(location.hash.slice(1));
+const RECUPERAR = HASH.get("type") === "recovery";
+const ERROR_ENLACE = HASH.get("error_code") || HASH.get("error");
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+sb.auth.onAuthStateChange?.((ev) => { if (ev === "PASSWORD_RECOVERY" && !iniciar.recuperado){ iniciar.recuperado = true; abrirClave(true); } });
 const $ = (s) => document.querySelector(s);
 // La barra de búsqueda de la Ayuda se pega justo debajo de la cabecera (que cambia de alto según la vista y el ancho).
 try { new ResizeObserver(([e]) => document.documentElement.style.setProperty("--hh", e.target.offsetHeight + "px")).observe(document.querySelector("header")); } catch {}
@@ -1868,6 +1897,55 @@ $("#corrForm").onsubmit = (e) => {
   abrirQuien(`¿Quién corrige el texto? · ${p.order_name}`, { nadie: true, destacar: p.asignado_a });
 };
 $("#bSalir").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+
+// ───── contraseña: cambiarla (con la sesión abierta) y recuperarla desde el login ─────
+async function abrirClave(recuperar = false){
+  const email = DEMO ? "fabrica@demo" : (await sb.auth.getSession()).data.session?.user?.email ?? "";
+  $("#claveTit").textContent = recuperar ? "Pon una contraseña nueva" : "Cambiar contraseña";
+  $("#claveQuien").textContent = email ? `Usuario: ${email}` + (recuperar ? "" : ". Si este usuario lo usáis varias, avisa a las demás de la contraseña nueva.") : "";
+  $("#claveUsuario").value = email;
+  $("#clave1").value = $("#clave2").value = ""; $("#claveErr").textContent = "";
+  $("#claveVer").checked = false; $("#clave1").type = $("#clave2").type = "password";
+  $("#claveM").dataset.recuperar = recuperar ? "1" : "";
+  $("#claveM").classList.remove("hidden"); $("#clave1").focus();
+}
+function cerrarClave(){
+  const recuperar = $("#claveM").dataset.recuperar === "1";
+  $("#claveM").classList.add("hidden"); $("#clave1").value = $("#clave2").value = "";
+  if (recuperar){ history.replaceState(null, "", location.pathname + location.search); iniciar(); }
+}
+$("#bClave").onclick = () => abrirClave(false);
+$("#claveCerrar").onclick = cerrarClave;
+$("#claveVer").onchange = (e) => { $("#clave1").type = $("#clave2").type = e.target.checked ? "text" : "password"; };
+$("#claveForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const a = $("#clave1").value, b = $("#clave2").value;
+  if (a.length < 8){ $("#claveErr").textContent = "Tiene que tener al menos 8 caracteres."; return; }
+  if (a !== b){ $("#claveErr").textContent = "Las dos no coinciden. Escríbela otra vez."; return; }
+  if (DEMO){ cerrarClave(); toast("Demostración: la contraseña no se cambia de verdad"); return; }
+  $("#claveErr").textContent = "Guardando…";
+  const { error } = await sb.auth.updateUser({ password: a });
+  if (error){
+    const m = error.message || "";
+    $("#claveErr").textContent = /different from the old/i.test(m) ? "Tiene que ser distinta de la anterior."
+      : /weak|short|characters/i.test(m) ? "Es demasiado fácil. Usa una más larga, con letras y números."
+      : /session|jwt|not authenticated|expired/i.test(m) ? "La sesión ha caducado. Sal, vuelve a entrar y repítelo."
+      : "No se ha podido cambiar: " + m;
+    return;
+  }
+  cerrarClave(); toast("Contraseña cambiada. La próxima vez entra con la nueva.");
+};
+$("#bOlvido").onclick = async () => {
+  const email = $("#email").value.trim(), out = $("#loginErr");
+  out.classList.remove("ok");
+  if (!email){ out.textContent = "Escribe arriba tu email y vuelve a pulsar «¿Has olvidado la contraseña?»."; $("#email").focus(); return; }
+  if (DEMO){ out.classList.add("ok"); out.textContent = "Demostración: no se envía ningún correo."; return; }
+  out.textContent = "Enviando…";
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname + (PRUEBAS ? "?pruebas" : "") });
+  if (error){ out.textContent = /rate|seconds|too many/i.test(error.message || "") ? "Ya se ha enviado un correo hace poco. Espera un minuto y vuelve a probar." : "No se ha podido enviar el correo: " + error.message; return; }
+  out.classList.add("ok");
+  out.textContent = "Si ese email tiene acceso, te llegará un correo con un enlace para poner una contraseña nueva. Mira también en correo no deseado.";
+};
 $("#fLogin").onsubmit = async (e) => {
   e.preventDefault();
   const { error } = await sb.auth.signInWithPassword({ email: $("#email").value, password: $("#pass").value });
@@ -1879,9 +1957,13 @@ if (PRUEBAS) document.body.classList.add("pruebas");
 async function iniciar(){
   if (DEMO){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); await cargar(); return; }
   const { data: { session } } = await sb.auth.getSession();
+  if (RECUPERAR && session && !iniciar.recuperado){ iniciar.recuperado = true; abrirClave(true); return; }
+  if (ERROR_ENLACE && !session){ $("#loginErr").textContent = "El enlace del correo ha caducado o ya se usó. Escribe tu email y pide otro."; history.replaceState(null, "", location.pathname + location.search); }
   $("#login").classList.toggle("hidden", !!session);
   $("#app").classList.toggle("hidden", !session);
   if (!session) return;
+  if (iniciar.arrancado) return cargar();
+  iniciar.arrancado = true;
   await cargar();
   const refrescar = () => { clearTimeout(iniciar.t); iniciar.t = setTimeout(cargar, 400); };
   sb.channel("fab")
