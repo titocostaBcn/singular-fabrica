@@ -1,6 +1,7 @@
-// fab v6 — Gestión de producción Singular Wardrobe
+// fab v7 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (cortar y estampar) ⇄ sin_stock → empaquetar; el pedido (trigger en BD) toma el de su prenda más atrasada.
-// Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · lineas · producido · impresa · reimprimir · diag · prueba_gls
+// Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir · diag · prueba_gls
+// v7: recoge los cambios hechos en Shopify en pedidos ya importados (talla/prenda, cantidad, dirección, nota, envío).
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
@@ -64,13 +65,34 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
   return j.data;
 }
 
-const Q_PEDIDOS = `query Pedidos($q: String!, $after: String) { orders(first: 50, after: $after, query: $q, sortKey: CREATED_AT) {
-  pageInfo { hasNextPage endCursor }
-  nodes { id name createdAt cancelledAt displayFulfillmentStatus tags note email phone
+const NODO_PEDIDO = `id name createdAt cancelledAt displayFulfillmentStatus tags note email phone
     shippingAddress { name address1 address2 city province zip countryCodeV2 phone company }
     shippingLine { title }
     lineItems(first: 50) { nodes { id title variantTitle sku currentQuantity customAttributes { key value } image { url }
-      variant { id inventoryQuantity inventoryItem { tracked } product { id tags } } } } } } }`;
+      variant { id inventoryQuantity inventoryItem { tracked } product { id tags } } } }`;
+const Q_PEDIDOS = `query Pedidos($q: String!, $after: String) { orders(first: 50, after: $after, query: $q, sortKey: CREATED_AT) {
+  pageInfo { hasNextPage endCursor }
+  nodes { ${NODO_PEDIDO} } } }`;
+const Q_PEDIDO = `query Pedido($id: ID!) { order(id: $id) { ${NODO_PEDIDO} } }`;
+
+const esUrgente = (p: any) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t: string) => /urgent/i.test(t));
+
+// Datos del pedido que vienen de Shopify (se guardan al importar y se refrescan si cambian después)
+function datosPedido(o: any) {
+  const a = o.shippingAddress ?? {};
+  return {
+    cliente_nombre: [a.name, a.company].filter(Boolean).join(" · ") || null,
+    email: o.email ?? null, telefono: a.phone || o.phone || null,
+    direccion1: a.address1 ?? null, direccion2: a.address2 ?? null, ciudad: a.city ?? null, provincia: a.province ?? null,
+    cp: a.zip ?? null, pais: a.countryCodeV2 ?? null, metodo_envio: o.shippingLine?.title ?? null,
+    nota: o.note ?? null, tags: o.tags ?? [],
+  };
+}
+const persDe = (l: any) => (l.customAttributes ?? []).filter((x: any) => x.value && !x.key.startsWith("_"));
+const lineaDe = (l: any, order_id: number) => ({
+  line_id: idNum(l.id), order_id, titulo: l.title, variante: l.variantTitle, sku: l.sku,
+  cantidad: l.currentQuantity, personalizacion: persDe(l), imagen_url: l.image?.url ?? null, ...datosVariante(l),
+});
 
 // Producto con etiqueta "sin vinilo" en Shopify: no se corta; si hay stock pasa solo a Empaquetar, si no a Sin stock.
 const esSinVinilo = (tags: string[] | undefined) => (tags ?? []).some((t) => /^\s*sin\s+vinilo\s*$/i.test(t));
@@ -82,12 +104,10 @@ const datosVariante = (l: any) => ({
 });
 
 // ───────── IMPORTAR ─────────
-async function importar(usuario: string) {
-  const cfg = await config();
-  const dias = Number(cfg.importar_dias_atras ?? "7");
+// Pedidos abiertos sin enviar de los últimos `dias` días
+async function leerAbiertos(dias: number) {
   const desde = new Date(Date.now() - dias * 864e5).toISOString();
   const q = `created_at:>='${desde}' fulfillment_status:unfulfilled status:open`;
-
   const pedidos: any[] = [];
   let after: string | null = null;
   for (let i = 0; i < 20; i++) {
@@ -96,6 +116,22 @@ async function importar(usuario: string) {
     if (!d.orders.pageInfo.hasNextPage) break;
     after = d.orders.pageInfo.endCursor;
   }
+  return pedidos;
+}
+// Pedidos de la BD (con sus prendas) por order_id
+async function pedidosBD(ids: number[]) {
+  const m = new Map<number, any>();
+  for (let i = 0; i < ids.length; i += 100) {
+    const { data, error } = await sb.from("fab_pedidos").select("*, fab_lineas(*)").in("order_id", ids.slice(i, i + 100));
+    if (error) throw new Error(`pedidos BD: ${error.message}`);
+    for (const p of data ?? []) m.set(Number(p.order_id), p);
+  }
+  return m;
+}
+
+async function importar(usuario: string) {
+  const cfg = await config();
+  const pedidos = await leerAbiertos(Number(cfg.importar_dias_atras ?? "7"));
 
   const ids = pedidos.map((o) => idNum(o.id));
   const { data: existentes } = await sb.from("fab_pedidos").select("order_id").in("order_id", ids.length ? ids : [0]);
@@ -105,30 +141,32 @@ async function importar(usuario: string) {
   for (const o of pedidos) {
     const order_id = idNum(o.id);
     if (ya.has(order_id) || o.cancelledAt) continue;
-    const a = o.shippingAddress ?? {};
     const { error } = await sb.from("fab_pedidos").insert({
-      order_id, order_name: o.name, creado_shopify: o.createdAt,
-      cliente_nombre: [a.name, a.company].filter(Boolean).join(" · ") || null,
-      email: o.email, telefono: a.phone || o.phone || null,
-      direccion1: a.address1, direccion2: a.address2, ciudad: a.city, provincia: a.province,
-      cp: a.zip, pais: a.countryCodeV2, metodo_envio: o.shippingLine?.title ?? null,
-      nota: o.note, tags: o.tags ?? [], peso_kg: Number(cfg.peso_defecto_kg ?? "1"),
+      order_id, order_name: o.name, creado_shopify: o.createdAt, ...datosPedido(o), peso_kg: Number(cfg.peso_defecto_kg ?? "1"),
     });
     if (error) { await evento(order_id, "error_importacion", { error: error.message }, usuario); continue; }
-    const lineas = o.lineItems.nodes.filter((l: any) => l.currentQuantity > 0).map((l: any) => ({
-      line_id: idNum(l.id), order_id, titulo: l.title, variante: l.variantTitle, sku: l.sku,
-      cantidad: l.currentQuantity, personalizacion: (l.customAttributes ?? []).filter((x: any) => x.value && !x.key.startsWith("_")),
-      imagen_url: l.image?.url ?? null, ...datosVariante(l),
-    }));
+    const lineas = o.lineItems.nodes.filter((l: any) => l.currentQuantity > 0).map((l: any) => lineaDe(l, order_id));
     if (lineas.length) await sb.from("fab_lineas").insert(lineas);
     nuevos++;
   }
 
-  // Pedidos ya importados: refrescar etiqueta "sin vinilo" y stock de sus prendas (pueden haber cambiado en Shopify)
+  // Pedidos ya importados: cambios hechos en Shopify (si está activado) y etiqueta "sin vinilo" / stock de sus prendas
+  const sincro = cfg.sincronizar_cambios === "si";
+  const enBD = sincro ? await pedidosBD(ids.filter((id) => ya.has(id))) : new Map();
+  let modificados = 0;
   for (const o of pedidos) {
-    if (!ya.has(idNum(o.id))) continue;
+    const id = idNum(o.id);
+    if (!ya.has(id)) continue;
+    if (sincro) {
+      try {
+        const r = await sincronizar(o, enBD.get(id), usuario, true);
+        if (r?.cambios.length) modificados++;
+      } catch (e) {
+        await evento(id, "error_sincronizar", { error: String((e as Error).message ?? e) }, usuario);
+      }
+    }
     for (const l of o.lineItems.nodes) {
-      if (!l.variant) continue;
+      if (!l.variant || !(l.currentQuantity > 0)) continue;
       await sb.from("fab_lineas").update(datosVariante(l)).eq("line_id", idNum(l.id));
     }
   }
@@ -149,8 +187,114 @@ async function importar(usuario: string) {
     }
   }
 
-  const res = { revisados: pedidos.length, nuevos, cancelados, enviados_fuera: fuera, sin_vinilo: sinVinilo };
+  const res = { revisados: pedidos.length, nuevos, cancelados, enviados_fuera: fuera, sin_vinilo: sinVinilo, ...(sincro ? { modificados } : {}) };
   await evento(null, "importacion", res, usuario);
+  return res;
+}
+
+// ───────── CAMBIOS EN SHOPIFY DE PEDIDOS YA IMPORTADOS ─────────
+// Talla o prenda («Editar pedido»: se quita una y se añade otra), cantidad, dirección, teléfono, nota o tipo de envío.
+// No se tocan pedidos producidos, cancelados o enviados por fuera. El texto de personalización de una prenda que ya
+// estaba no se toca (Shopify no deja cambiarlo; se corrige en la pantalla con fab_corregir_personalizacion).
+// Cada cambio deja un aviso en fab_pedidos.modificado (la pantalla muestra «✏️ Modificado» hasta pulsar Visto).
+const sinVacio = (v: unknown) => (v === "" || v === undefined ? null : v);
+const igual = (a: unknown, b: unknown) => JSON.stringify(sinVacio(a)) === JSON.stringify(sinVacio(b));
+const prendaTxt = (titulo: string, variante: string | null, n: number) => `${n} × ${titulo}${variante ? " · " + variante : ""}`;
+const persTxt = (pers: any[]) => (pers ?? []).map((x: any) => x.value).filter(Boolean).join(" · ");
+
+async function sincronizar(o: any, p: any, usuario: string, aplicar: boolean) {
+  if (!p || o.cancelledAt || p.estado === "producido" || p.cancelado || p.enviado_fuera) return null;
+  const order_id = Number(p.order_id);
+  const cambios: string[] = [];
+
+  // 1. Datos del pedido
+  const nuevo: Record<string, any> = datosPedido(o);
+  const upd: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(nuevo)) if (!igual(p[k], v)) upd[k] = v;
+  if (["direccion1", "direccion2", "ciudad", "provincia", "cp", "pais"].some((k) => k in upd)) {
+    cambios.push(nuevo.direccion1
+      ? `Dirección de envío: ${[nuevo.direccion1, nuevo.direccion2].filter(Boolean).join(", ")} · ${nuevo.cp ?? ""} ${nuevo.ciudad ?? ""}${nuevo.pais && nuevo.pais !== "ES" ? ` (${nuevo.pais})` : ""}`.replace(/\s+/g, " ").trim()
+      : "Ahora es recogida en taller (sin dirección de envío)");
+  }
+  if ("cliente_nombre" in upd) cambios.push(`Destinatario: ${nuevo.cliente_nombre ?? "—"}`);
+  if ("telefono" in upd) cambios.push(`Teléfono: ${nuevo.telefono ?? "—"}`);
+  if ("metodo_envio" in upd) cambios.push(`Tipo de envío: ${nuevo.metodo_envio ?? "—"}`);
+  if ("nota" in upd) cambios.push(nuevo.nota ? `Nota del cliente: «${nuevo.nota}»` : "Nota del cliente borrada");
+  const urgAhora = esUrgente({ ...p, ...upd });
+  if (esUrgente(p) !== urgAhora) cambios.push(urgAhora ? "Ahora es URGENTE" : "Ya no es urgente");
+
+  // 2. Prendas
+  const act = (o.lineItems?.nodes ?? []).filter((l: any) => l.currentQuantity > 0);
+  const db = new Map<number, any>((p.fab_lineas ?? []).map((l: any) => [Number(l.line_id), l]));
+  const enShop = new Set(act.map((l: any) => idNum(l.id)));
+  const nuevas = act.filter((l: any) => !db.has(idNum(l.id)));
+  let quitadas = [...db.values()].filter((l) => !enShop.has(Number(l.line_id)));
+  const cantidades: { line_id: number; cantidad: number; vuelve: boolean }[] = [];
+  if (!act.length) {
+    // Shopify ya no tiene prendas en el pedido (¿devuelto o reembolsado sin cancelar?): no se quita nada, solo se avisa
+    if (db.size) cambios.push("En Shopify este pedido ya no tiene prendas: revisar con la tienda antes de hacerlo");
+    quitadas = [];
+  } else {
+    const yaHecha = (l: any) => l.estado !== "empaquetar" ? "" : l.sin_vinilo ? " (ya estaba preparada: devuélvela a la estantería)" : " (ya estaba hecha: apártala)";
+    // Cambio de talla o color de la misma prenda (se quita una y se añade otra del mismo modelo): un solo aviso
+    const emparejadas = new Set<any>();
+    for (const n of nuevas) {
+      const q = quitadas.find((l) => !emparejadas.has(l) && l.titulo === n.title && l.cantidad === n.currentQuantity);
+      if (!q) continue;
+      emparejadas.add(q); emparejadas.add(n);
+      const pers = persTxt(persDe(n));
+      cambios.push(`Cambio de ${n.currentQuantity > 1 ? n.currentQuantity + " × " : ""}${n.title}: ${q.variante ?? "—"} → ${n.variantTitle ?? "—"}${pers ? ` · «${pers}»` : ""}${yaHecha(q)}`);
+    }
+    for (const l of nuevas) {
+      if (emparejadas.has(l)) continue;
+      const pers = persTxt(persDe(l));
+      cambios.push(`Prenda añadida: ${prendaTxt(l.title, l.variantTitle, l.currentQuantity)}${pers ? ` · «${pers}»` : ""}`);
+    }
+    for (const l of quitadas) {
+      if (emparejadas.has(l)) continue;
+      const pers = persTxt(l.personalizacion);
+      cambios.push(`Prenda quitada: ${prendaTxt(l.titulo, l.variante, l.cantidad)}${pers ? ` · «${pers}»` : ""}${yaHecha(l)}`);
+    }
+    for (const s of act) {
+      const l = db.get(idNum(s.id));
+      if (!l || l.cantidad === s.currentQuantity) continue;
+      const mas = s.currentQuantity > l.cantidad, hecha = !["pendiente", "sin_stock", "cortar"].includes(l.estado);
+      const n = l.cantidad - s.currentQuantity;
+      cantidades.push({ line_id: Number(l.line_id), cantidad: s.currentQuantity, vuelve: mas && hecha });
+      cambios.push(`Cantidad de ${l.titulo}${l.variante ? " · " + l.variante : ""}: ${l.cantidad} → ${s.currentQuantity}` +
+        (mas && hecha ? " (vuelve a Cortar y estampar)" : !mas && hecha ? (n === 1 ? " (sobra 1 ya hecha: apártala)" : ` (sobran ${n} ya hechas: apártalas)`) : ""));
+    }
+  }
+
+  const previos = new Set<string>(p.modificado ?? []);
+  const avisos = cambios.filter((c) => !previos.has(c)); // no repetir avisos que aún no se han visto
+  const campos = Object.keys(upd);
+  const res = { order_id, order_name: p.order_name, cambios, campos };
+  if (!campos.length && !nuevas.length && !quitadas.length && !cantidades.length && !avisos.length) return { ...res, cambios: [] };
+  if (!aplicar) return { ...res, simulado: true };
+
+  const ahora = new Date().toISOString();
+  if (campos.length || avisos.length) {
+    const { error } = await sb.from("fab_pedidos").update({
+      ...upd,
+      ...(avisos.length ? { modificado: [...(p.modificado ?? []), ...avisos], modificado_at: ahora, modificado_visto_at: null, modificado_visto_por: null } : {}),
+    }).eq("order_id", order_id);
+    if (error) throw new Error(`${p.order_name}: ${error.message}`);
+  }
+  if (nuevas.length) {
+    const { error } = await sb.from("fab_lineas").insert(nuevas.map((l: any) => lineaDe(l, order_id)));
+    if (error) throw new Error(`${p.order_name} (prendas nuevas): ${error.message}`);
+  }
+  for (const c of cantidades) {
+    await sb.from("fab_lineas").update(c.vuelve ? { cantidad: c.cantidad, estado: "cortar", estado_at: ahora, estado_por: "cambio en Shopify" } : { cantidad: c.cantidad })
+      .eq("line_id", c.line_id);
+  }
+  if (quitadas.length) {
+    const { error } = await sb.from("fab_lineas").delete().in("line_id", quitadas.map((l) => l.line_id));
+    if (error) throw new Error(`${p.order_name} (prendas quitadas): ${error.message}`);
+    await sb.rpc("fab_recalcular_estado", { p_order_id: order_id }); // la etapa del pedido y la asignación automática
+  }
+  await evento(order_id, "cambio_shopify", { cambios, campos: upd, nuevas: nuevas.map((l: any) => idNum(l.id)), quitadas, cantidades }, usuario);
   return res;
 }
 
@@ -416,6 +560,42 @@ Deno.serve(async (req) => {
     }
 
     const order_id = Number(body.order_id);
+    if (accion === "actualizar") {
+      // Un pedido: lo vuelve a leer de Shopify y aplica los cambios (con simular: true solo los enseña)
+      const simular = body.simular === true;
+      const d = await gql(Q_PEDIDO, { id: gidOrder(order_id) });
+      if (!d.order) return json({ ok: false, error: "No se encuentra el pedido en Shopify" }, 404);
+      const p = (await pedidosBD([order_id])).get(order_id);
+      if (!p) return json({ ok: false, error: "Este pedido no está importado" }, 404);
+      if (p.estado === "producido") return json({ ok: false, error: "El pedido ya ha salido: no se actualiza" }, 409);
+      if (d.order.cancelledAt && !p.cancelado) {
+        if (!simular) {
+          await sb.from("fab_pedidos").update({ cancelado: true }).eq("order_id", order_id);
+          await evento(order_id, "cancelado_shopify", null, usuario);
+        }
+        return json({ ok: true, order_id, cambios: ["Pedido cancelado en Shopify"], simulado: simular || undefined });
+      }
+      const r = await sincronizar(d.order, p, usuario, !simular);
+      if (!simular) {
+        for (const l of d.order.lineItems.nodes) {
+          if (l.variant && l.currentQuantity > 0) await sb.from("fab_lineas").update(datosVariante(l)).eq("line_id", idNum(l.id));
+        }
+        await repartirSinVinilo(usuario);
+      }
+      return json({ ok: true, ...(r ?? { order_id, cambios: [] }) });
+    }
+    if (accion === "revisar_cambios") {
+      // Simulación para todos los pedidos abiertos: qué cambiaría al sincronizar con Shopify. No toca nada.
+      const cfg = await config();
+      const abiertos = await leerAbiertos(Number(cfg.importar_dias_atras ?? "7"));
+      const enBD = await pedidosBD(abiertos.map((o) => idNum(o.id)));
+      const conCambios: any[] = [];
+      for (const o of abiertos) {
+        const r = await sincronizar(o, enBD.get(idNum(o.id)), usuario, false);
+        if (r && (r.cambios.length || r.campos.length)) conCambios.push(r);
+      }
+      return json({ ok: true, revisados: abiertos.length, en_bd: enBD.size, sincronizar_cambios: cfg.sincronizar_cambios ?? "no", pedidos: conCambios });
+    }
     if (accion === "lineas") {
       const estado = body.estado;
       const ids: number[] = (body.line_ids ?? []).map(Number).filter(Boolean);

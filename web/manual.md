@@ -4,7 +4,7 @@ Este programa organiza todos los pedidos de la tienda online desde que entran ha
 
 ## 1. Antes de empezar
 
-Cada mañana a las 8:00 el programa trae solo los pedidos nuevos de la tienda. No hace falta hacer nada para que aparezcan.
+Cada mañana a las 8:00 el programa trae los pedidos nuevos de la tienda y recoge los cambios de los que ya tenía (por ejemplo, una talla cambiada). No hace falta hacer nada para que aparezcan.
 
 **Entrar**
 
@@ -20,7 +20,7 @@ Cada mañana a las 8:00 el programa trae solo los pedidos nuevos de la tienda. N
 | Resumen producción | Lo que hay que cortar y estampar, agrupado por modelo y talla. |
 | Histórico | Los pedidos ya estampados o enviados, con quién lo hizo. |
 | Ayuda | Este manual, con buscador por palabras y botón para imprimirlo en PDF. |
-| ↻ Importar | Trae ahora los pedidos nuevos de la tienda, sin esperar a mañana. |
+| ↻ Importar | Trae ahora los pedidos nuevos de la tienda y los cambios de los que ya están, sin esperar a mañana. |
 | Salir | Cierra la sesión. Úsalo solo si el ordenador lo usa otra gente. |
 
 **Avisos de colores en la franja superior**
@@ -45,6 +45,7 @@ Cada pestaña muestra un grupo de pedidos y, al lado, cuántos hay. La etiqueta 
 | Pestaña | Qué hay |
 | --- | --- |
 | ⚠ Retrasados | Pedidos que no han salido después de más de 7 días (urgentes: más de 3 días). Son la prioridad. |
+| ✏️ Modificados | Pedidos que la clienta ha cambiado en Shopify después de entrar (talla, prendas, dirección…) o con el texto de personalización corregido. Solo aparece si hay alguno. |
 | Pendientes | Solo aparece si alguien ha apartado un pedido a mano. |
 | Sin stock | Pedidos con alguna prenda que no podemos hacer por falta de material o de stock. |
 | Cortar y estampar | Pedidos que entran del día: hay que cortar el vinilo y estamparlo. |
@@ -68,6 +69,7 @@ Cada pedido es una tarjeta con todo lo necesario para hacerlo sin abrir Shopify.
 - **Número de pedido** (por ejemplo #40250), fecha en que se hizo y, si tiene 2 días o más, «hace N días».
 - **Tarjeta roja y etiqueta URGENTE**: el cliente pagó envío Exprés o el pedido lleva la etiqueta «urgente». Se hace antes que los demás.
 - **RETRASADO · N días**: lleva demasiado tiempo en el taller. Prioridad máxima.
+- **✏️ MODIFICADO**: el pedido ha cambiado después de entrar. Debajo sale un recuadro morado con los cambios (apartado 10).
 - **Etapa** en la que está (Cortar y estampar, Empaquetar…).
 - **Otras marcas**: Recogida taller, el país si no es España, 📦 Canarias / Reino Unido / Fuera de la UE si va por Otros envíos, o el nombre de quien lo tiene cogido.
 
@@ -77,12 +79,12 @@ Cada pedido es una tarjeta con todo lo necesario para hacerlo sin abrir Shopify.
 
 - Foto y nombre del modelo. Si hay más de una unidad, delante pone «2×».
 - **Talla** dentro de un recuadro. Si pone «Sin talla», revisa el pedido antes de hacerlo.
-- **Personalización** en negro (iniciales, nombre, número…): es exactamente lo que hay que cortar. Comprueba letra por letra.
+- **Personalización** en negro (iniciales, nombre, número…): es exactamente lo que hay que cortar. Comprueba letra por letra. Al lado, el botón **✏️ Corregir texto** sirve para arreglarla si la clienta se ha equivocado (apartado 10).
 - **Sin vinilo · stock N**: prenda que no se corta (ver apartado 9).
 
 **📝 Nota del cliente**, en amarillo: lo que el cliente escribió al comprar (por ejemplo «envolver para regalo»). Léela siempre. Los clientes no pueden cambiarla después.
 
-**Abajo, los botones** de la etapa en la que está el pedido. Se explican en los apartados 5 a 8.
+**Abajo, los botones** de la etapa en la que está el pedido. Se explican en los apartados 5 a 8. Debajo de todo, **🔄 Actualizar desde Shopify** trae al momento los cambios que se hayan hecho en ese pedido en Shopify.
 
 ## 5. Repartirse el trabajo
 
@@ -208,7 +210,42 @@ Estos productos no cuentan en el contador de vinilos del Resumen.
 
 **Producto nuevo que no se corta**: hay que ponerle la etiqueta «sin vinilo» en Shopify. Lo hace quien da de alta los productos; si ves uno que falta, avísale.
 
-## 10. Histórico
+## 10. Cambios de la clienta (talla, dirección o texto)
+
+Si una clienta se equivoca y pide un cambio, **la talla, las prendas y la dirección se cambian en Shopify**. El texto de personalización se corrige aquí, porque Shopify no deja cambiarlo en un pedido ya hecho.
+
+| Qué cambia | Dónde se cambia | Cómo |
+| --- | --- | --- |
+| Talla o prenda | Shopify | En el pedido, «Editar»: quita la prenda equivocada y añade la buena. |
+| Cantidad | Shopify | En el pedido, «Editar». |
+| Dirección o teléfono | Shopify | En el pedido, edita la dirección de envío. |
+| Texto de personalización | Este programa | En la tarjeta, botón ✏️ Corregir texto. |
+
+**Cuándo lo ve el taller**
+
+- Cada mañana a las 8:00 el programa revisa los pedidos abiertos y recoge los cambios. También al pulsar ↻ Importar.
+- Para verlo al momento, en la tarjeta del pedido pulsa **🔄 Actualizar desde Shopify**.
+
+**Qué hace el programa con un cambio**
+
+- La tarjeta lleva la marca **✏️ Modificado** y un recuadro morado con la lista de cambios. El pedido sale también en la pestaña ✏️ Modificados.
+- **Talla cambiada**: la prenda nueva entra en Cortar y estampar. Si la antigua ya estaba hecha, el aviso dice «apártala».
+- **Prenda añadida**: entra en Cortar y estampar.
+- **Prenda quitada**: desaparece del pedido. Si ya estaba hecha o preparada, el aviso lo dice: apártala.
+- **Más unidades de una prenda ya hecha**: la prenda vuelve a Cortar y estampar. Si hay menos unidades, el aviso dice cuántas sobran.
+- **Dirección nueva**: se actualiza, y con ella el tipo de salida (GLS u Otros envíos).
+- Cuando lo hayas leído y hecho lo necesario, pulsa **✔ Visto**. El recuadro desaparece; el cambio queda guardado en el registro.
+
+**Corregir el texto de personalización**
+
+1. En la tarjeta, pulsa **✏️ Corregir texto** junto al texto.
+2. Escribe el texto bueno y pulsa **Guardar**. Si arriba no tienes tu nombre marcado, toca tu nombre.
+3. El texto nuevo sustituye al antiguo en la tarjeta, en el Resumen y en el Histórico. Debajo queda «Texto corregido por… · antes: …» para comprobarlo.
+4. El cambio solo está en este programa: en Shopify sigue el texto que puso la clienta.
+
+**Pedidos que ya han salido** no se tocan: si la clienta cambia algo después de enviarlo, ya no hay nada que hacer en el taller.
+
+## 11. Histórico
 
 El Histórico muestra los pedidos que han salido (o que se han estampado) en un día o un periodo, con quién hizo cada parte. Sirve para buscar un pedido antiguo y para saber cuánto ha hecho cada una.
 
@@ -233,7 +270,7 @@ El Histórico muestra los pedidos que han salido (o que se han estampado) en un 
 
 Los pedidos que salieron hace más de 30 días ya no aparecen en la pantalla de Pedidos: están en el Histórico.
 
-## 11. Ayuda
+## 12. Ayuda
 
 Este manual está siempre en el programa, en el botón **Ayuda** de arriba.
 
@@ -243,7 +280,7 @@ Este manual está siempre en el programa, en el botón **Ayuda** de arriba.
 
 Cada vez que el programa cambia, este manual se actualiza con el cambio.
 
-## 12. Problemas frecuentes
+## 13. Problemas frecuentes
 
 | Qué pasa | Qué hacer |
 | --- | --- |
@@ -258,13 +295,16 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 | Error de GLS al pedir la etiqueta | No envíes el paquete. Avisa a Tito con el número de pedido. |
 | He elegido mal quién lo ha hecho | Avisa a Tito para corregirlo en el Histórico. |
 | La talla pone «Sin talla» | Revisa el pedido en Shopify antes de cortar. |
+| La clienta ha cambiado la talla y aquí sigue la antigua | Cámbiala en Shopify y en la tarjeta pulsa 🔄 Actualizar desde Shopify (apartado 10). |
+| La personalización está mal escrita | En la tarjeta pulsa ✏️ Corregir texto (apartado 10). |
+| Un pedido sale con ✏️ Modificado | Lee el recuadro morado, haz lo que diga y pulsa ✔ Visto. |
 
-## 13. Reglas de oro
+## 14. Reglas de oro
 
 1. **Urgentes y retrasados, primero.** Mira la pestaña ⚠ Retrasados al empezar el día.
 2. **Coge antes de trabajar.** Un pedido con tu nombre es tuyo; uno con el nombre de otra, no se toca sin hablar.
 3. **Comprueba la personalización letra por letra** antes de cortar.
-4. **Lee siempre la nota del cliente.**
+4. **Lee siempre la nota del cliente y los cambios marcados con ✏️.**
 5. **Toca tu nombre cuando el programa pregunte quién lo ha hecho.** Así el Histórico es fiable.
 6. **Pulsa «Hecho» solo cuando todas las prendas del pedido estén terminadas.**
 7. **Ningún paquete sale sin etiqueta impresa** o sin anotar cómo sale en Otros envíos.

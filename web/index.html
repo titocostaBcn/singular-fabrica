@@ -113,6 +113,25 @@
   #quien .nombres button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:12px 18px;font-weight:700;font-size:16px}
   #quien form{display:flex;gap:8px} #quien input{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px}
   #quien form button{border:0;background:#1b7f4b;color:#fff;border-radius:10px;padding:10px 16px;font-weight:700}
+  /* cambios del pedido en Shopify y texto corregido */
+  .b-mod{background:#ede4ff;color:#5b21b6}
+  .mod{background:#f5f0ff;border:1px solid #c9b6f2;border-radius:8px;padding:8px 10px;font-size:14px;display:grid;gap:6px}
+  .mod ul{margin:0;padding-left:18px} .mod li{margin:2px 0}
+  .mod button{justify-self:start;border:1px solid #6d28d9;background:#6d28d9;color:#fff;border-radius:10px;padding:7px 14px;font-weight:700}
+  .pedit{margin:4px 0 0 6px;border:1px dashed #b9b2a6;background:none;border-radius:8px;padding:4px 8px;font-size:13px;color:var(--muted);vertical-align:middle}
+  .persant{font-size:12px;color:var(--muted);margin-top:3px}
+  .pie2{display:flex;justify-content:flex-end;margin-top:-4px}
+  .mini{border:0;background:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:2px 0}
+  .mini[disabled]{opacity:.6;cursor:wait}
+  #corregir{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  #corregir.hidden{display:none}
+  #corregir .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:440px;width:100%;display:grid;gap:12px}
+  #corregir label{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+  #corregir input{font:inherit;font-size:20px;font-weight:700;color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px}
+  #corregir .corr-ayuda{margin:0;font-size:13px;color:var(--muted)}
+  #corregir .corr-prenda{font-weight:700}
+  #corregir .corr-bot{display:flex;gap:8px}
+  #corregir .corr-bot .go{border:0;background:#1b7f4b;color:#fff;border-radius:10px;padding:12px 18px;font-weight:700;flex:1}
   .hecho{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
   .check{font-weight:700;color:var(--producido)}
   .nocheck{font-weight:700;color:var(--pendiente)}
@@ -293,6 +312,12 @@
   <form id="quienForm"><input id="quienOtro" placeholder="Otro nombre" maxlength="30"><button>OK</button></form>
   <button class="btn-sec" id="quienCerrar" type="button">Cancelar</button>
 </div></div>
+<div id="corregir" class="hidden"><form class="caja" id="corrForm">
+  <h3 style="margin:0" id="corrTit">Corregir texto</h3>
+  <div id="corrCampos"></div>
+  <p class="corr-ayuda">Solo cambia en este programa: en Shopify seguirá el texto que puso la clienta. Queda guardado el texto anterior.</p>
+  <div class="corr-bot"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="corrCerrar">Cancelar</button></div>
+</form></div>
 <div id="zonaImpresion"></div>
 <div id="toast" class="hidden"></div>
 
@@ -350,7 +375,7 @@ const urgente = (p) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tag
 const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_shopify) - new Date(b.creado_shopify));
 
 let vista = "pedidos", tab = "cortar", etapaR = "cortar";
-let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null;
+let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null, actualizando = new Set(), corrLinea = null;
 // Reparto: cada dispositivo dice quién es (mismo login para todas). Se puede coger un pedido en cualquier etapa.
 // Pensado para un PC compartido: no hay "usuario" del dispositivo. Arriba se elige Todos / Libres / una persona;
 // al coger un pedido se dice para quién. Si una tablet se queda fija en una persona, se recuerda (localStorage).
@@ -380,11 +405,14 @@ const esHoy = (t) => t && new Date(t).toDateString() === new Date().toDateString
 const fecha = (t) => new Date(t).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 // Retrasado: sin salir (no producido) y más de 7 días naturales desde el pedido; urgentes (Exprés) más de 3.
 const retrasado = (p) => activo(p) && estadoPedido(p) !== "producido" && diasDesde(p.creado_shopify) > (urgente(p) ? 3 : 7);
+// Modificado: la clienta cambió el pedido en Shopify después de entrar, o se corrigió el texto. Se quita con «✔ Visto».
+const modificado = (p) => !p.cancelado && (p.modificado ?? []).length > 0;
 const diasDesde = (t) => Math.floor((new Date().setHours(0,0,0,0) - new Date(new Date(t).setHours(0,0,0,0))) / 864e5);
 function toast(msg, err = false){ const t = $("#toast"); t.textContent = msg; t.className = err ? "e" : ""; clearTimeout(toast.h); toast.h = setTimeout(() => t.className = "hidden", err ? 7000 : 3000); }
 
 const TABS = [
   { id: "retrasados",   label: "⚠ Retrasados",   f: (p) => retrasado(p) },
+  { id: "modificados",  label: "✏️ Modificados", f: (p) => modificado(p) },
   ...["pendiente", "sin_stock", "cortar", "empaquetar"].map((e) => ({ id: e, label: ETAPA[e].plural, f: (p) => p._estado === e && activo(p) })),
   { id: "producido",    label: "Producidos hoy", f: (p) => p._estado === "producido" && esHoy(p.estado_at) },
   { id: "otros",        label: "Otros envíos",   f: (p) => p._estado === "producido" && p.envio_tipo === "otros" },
@@ -431,6 +459,10 @@ const Demo = (() => {
     Object.assign(p, { estado: "producido", estado_at: hace(hS), estampado_por: est, estampado_at: hace(hE), empaquetado_por: emp, empaquetado_at: hace(hS), envio_tipo: k === 3 ? "otros" : "gls", envio_info: k === 3 ? "Correos · PQ123ES" : null, gls_codbarras: k === 3 ? null : "617713153095" + (10 + k), etiqueta_impresa: k !== 3 });
     p.fab_lineas.forEach((l) => l.estado = "empaquetar");
   });
+  // Pedido que la clienta ha cambiado en Shopify después de entrar (talla y dirección)
+  const lm = pedidos[10].fab_lineas[0];
+  Object.assign(pedidos[10], { ciudad: "Valencia", cp: "46001", modificado_at: hace(3),
+    modificado: [`Cambio de ${lm.titulo}: ${lm.variante === "S" ? "M" : "S"} → ${lm.variante}`, "Dirección de envío: Calle Nueva 3 · 46001 Valencia"] });
   Object.assign(pedidos[3], { ciudad: "Las Palmas de Gran Canaria", cp: "35001", provincia: "Las Palmas" });
   Object.assign(pedidos[5], { ciudad: "London", cp: "SW1A 1AA", pais: "GB" });
   const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no", empaquetadoras: "Dania, Irene, Andrea, Mica, Cristina, Carlota" };
@@ -466,6 +498,7 @@ const Demo = (() => {
       return { ok: true };
     }
     if (b.accion === "reimprimir") return { ok: true, pdf: PDF };
+    if (b.accion === "actualizar"){ await espera(500); return { ok: true, order_id: b.order_id, cambios: [] }; }
     if (b.accion === "asignar"){
       const hechos = [];
       for (const id of b.ids){
@@ -692,6 +725,58 @@ async function otroEnvio(id, info, nuevo){
   await cargar();
 }
 
+// ───── cambios de la clienta ─────
+// Talla, prendas, cantidad y dirección se cambian en Shopify; el programa los recoge cada mañana o con este botón.
+async function actualizarPedido(id){
+  const p = pedidos.find((x) => x.order_id === id); if (!p || actualizando.has(id)) return;
+  actualizando.add(id); pintar();
+  try {
+    const j = await fn({ accion: "actualizar", order_id: id });
+    if (!j.ok){ toast(j.error || "Error", true); return; }
+    const n = (j.cambios ?? []).length;
+    toast(n ? `${p.order_name}: ${n} cambio${n > 1 ? "s" : ""} recogido${n > 1 ? "s" : ""} de Shopify` : `${p.order_name}: sin cambios en Shopify`);
+  } catch (e){ toast(String(e.message || e), true); }
+  finally { actualizando.delete(id); await cargar(); }
+}
+async function marcarVisto(id){
+  const p = pedidos.find((x) => x.order_id === id);
+  let error = null;
+  if (DEMO){ const d = Demo.pedidos.find((x) => x.order_id === id); if (d) d.modificado = []; }
+  else ({ error } = await sb.rpc("fab_modificado_visto", { p_order_id: id, p_persona: persona() || null }));
+  if (error){ toast(error.message, true); return; }
+  toast(`${p?.order_name ?? ""}: cambios vistos`);
+  await cargar();
+}
+// El texto de personalización no se puede cambiar en Shopify en un pedido ya hecho: se corrige aquí.
+function abrirCorregir(lineId){
+  const p = pedidos.find((x) => (x.fab_lineas ?? []).some((l) => l.line_id === lineId));
+  const l = p?.fab_lineas.find((x) => x.line_id === lineId); if (!l) return;
+  corrLinea = { p, l };
+  $("#corrTit").textContent = `Corregir texto · ${p.order_name}`;
+  const v = partes(l.variante);
+  $("#corrCampos").innerHTML = `<div class="corr-prenda">${esc(l.titulo)}${v.talla ? " · Talla " + esc(v.talla) : ""}</div>`
+    + (l.personalizacion ?? []).map((x, i) => `<label>${esc(x.key)}<input data-corr="${i}" value="${esc(x.value)}" maxlength="200" autocomplete="off"></label>`).join("");
+  $("#corregir").classList.remove("hidden");
+  $("#corrCampos input")?.select();
+}
+async function guardarCorreccion(l, nueva, per){
+  let error = null;
+  if (DEMO){
+    const d = Demo.pedidos.find((x) => x.order_id === l.order_id || (x.fab_lineas ?? []).some((y) => y.line_id === l.line_id));
+    const dl = d?.fab_lineas.find((y) => y.line_id === l.line_id);
+    if (dl){
+      const antes = textoPers(dl), despues = textoPers({ personalizacion: nueva });
+      if (antes !== despues){
+        dl.personalizacion_original ??= dl.personalizacion; dl.personalizacion = nueva; dl.personalizacion_por = per || null;
+        d.modificado = [...(d.modificado ?? []), `Texto corregido en ${dl.titulo}: «${antes}» → «${despues}»${per ? ` (${per})` : ""}`]; d.modificado_at = new Date().toISOString();
+      }
+    }
+  } else ({ error } = await sb.rpc("fab_corregir_personalizacion", { p_line_id: l.line_id, p_personalizacion: nueva, p_persona: per || null }));
+  if (error){ toast(error.message, true); return; }
+  toast(`Texto corregido: «${textoPers({ personalizacion: nueva })}»`);
+  await cargar();
+}
+
 async function reimprimir(id){
   const j = await fn({ accion: "reimprimir", order_id: id });
   if (!j.ok){ toast(j.error, true); return; }
@@ -766,8 +851,8 @@ function pintarPedidos(){
   const filtrados = pedidos.filter((p) => !q || p.order_name.toLowerCase().includes(q) || (p.cliente_nombre ?? "").toLowerCase().includes(q));
   $("#tabs").innerHTML = TABS.map((t) => {
     const ps = filtrados.filter(t.f).filter(t.cuenta ?? (() => true)); const u = ps.filter((p) => p._urg).length;
-    if (t.id === "pendiente" && !ps.length && tab !== "pendiente") return "";
-    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta", "recogida", "listos", "recogidos", "retrasados"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
+    if (["pendiente", "modificados"].includes(t.id) && !ps.length && tab !== t.id) return "";
+    return `<button class="tab ${t.id === tab ? "on" : ""}" data-tab="${t.id}">${t.label} <b>${ps.length}</b>${u && !["todos", "producido", "otros", "sin_etiqueta", "recogida", "listos", "recogidos", "retrasados", "modificados"].includes(t.id) ? `<span class="u">${u} urg</span>` : ""}</button>`;
   }).join("");
   let lista = listaActual(filtrados, true);
   if (tab === "producido") lista = lista.slice().reverse();
@@ -784,6 +869,7 @@ function card(p){
   const badges = [
     p._urg ? `<span class="badge b-urg">Urgente</span>` : "",
     retrasado(p) ? `<span class="badge b-ret">Retrasado · ${diasDesde(p.creado_shopify)} días</span>` : "",
+    modificado(p) ? `<span class="badge b-mod">✏️ Modificado</span>` : "",
     `<span class="chip" style="${colorVars(e)}">${E.label}</span>`,
     p.recogida ? `<span class="badge">Recogida taller</span>` : "",
     p.pais && p.pais !== "ES" ? `<span class="badge">${esc(p.pais)}</span>` : "",
@@ -793,6 +879,7 @@ function card(p){
     p.enviado_fuera ? `<span class="badge">Enviado fuera</span>` : "",
   ].join("");
   const mixto = new Set((p.fab_lineas ?? []).map((l) => l.estado ?? "pendiente")).size > 1;
+  const editable = activo(p) && e !== "producido";
   const lineas = (p.fab_lineas ?? []).map((l) => {
     const le = l.estado ?? "pendiente";
     return `<div class="linea">
@@ -801,10 +888,12 @@ function card(p){
         <div class="t">${l.cantidad > 1 ? `<b>${l.cantidad}×</b>` : ""}${esc(l.titulo)} ${mixto && e !== "producido" ? `<span class="chip" style="${colorVars(le)}">${ETAPA[le].label}</span>` : ""}</div>
         ${(() => { const v = partes(l.variante); return `<div>${v.talla ? `<span class="talla">Talla ${esc(v.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}${v.resto ? `<span class="resto">${esc(v.resto)}</span>` : ""}</div>`; })()}
         ${l.sin_vinilo ? `<div><span class="badge">Sin vinilo${l.stock != null ? ` · stock ${l.stock}` : ""}</span></div>` : ""}
-        ${(l.personalizacion ?? []).map((x) => `<div class="pers"><span>${esc(x.key)}</span>${esc(x.value)}</div>`).join(" ")}
+        ${(l.personalizacion ?? []).map((x) => `<div class="pers"><span>${esc(x.key)}</span>${esc(x.value)}</div>`).join(" ")}${editable && (l.personalizacion ?? []).length ? `<button class="pedit" data-pers="${l.line_id}" title="Corregir el texto si la clienta se ha equivocado">✏️ Corregir texto</button>` : ""}
+        ${l.personalizacion_original ? `<div class="persant">Texto corregido${l.personalizacion_por && !l.personalizacion_por.includes("@") ? " por " + esc(l.personalizacion_por) : ""} · antes: «${esc(textoPers({ personalizacion: l.personalizacion_original }))}»</div>` : ""}
       </div>
     </div>`;
   }).join("");
+  const mods = p.modificado ?? [];
   const errores = [p.gls_error && `GLS: ${esc(p.gls_error)}`, p.shopify_error && `Shopify: ${esc(p.shopify_error)}`].filter(Boolean);
   let pie = "";
   if (e === "producido" && p.envio_tipo === "otros"){
@@ -852,10 +941,12 @@ function card(p){
   return `<article class="${cls}" style="${colorVars(e)}">
     <div class="top"><span class="num">${esc(p.order_name)}</span><span class="fecha">${fecha(p.creado_shopify)}</span>${d >= 2 && e !== "producido" ? `<span class="dias">hace ${d} días</span>` : ""}<div class="badges">${badges}</div></div>
     <div class="cliente">${esc(p.cliente_nombre ?? "")}${p.ciudad ? " · " + esc(p.ciudad) : ""}${p.cp ? " (" + esc(p.cp) + ")" : ""}${p._urg ? " · <b>" + esc(p.metodo_envio) + "</b>" : ""}</div>
+    ${modificado(p) ? `<div class="mod"><b>✏️ Cambios en el pedido${p.modificado_at ? " · " + fecha(p.modificado_at) : ""}</b><ul>${mods.map((m) => `<li>${esc(m)}</li>`).join("")}</ul><button data-visto="${p.order_id}">✔ Visto</button></div>` : ""}
     <div class="lineas">${lineas}</div>
     ${p.nota ? `<div class="nota"><b>📝 Nota del cliente:</b> ${esc(p.nota)}</div>` : ""}
     ${errores.length ? `<div class="err">${errores.join("<br>")}</div>` : ""}
     ${pie}
+    ${editable ? `<div class="pie2"><button class="mini" data-actualizar="${p.order_id}" ${actualizando.has(p.order_id) ? "disabled" : ""} title="Recoger ahora los cambios hechos en Shopify (talla, prendas, dirección…)">${actualizando.has(p.order_id) ? "Leyendo Shopify…" : "🔄 Actualizar desde Shopify"}</button></div>` : ""}
   </article>`;
 }
 
@@ -1323,6 +1414,10 @@ document.addEventListener("click", (e) => {
   else if (b.id === "aLimpiar"){ ayudaQ = ""; $("#aQ").value = ""; pintarAyuda(); $("#aQ").focus(); }
   else if (b.dataset.irsec){ document.getElementById(b.dataset.irsec)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (b.dataset.reimp) reimprimir(Number(b.dataset.reimp));
+  else if (b.dataset.actualizar) actualizarPedido(Number(b.dataset.actualizar));
+  else if (b.dataset.visto) marcarVisto(Number(b.dataset.visto));
+  else if (b.dataset.pers) abrirCorregir(Number(b.dataset.pers));
+  else if (b.id === "corrCerrar"){ corrLinea = null; $("#corregir").classList.add("hidden"); }
   else if (b.dataset.bmover) moverLineas([...sel], b.dataset.bmover);
   else if (b.dataset.bclear !== undefined){ sel.clear(); pintar(); }
   else if (b.id === "bImprLista") imprimir("imp-lista");
@@ -1342,6 +1437,18 @@ document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.hecho){ e.preventDefault(); hacerUnidades(e.target.dataset.hecho, e.target.value); } });
 $("#bImportar").onclick = async () => { toast("Importando de Shopify…"); const j = await fn({ accion: "importar" }); j.ok ? toast(`${j.nuevos} pedidos nuevos`) : toast(j.error, true); cargar(); };
 $("#quienForm").onsubmit = (e) => { e.preventDefault(); elegirNombre($("#quienOtro").value); };
+$("#corrForm").onsubmit = (e) => {
+  e.preventDefault();
+  const { p, l } = corrLinea ?? {}; if (!l) return;
+  const nueva = (l.personalizacion ?? []).map((x, i) => ({ key: x.key, value: (document.querySelector(`input[data-corr="${i}"]`)?.value ?? "").trim() }));
+  if (nueva.some((x) => !x.value)){ toast("El texto no puede quedar vacío", true); return; }
+  if (textoPers({ personalizacion: nueva }) === textoPers(l)){ $("#corregir").classList.add("hidden"); corrLinea = null; return; }
+  $("#corregir").classList.add("hidden"); corrLinea = null;
+  const guardar = (per) => guardarCorreccion(l, nueva, per);
+  if (persona()) return guardar(persona());
+  trasElegir = guardar;
+  abrirQuien(`¿Quién corrige el texto? · ${p.order_name}`, { nadie: true, destacar: p.asignado_a });
+};
 $("#bSalir").onclick = async () => { await sb.auth.signOut(); location.reload(); };
 $("#fLogin").onsubmit = async (e) => {
   e.preventDefault();
