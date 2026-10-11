@@ -30,7 +30,7 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 | Puesto | Qué ve |
 | --- | --- |
 | Administración | El programa entero: Plan del día, Pedidos, Resumen producción, Histórico y Ayuda. |
-| Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, y al final las «sin vinilo» que hay que preparar, con ✔ Hechas (o Preparadas), Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas y ✔ Ha llegado todo. |
+| Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. **Prendas sin vinilo**: los productos que no se cortan (como «cupido»), con ✔ Preparadas, Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas, ✔ Han llegado todas (el modelo entero) y ✔ Ha llegado todo. |
 | Expedición | **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
 En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
@@ -188,7 +188,7 @@ Quien corta el vinilo también estampa, a la vez y sin papeles. Todo se apunta e
 
 Las prendas que faltan están en **Sin stock** (pantalla de Producción, Resumen producción o la pestaña Sin stock de Pedidos). El pedido espera ahí entero.
 
-Cuando llegue la prenda, escribe cuántas han llegado y pulsa **✔ Han llegado**, o pulsa **Todas** si ha llegado toda la línea: vuelven a Producción, primero las de los pedidos urgentes y más antiguos. Si has repuesto de todo, **✔ Ha llegado todo** (arriba) lo devuelve todo de golpe; pide pulsar dos veces para no hacerlo sin querer.
+Cuando llegue la prenda, escribe cuántas han llegado y pulsa **✔ Han llegado**: si faltan 50 y llegan 20, escribe 20 y quedan 30 pendientes. **Todas** marca la talla entera y **✔ Han llegado todas**, junto al nombre del modelo, marca todas las tallas de ese modelo. Lo que llega se asigna primero a los pedidos urgentes (Exprés) y más antiguos, y vuelve a Producción. Si has repuesto de todo, **✔ Ha llegado todo** (arriba) lo devuelve todo de golpe; pide pulsar dos veces para no hacerlo sin querer.
 
 **Pedidos que se mueven solos.** No te asustes si un pedido cambia de pestaña sin que nadie lo toque:
 
@@ -246,7 +246,7 @@ Si aparece un error de GLS, el pedido queda en la pestaña Sin etiqueta. No lo e
 
 Algunos productos no se cortan ni se estampan: se venden tal cual, como los pantalones «cupido». En Shopify llevan la etiqueta **sin vinilo**.
 
-- Salen en **Producción**, al final de la lista, en el bloque **«Sin vinilo · mira si hay y déjalas en la estantería»**.
+- Salen en **Producción**, en su propia pestaña **Prendas sin vinilo**, por modelo y talla.
 - Si hay, cógelas, déjalas en la estantería de hechas y pulsa **✔ Preparadas** (o **Todas**). El programa las reparte a los pedidos como las demás.
 - Si no hay, pulsa **✖ No hay**: van a Sin stock. Cuando lleguen, **✔ Han llegado** las devuelve a Producción.
 - Expedición no tiene que mirar el stock: un pedido solo le sale cuando todas sus prendas están hechas o preparadas.
