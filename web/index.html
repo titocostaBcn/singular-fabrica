@@ -642,7 +642,8 @@ async function cargarYo(){
 
 // Pasos de cada puesto, con cuántos hay en cada uno
 let paso = null, buscaPuesto = "";
-const ordenPuesto = (a, b) => { const r = (p) => !p.asignado_a ? 1 : p.asignado_a === YO.nombre ? 0 : 2; return r(a) - r(b) || porPrioridad(a, b); };
+// Urgentes (Exprés) primero y después del más antiguo al más nuevo
+const ordenPuesto = porPrioridad;
 const pedidosEn = (e) => pedidos.filter((p) => activo(p) && p._estado === e).sort(ordenPuesto);
 const hechosHoy = () => pedidos.filter((p) => p._estado === "producido" && esHoy(p.estado_at) && !p.cancelado).sort((a, b) => new Date(b.estado_at) - new Date(a.estado_at));
 const recogidasListas = () => pedidos.filter((p) => p.recogida && !p.cancelado && p._estado === "producido" && !p.entregado_at).sort(porPrioridad);
@@ -1674,7 +1675,9 @@ function construirResumen(etapa){
   const contador = etapa === "cortar"; // en Cortar vinilo las estándar llevan contador (almacén de vinilos cortados)
   for (const g of grupos.values()) g.color = colorDe(g.titulo);
   // Hoja de corte: agrupada por color de vinilo (los sin color al final); dentro, urgentes y más cantidad primero
-  const lista = [...grupos.values()].sort((a, b) => (contador ? (!a.color - !b.color) || a.color.localeCompare(b.color, "es") : 0) || (b.urg > 0) - (a.urg > 0) || b.uds - a.uds);
+  // Por color de vinilo (en la hoja de corte) y, dentro, los modelos por orden alfabético: la A primero
+  const abc = new Intl.Collator("es", { sensitivity: "base", ignorePunctuation: true });
+  const lista = [...grupos.values()].sort((a, b) => (contador ? (!a.color - !b.color) || abc.compare(a.color, b.color) : 0) || abc.compare(a.titulo, b.titulo));
   let totalQuedan = 0;
   for (const g of lista){
     g.quedan = 0;

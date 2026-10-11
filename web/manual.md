@@ -33,7 +33,7 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 | Producción | Dos pasos. **1 · Cortar vinilo**: la hoja de corte por color. **2 · Estampar**: los pedidos con su vinilo cortado, con los botones ✔ Estampado, ✖ Vinilo mal y Falta la prenda. |
 | Expedición | **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
-En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. El buscador de arriba encuentra un pedido: escanea el código de la hoja o escribe su número. Si un pedido lo está haciendo otra compañera, sale en gris y al final de la lista.
+En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. El buscador de arriba encuentra un pedido: escanea el código de la hoja o escribe su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
 
 **Botones de la parte de arriba**
 
@@ -182,7 +182,7 @@ Todos los pedidos nuevos con vinilo entran en **Cortar vinilo**. Aquí solo se c
 
 **Vinilo estándar (igual para todas): en el Resumen**
 
-1. Ve a **Resumen producción → Cortar vinilo**. Es la **hoja de corte**: agrupa los modelos por **color de vinilo** para cortar cada color de una vez.
+1. Ve a **Resumen producción → Cortar vinilo**. Es la **hoja de corte**: agrupa los modelos por **color de vinilo** para cortar cada color de una vez y, dentro de cada color, los ordena por orden alfabético.
 2. Corta lo que pone «por cortar» en cada modelo y talla. Incluye lo de pedidos **sin prenda**: se corta igual y se guarda.
 3. Apunta las cortadas (**✔ Cortadas** o **Todos**). El vinilo entra en el **almacén de vinilos** y el programa lo reparte solo: cuando un pedido tiene todo su vinilo y ninguna prenda en Sin stock, pasa solo a **Estampar**. Primero los urgentes y los más antiguos.
 4. El vinilo que no se reparte se queda en el almacén hasta que llega su prenda.
