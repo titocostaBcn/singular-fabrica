@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fábrica · Singular Wardrobe</title>
+<title>Taller · Singular Wardrobe</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
@@ -431,7 +431,7 @@
 <section id="login" class="hidden">
   <form id="fLogin">
     <img class="logo" src="logo.png" alt="Singular Wardrobe">
-    <h1 style="text-align:center">Fábrica</h1>
+    <h1 style="text-align:center">Taller</h1>
     <input id="email" type="email" placeholder="Email" autocomplete="username" required>
     <input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password" required>
     <button type="submit">Entrar</button>
@@ -445,7 +445,7 @@
   <div id="aviso" class="hidden"></div>
   <header>
     <div class="fila">
-      <div class="marca"><img src="logo.png" alt="Singular Wardrobe"><span>Fábrica</span></div>
+      <div class="marca"><img src="logo.png" alt="Singular Wardrobe"><span>Taller</span></div>
       <div class="vistas"><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec hidden" id="bUsuarios" title="Usuarios: dar de alta y poner contraseñas" aria-label="Usuarios">👥</button>
@@ -507,7 +507,7 @@
   <div class="bots"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="claveCerrar">Cancelar</button></div>
 </form></div>
 <div id="usuM" class="hidden"><div class="caja">
-  <div class="cab"><h3 style="margin:0">Usuarios de la fábrica</h3><button type="button" class="btn-sec" id="usuCerrar">Cerrar</button></div>
+  <div class="cab"><h3 style="margin:0">Usuarios del taller</h3><button type="button" class="btn-sec" id="usuCerrar">Cerrar</button></div>
   <p class="ayuda">Aquí das de alta a cada persona y le pones la contraseña, sin correos. El email es solo su nombre de usuario: no hace falta que exista (por ejemplo dania@singularwardrobe.com). Dile a cada una su email y su contraseña; luego puede cambiarla con 🔑.</p>
   <div id="usuLista"></div>
   <form class="usu-nuevo" id="usuNuevo" novalidate autocomplete="off">
@@ -641,7 +641,7 @@ async function cargarYo(){
   }
   $("#bUsuarios").classList.toggle("hidden", !YO.admin);
   document.body.classList.toggle("puesto", modoPuesto());
-  $(".marca span").textContent = modoPuesto() ? `${PUESTOS[YO.puesto].label}${YO.nombre ? " · " + YO.nombre : ""}` : "Fábrica" + (YO.nombre ? " · " + YO.nombre : "");
+  $(".marca span").textContent = modoPuesto() ? `${PUESTOS[YO.puesto].label}${YO.nombre ? " · " + YO.nombre : ""}` : "Taller" + (YO.nombre ? " · " + YO.nombre : "");
   // Lo que haga queda a su nombre (quién estampó, quién empaquetó) sin preguntar
   if (modoPuesto() && YO.nombre) filtroAsig = YO.nombre;
 }
@@ -1304,7 +1304,7 @@ async function reimprimir(id){
   await cargar();
 }
 
-// PDF de GLS → imágenes → impresión. En el PC de fábrica: Chrome con --kiosk-printing para imprimir sin diálogo.
+// PDF de GLS → imágenes → impresión. En el PC del taller: Chrome con --kiosk-printing para imprimir sin diálogo.
 async function imprimirPdf(b64){
   const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
@@ -1870,7 +1870,7 @@ async function excelHistorico(){
   try {
     const ExcelJS = await cargarExcelJS();
     const filas = filasHistorico(), ahora = new Date();
-    const wb = new ExcelJS.Workbook(); wb.creator = "Singular Wardrobe · Fábrica"; wb.created = ahora;
+    const wb = new ExcelJS.Workbook(); wb.creator = "Singular Wardrobe · Taller"; wb.created = ahora;
     const fill = (hex) => ({ type: "pattern", pattern: "solid", fgColor: { argb: "FF" + hex } });
     const local = (t) => t ? ((d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000))(new Date(t)) : null;
     const ws = wb.addWorksheet("Histórico", { views: [{ state: "frozen", ySplit: 4 }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
@@ -2007,7 +2007,7 @@ async function exportarExcel(){
     const { ls, lista, total } = construirResumen(etapa);
     const ahora = new Date();
     const fTxt = { todos: "Todos los días", atrasados: "Entrados hasta ayer", hoy: "Entrados hoy" }[$("#fFecha").value];
-    const wb = new ExcelJS.Workbook(); wb.creator = "Singular Wardrobe · Fábrica"; wb.created = ahora;
+    const wb = new ExcelJS.Workbook(); wb.creator = "Singular Wardrobe · Taller"; wb.created = ahora;
     const borde = { top: { style: "thin", color: { argb: "FFD9D4CA" } }, bottom: { style: "thin", color: { argb: "FFD9D4CA" } }, left: { style: "thin", color: { argb: "FFD9D4CA" } }, right: { style: "thin", color: { argb: "FFD9D4CA" } } };
     const fill = (hex) => ({ type: "pattern", pattern: "solid", fgColor: { argb: "FF" + hex } });
 

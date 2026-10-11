@@ -1,4 +1,4 @@
-# Manual de uso · Programa de fábrica Singular Wardrobe
+# Manual de uso · Programa de taller de Singular Wardrobe
 
 Este programa organiza todos los pedidos de la tienda online desde que entran hasta que salen del taller. Se abre en el navegador en [tallersingular.netlify.app](https://tallersingular.netlify.app) y lo usamos todas a la vez, desde un ordenador compartido o una tablet.
 
@@ -9,7 +9,7 @@ Cada mañana a las 8:00 el programa trae los pedidos nuevos de la tienda y recog
 **Entrar**
 
 1. Abre Chrome y entra en tallersingular.netlify.app.
-2. Escribe el email y la contraseña de la fábrica y pulsa Entrar.
+2. Escribe el email y la contraseña del taller y pulsa Entrar.
 3. Si el ordenador se queda encendido, la sesión sigue abierta al día siguiente.
 
 **¿No recuerdas la contraseña?** Pídele a Tito que te ponga una nueva desde 👥. También puedes escribir tu email en la pantalla de entrada y pulsar **¿Has olvidado la contraseña?**: te llega un correo con un enlace (mira también en correo no deseado) y, al abrirlo, el programa te pide la contraseña nueva dos veces. El enlace solo vale una vez y caduca al cabo de un rato.
