@@ -29,7 +29,7 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 
 | Puesto | Qué ve |
 | --- | --- |
-| Administración | El programa entero: Plan del día, Pedidos, Resumen producción, Histórico y Ayuda. |
+| Administración | Al entrar, la pantalla de **Gerencia** (Panel y Mi día, apartado 17). Con el botón **Ver todo el programa** pasa al programa entero: Plan del día, Pedidos, Resumen producción, Histórico y Ayuda. El botón **Gerencia** de arriba vuelve al panel. |
 | Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. **Prendas sin vinilo**: los productos que no se cortan (como «cupido»), con ✔ Preparadas, Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas, ✔ Han llegado todas (el modelo entero) y ✔ Ha llegado todo. |
 | Expedición | **Revisar stock**: lo primero de la mañana, las prendas del día por modelo y talla, con ✔ Hay y ✖ No hay (las de estampar) y ✔ Preparadas (las sin vinilo). **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
@@ -373,3 +373,38 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 7. **Ningún paquete sale sin etiqueta impresa** o sin anotar cómo sale en Otros envíos.
 8. **Si algo no cuadra, para y avisa** antes de enviar.
 9. **Las personalizadas, aparte y con el texto a la vista**, para que Expedición las encuentre.
+
+## 17. Gerencia: Panel y Mi día
+
+Es la pantalla con la que entra Administración (Carlota). Tiene dos botones arriba: **📊 Panel**, para ver cómo va la empresa, y **✅ Mi día**, con lo que hay que hacer hoy. **Ver todo el programa →** abre el programa entero, y el botón **Gerencia** de arriba vuelve aquí.
+
+La franja verde de arriba confirma que los pedidos de Shopify se han importado hoy. Si sale en rojo, pulsa **↻ Importar ahora**; si sigue en rojo, avisa a Tito.
+
+**Mi día: lo que hay que hacer hoy**
+
+Cada tarjeta es una tarea, con un número grande. Arriba salen las que necesitan algo (borde rojo = urgente, amarillo = mirar hoy) y abajo, en pequeño y en verde, las que ya están bien.
+
+| Tarjeta | Qué hacer |
+| --- | --- |
+| 🛒 Comprar | La lista de lo que falta (Sin stock): modelo, talla, cuántas, qué pedidos esperan (⚡ = urgente) y desde cuándo. **🖨 Imprimir la lista** la saca en papel. Cuando llegue la compra, **Marcar lo que ha llegado** abre Sin stock. |
+| 📦 Revisión de stock de la mañana | Cuántas prendas quedan por mirar. Mientras no esté a 0, la lista de la compra no está completa. |
+| ⏰ Pedidos retrasados | Más de 7 días sin salir (urgentes, más de 3). Pulsa un número de pedido para ver su tarjeta. |
+| ⚡ Urgentes | Los pedidos Exprés que aún no han salido y en qué etapa están. |
+| ✏️ Cambios de clientas | Pedidos que la clienta cambió en Shopify: comprueba que el taller lo ha visto y pulsa ✔ Visto. |
+| 🏷 Etiquetas GLS con problema | Pedidos sin etiqueta o con error de GLS. No se envían así: avisa a Tito. |
+| ✈️ Otros envíos de hoy | Los que han salido sin GLS (Canarias, Reino Unido…). De momento hay que marcarlos a mano como enviados en Shopify. |
+| 🏬 Recogidas en tienda | Paquetes esperando a que la clienta pase a buscarlos. |
+
+**Panel: cómo va la empresa**
+
+Arriba eliges el periodo: Hoy, Ayer, 7 días, 30 días, Este mes o Este año. Todo se compara con las mismas fechas del año anterior (▲ verde = mejor, ▼ rojo = peor).
+
+- **Ventas**: facturación (IVA y envío incluidos, menos devoluciones), pedidos, ticket medio y prendas vendidas. Con Meta Ads: la inversión, el **ROAS** (euros vendidos por cada euro en Meta, contando todas las ventas de la tienda) y el coste por clienta nueva. El gráfico enseña las ventas de cada día (barras) y la inversión en Meta (línea); pasa el ratón por encima para ver el detalle del día.
+- **Clientas nuevas y recurrentes**: cuántos pedidos son de clientas que compran por primera vez y cuántos de clientas que repiten, con el ticket medio de cada grupo y su parte de la facturación.
+- **Evolución**: las ventas de cada mes de este año (barra llena) frente al año anterior (barra vacía).
+- **Lo más vendido**: los 10 productos que más facturan en el periodo.
+- **Taller ahora mismo**: pedidos por salir (y cuántos días de trabajo son al ritmo actual), salidos hoy, prendas por hacer, listos para empaquetar, prendas sin stock, urgentes y retrasados, con los pedidos entrados y salidos de los últimos 14 días.
+- **Qué ha hecho cada una**: por persona y día, prendas hechas, personalizadas, stock revisado, prendas marcadas «No hay», pedidos empaquetados y la hora de la primera y la última acción. Con ‹ Día anterior se ven otros días, y debajo, los últimos 7 días.
+
+Las ventas se leen de Shopify cada mañana a las 8:00 y al abrir el panel (las de hoy). Las cifras pueden diferir un poco de las «Ventas totales» de Shopify, porque aquí las devoluciones se restan del día del pedido y no del día en que se devolvió el dinero. La inversión en Meta Ads se actualiza cada mañana.
+

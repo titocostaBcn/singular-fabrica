@@ -344,6 +344,47 @@
   .rech{margin:8px 0 0;font-size:19px} .rech small{color:var(--muted);font-size:14px;font-weight:600}
   .rrow.rec{grid-template-columns:minmax(180px,auto) 1fr auto auto}
   .rhacer .nohay{background:#fff;color:var(--err);border:2px solid var(--err);padding:9px 12px}
+  /* Gerencia */
+  #gerencia{padding:16px 16px 60px;display:grid;gap:14px;max-width:1180px;margin:0 auto}
+  body.ger .vistas,body.ger #bImportar,body.ger header > .fila + .fila{display:none!important}
+  .gtop{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .gtop h2{margin:0 auto 0 0;font-size:26px;display:grid} .gtop h2 small{font-size:14px;color:var(--muted);font-weight:600}
+  .gmodos{display:flex;gap:6px}
+  .gmodos button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:11px 20px;font-weight:800;font-size:16px}
+  .gmodos button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .gtodo{border:1px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;padding:10px 16px;font-weight:800}
+  .gimp{border-radius:12px;padding:10px 14px;font-weight:700;font-size:14px}
+  .gimp.ok{background:var(--producido-bg);color:var(--producido)} .gimp.mal{background:var(--err-bg);color:var(--err)}
+  .gimp button{border:0;background:var(--err);color:#fff;border-radius:8px;padding:6px 10px;font-weight:700;margin-left:6px}
+  .gsec{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;min-width:0}
+  .gsec h3{margin:0;font-size:19px} .gsec h3 small{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px}
+  .gh4{margin:6px 0 0;font-size:15px}
+  .gcab{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .gper{display:flex;gap:6px;flex-wrap:wrap}
+  .gper button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 13px;font-weight:600}
+  .gper button.on{background:var(--accent);color:#fff;border-color:var(--accent)} .gper button[disabled]{opacity:.4}
+  .gsec .kpis{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
+  .gsec .kpi{background:#faf8f5} .gsec .kpi b{font-size:26px}
+  .kpi em.d{font-style:normal;font-weight:800;display:block} .kpi em.d.up{color:var(--producido)} .kpi em.d.down{color:var(--err)}
+  .gchart svg{width:100%;height:auto;display:block} .gchart .ghit:hover{fill:#1d1b1810}
+  .gley{display:flex;gap:16px;font-size:13px;color:var(--muted);flex-wrap:wrap;font-weight:600}
+  .gley i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .gmini{font-size:13px;color:var(--muted);margin:0}
+  .htabla td.r,.htabla th.r{text-align:right} .htabla tr.tot td{font-weight:800;background:#faf8f5}
+  .htabla.g7 td{font-size:13px;white-space:nowrap}
+  .gres{display:flex;gap:10px;flex-wrap:wrap} .gres span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px}
+  .gtareas{display:grid;gap:12px}
+  .gtarea{background:var(--panel);border:1px solid var(--line);border-left:7px solid #c9c2b6;border-radius:14px;padding:14px 16px;display:grid;gap:10px;min-width:0}
+  .gtarea.ok{border-left-color:var(--producido);padding:10px 16px;gap:4px} .gtarea.ok .ic{font-size:18px} .gtarea.ok b.n{font-size:22px} .gtarea.ok .t{font-size:15px} .gtarea.aviso{border-left-color:#d9a400} .gtarea.mal{border-left-color:var(--err)}
+  .gtarea .cab{display:flex;gap:12px;align-items:center}
+  .gtarea .ic{font-size:24px} .gtarea .t{font-weight:800;font-size:17px;flex:1} .gtarea b.n{font-size:30px;line-height:1}
+  .gtarea.ok b.n{color:var(--producido)} .gtarea.mal b.n{color:var(--err)} .gtarea.aviso b.n{color:#9a6b00}
+  .gtarea .acc{display:flex;gap:8px;flex-wrap:wrap}
+  .gtarea .acc button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;font-weight:700}
+  .gtarea .acc button.prim{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .gpeds{display:flex;gap:8px;flex-wrap:wrap;align-items:center} .gpeds .chip{font-size:12px;padding:3px 8px;margin-right:6px}
+  .gtarea tr.urg td{background:var(--urg-bg)}
+  @media (max-width:600px){ .gsec .kpis{grid-template-columns:1fr 1fr} .gsec .kpi b{font-size:21px} .gsec{padding:12px} #gerencia{padding:12px 12px 60px} }
   #zonaHojas{display:none}
   #zonaImpresion{display:none}
   @media print{
@@ -379,6 +420,12 @@
     body.imp-lista .rrow,body.imp-lista .ghead{break-inside:avoid}
     body.imp-lista .ghead{break-after:avoid}
     body.imp-lista #bExcel,body.imp-lista #bImprLista{display:none!important}
+    /* lista de la compra (Gerencia → Mi día) */
+    body.imp-compra #app > *:not(#gerencia),body.imp-compra > *:not(#app){display:none!important}
+    body.imp-compra,html:has(body.imp-compra){background:#fff!important}
+    body.imp-compra #gerencia > *:not(.gtareas):not(.logo-imp),body.imp-compra .gtarea:not(.gtcompra),body.imp-compra .gtarea .acc{display:none!important}
+    body.imp-compra .logo-imp{display:block;margin:0 0 8px} body.imp-compra .gtarea{border:0;padding:0}
+    body.imp-compra .htabla th{background:#000!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;position:static}
     /* plan del día y lista de recogida */
     body.imp-plan #app > *:not(#plan),body.imp-plan > *:not(#app){display:none!important}
     body.imp-plan,html:has(body.imp-plan){background:#fff!important}
@@ -447,7 +494,7 @@
   <header>
     <div class="fila">
       <div class="marca"><img src="logo.png" alt="Singular Wardrobe"><span>Taller</span></div>
-      <div class="vistas"><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
+      <div class="vistas"><button data-vista="gerencia">Gerencia</button><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec hidden" id="bUsuarios" title="Usuarios: dar de alta y poner contraseñas" aria-label="Usuarios">👥</button>
       <button class="btn-sec" id="bClave" title="Cambiar la contraseña" aria-label="Cambiar la contraseña">🔑</button>
@@ -469,6 +516,7 @@
     <div class="busca-p" id="buscaP"><input id="buscaPIn" type="search" inputmode="search" placeholder="Busca: escribe el nº de pedido o el nombre" autocomplete="off"><button type="button" class="btn-sec" id="buscaPX">Borrar</button></div>
     <div id="puestoLista"></div>
   </main>
+  <main id="gerencia" class="hidden"></main>
   <main id="plan" class="hidden"></main>
   <main id="lista"></main>
   <main id="resumen" class="hidden"></main>
@@ -597,8 +645,8 @@ const estandar = (l) => carrilLinea(l) === "estandar";
 const urgente = (p) => /expr[eé]s|urgent/i.test(p.metodo_envio ?? "") || (p.tags ?? []).some((t) => /urgent/i.test(t));
 const porPrioridad = (a, b) => (urgente(b) - urgente(a)) || (new Date(a.creado_shopify) - new Date(b.creado_shopify));
 
-let vista = (() => { try { return localStorage.getItem("fab_vista") || "pedidos"; } catch { return "pedidos"; } })(), tab = "cortar", etapaR = "cortar";
-if (!["plan", "pedidos", "resumen", "historico", "ayuda"].includes(vista)) vista = "pedidos";
+let vista = (() => { try { return localStorage.getItem("fab_vista") || "gerencia"; } catch { return "gerencia"; } })(), tab = "cortar", etapaR = "cortar";
+if (!["gerencia", "plan", "pedidos", "resumen", "historico", "ayuda"].includes(vista)) vista = "gerencia";
 let pedidos = [], cfg = {}, ocupado = new Set(), sel = new Set(), cortados = new Map(), otrosAbierto = null, actualizando = new Set(), corrLinea = null;
 let modelos = new Map(); // titulo → color de vinilo (fab_modelos)
 const colorDe = (titulo) => modelos.get(titulo) || "";
@@ -636,7 +684,7 @@ async function cargarYo(){
   if (DEMO){
     // ?demo&puesto=produccion (o expedicion) enseña la pantalla de ese puesto; sin puesto, la del administrador.
     const q = new URLSearchParams(location.search), pu = q.get("puesto");
-    YO = PUESTOS[pu] && pu !== "administracion" ? { admin: false, puesto: pu, nombre: q.get("nombre") || "Andrea" } : { admin: true, puesto: null, nombre: "Tito" };
+    YO = PUESTOS[pu] && pu !== "administracion" ? { admin: false, puesto: pu, nombre: q.get("nombre") || "Andrea" } : { admin: true, puesto: null, nombre: q.get("nombre") || "Tito" };
   } else {
     const { data, error } = await sb.rpc("fab_yo");
     if (!error && data) YO = { admin: !!data.admin, puesto: PUESTOS[data.puesto] ? data.puesto : null, nombre: data.nombre ?? null };
@@ -672,7 +720,7 @@ const PASOS = {
   ],
 };
 function pintarPuesto(){
-  for (const id of ["lista", "plan", "resumen", "historico", "ayuda"]) $("#" + id).classList.add("hidden");
+  for (const id of ["lista", "gerencia", "plan", "resumen", "historico", "ayuda"]) $("#" + id).classList.add("hidden");
   $("#puesto").classList.remove("hidden");
   const pasos = PASOS[YO.puesto]();
   if (!paso || (paso !== "ayuda" && !pasos.some((x) => x.id === paso))) paso = pasos[0].id;
@@ -1336,15 +1384,17 @@ function pintar(){
   $("#puesto").classList.add("hidden");
   $("#lista").classList.toggle("hidden", vista !== "pedidos");
   $("#plan").classList.toggle("hidden", vista !== "plan");
+  $("#gerencia").classList.toggle("hidden", vista !== "gerencia");
+  document.body.classList.toggle("ger", vista === "gerencia");
   $("#resumen").classList.toggle("hidden", vista !== "resumen");
   $("#historico").classList.toggle("hidden", vista !== "historico");
   $("#ayuda").classList.toggle("hidden", vista !== "ayuda");
-  $("#tabs").classList.toggle("hidden", vista === "historico" || vista === "ayuda" || vista === "plan");
+  $("#tabs").classList.toggle("hidden", vista === "historico" || vista === "ayuda" || vista === "plan" || vista === "gerencia");
   if (vista !== "pedidos") $("#subbar").classList.add("hidden");
   $("#buscar").classList.toggle("hidden", vista !== "pedidos");
   $("#fFecha").classList.toggle("hidden", vista !== "resumen");
   document.querySelectorAll(".vistas button").forEach((b) => b.classList.toggle("on", b.dataset.vista === vista));
-  vista === "plan" ? pintarPlan() : vista === "pedidos" ? pintarPedidos() : vista === "resumen" ? pintarResumen() : vista === "historico" ? pintarHistorico() : pintarAyuda();
+  vista === "gerencia" ? pintarGerencia() : vista === "plan" ? pintarPlan() : vista === "pedidos" ? pintarPedidos() : vista === "resumen" ? pintarResumen() : vista === "historico" ? pintarHistorico() : pintarAyuda();
 }
 
 // ───── Plan del día (ola 1): cuadro del día, plan con lo pendiente primero y lista de recogida de prendas ─────
@@ -1489,6 +1539,370 @@ function pintarSubbar(){
     + `<button class="coger" data-cogern="5">✋ Coger 5 siguientes${persona() ? " para " + esc(persona()) : ""}</button>`;
   el.classList.remove("hidden");
 }
+// ───── Gerencia (Carlota): «Panel» para decidir (ventas, Meta Ads, taller, equipo) y «Mi día» para el trabajo diario ─────
+// Datos: fab_ventas_dia / fab_ventas_producto / fab_meta_dia (los rellena la función: acción «ventas»), fab_almacen_mov y fab_eventos
+// (quién hace qué), y los pedidos ya cargados. Solo lectura; los botones llevan a la parte del programa donde se actúa.
+const G = { modo: "panel", periodo: "30", dia: null, ventas: [], meta: [], prods: [], prodsClave: "", mov: [], ev: [], usu: [], extra: [], leido: 0, cargando: false, refrescado: 0, error: null };
+const diaISO = (t) => new Date(t).toLocaleDateString("sv-SE");
+const hoyISO = () => diaISO(new Date());
+const masDias = (d, n) => { const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return x.toLocaleDateString("sv-SE"); };
+const menosAno = (d) => { const x = new Date(d + "T12:00:00"); x.setFullYear(x.getFullYear() - 1); return x.toLocaleDateString("sv-SE"); };
+const eur = (n, dec = 0) => Number(n ?? 0).toLocaleString("es-ES", { style: "currency", currency: "EUR", minimumFractionDigits: dec, maximumFractionDigits: dec });
+const ent = (n) => Math.round(Number(n ?? 0)).toLocaleString("es-ES");
+const diaCorto = (d) => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" });
+const neto = (v) => Number(v.total) - Number(v.devuelto);
+const todosPedidos = () => G.extra.length ? pedidos.concat(G.extra) : pedidos;
+
+async function leerTodo(build){ // Supabase devuelve como mucho 1000 filas por consulta
+  const out = [];
+  for (let i = 0; i < 60; i++){
+    const { data, error } = await build().range(i * 1000, i * 1000 + 999);
+    if (error) throw error;
+    out.push(...(data ?? [])); if (!data || data.length < 1000) break;
+  }
+  return out;
+}
+async function cargarGerencia(forzar = false){
+  if (G.cargando || (!forzar && Date.now() - G.leido < 120000)) return;
+  G.cargando = true; G.error = null;
+  try {
+    if (DEMO) demoGerencia();
+    else {
+      const d31 = new Date(Date.now() - 31 * 864e5).toISOString();
+      [G.ventas, G.meta, G.mov, G.ev, G.usu] = await Promise.all([
+        leerTodo(() => sb.from("fab_ventas_dia").select("*").order("dia")),
+        leerTodo(() => sb.from("fab_meta_dia").select("*").order("dia")),
+        leerTodo(() => sb.from("fab_almacen_mov").select("n,motivo,usuario,created_at").gte("created_at", d31).in("motivo", ["cortado", "corregido"])),
+        leerTodo(() => sb.from("fab_eventos").select("tipo,detalle,usuario,created_at").gte("created_at", d31).in("tipo", ["lineas", "picking_hay", "picking_no_hay", "importacion", "importacion_error", "ventas_error", "meta_error"])),
+        sb.from("fab_usuarios").select("email,nombre,puesto").then((r) => r.data ?? []),
+      ]);
+      G.prodsClave = "";
+    }
+    G.leido = Date.now();
+  } catch (e){ G.error = String(e.message ?? e); }
+  G.cargando = false;
+  await cargarProductos();
+  if (vista === "gerencia") pintarGerencia();
+  refrescarVentasHoy();
+}
+// Las ventas de hoy se piden a Shopify al abrir el panel si tienen más de 20 minutos
+async function refrescarVentasHoy(){
+  if (DEMO || Date.now() - G.refrescado < 20 * 60000) return;
+  const v = G.ventas.find((x) => x.dia === hoyISO());
+  if (v && Date.now() - new Date(v.actualizado_at) < 20 * 60000) return;
+  G.refrescado = Date.now();
+  const j = await fn({ accion: "ventas" });
+  if (!j.ok) return;
+  const [nv, nm] = await Promise.all([
+    sb.from("fab_ventas_dia").select("*").gte("dia", masDias(hoyISO(), -1)).then((r) => r.data ?? []),
+    sb.from("fab_meta_dia").select("*").gte("dia", masDias(hoyISO(), -1)).then((r) => r.data ?? []),
+  ]);
+  const unir = (lista, nuevos) => { const m = new Map(lista.map((x) => [x.dia, x])); for (const x of nuevos) m.set(x.dia, x); return [...m.values()].sort((a, b) => a.dia.localeCompare(b.dia)); };
+  G.ventas = unir(G.ventas, nv); G.meta = unir(G.meta, nm); G.prodsClave = "";
+  await cargarProductos();
+  if (vista === "gerencia") pintarGerencia();
+}
+function rangoPeriodo(p = G.periodo){
+  const h = hoyISO(), d = new Date(h + "T12:00:00");
+  if (p === "hoy") return [h, h];
+  if (p === "ayer") return [masDias(h, -1), masDias(h, -1)];
+  if (p === "7") return [masDias(h, -6), h];
+  if (p === "30") return [masDias(h, -29), h];
+  if (p === "mes") return [h.slice(0, 8) + "01", h];
+  if (p === "ano") return [h.slice(0, 5) + "01-01", h];
+  return [masDias(h, -29), h];
+}
+const PERIODOS = [["hoy", "Hoy"], ["ayer", "Ayer"], ["7", "7 días"], ["30", "30 días"], ["mes", "Este mes"], ["ano", "Este año"]];
+async function cargarProductos(){
+  const [d0, d1] = rangoPeriodo(), clave = d0 + d1;
+  if (G.prodsClave === clave) return;
+  G.prodsClave = clave;
+  if (DEMO){ G.prods = G.demoProds(d0, d1); return; }
+  try { G.prods = await leerTodo(() => sb.from("fab_ventas_producto").select("titulo,unidades,importe").gte("dia", d0).lte("dia", d1)); }
+  catch { G.prods = []; }
+}
+function sumaVentas(d0, d1){
+  const r = { neto: 0, pedidos: 0, unidades: 0, devuelto: 0, dias: 0, gasto: 0, metaDias: 0, compras: 0, valorMeta: 0, nuevos: 0, recurrentes: 0, vNuevos: 0, vRec: 0 };
+  for (const v of G.ventas) if (v.dia >= d0 && v.dia <= d1){
+    r.neto += neto(v); r.pedidos += v.pedidos; r.unidades += v.unidades; r.devuelto += Number(v.devuelto); r.dias++;
+    r.nuevos += v.pedidos_nuevos ?? 0; r.recurrentes += v.pedidos_recurrentes ?? 0; r.vNuevos += Number(v.ventas_nuevos ?? 0); r.vRec += Number(v.ventas_recurrentes ?? 0);
+  }
+  for (const m of G.meta) if (m.dia >= d0 && m.dia <= d1){ r.gasto += Number(m.gasto); r.metaDias++; r.compras += m.compras; r.valorMeta += Number(m.valor_compras); }
+  return r;
+}
+// Quién ha hecho qué en un día: prendas hechas (Producción), personalizadas, stock revisado, «No hay» y pedidos empaquetados
+function nombreDe(x){
+  if (!x || ["auto", "cron", "claude", "demo"].includes(x)) return null;
+  if (!x.includes("@")) return x;
+  const u = G.usu.find((u) => String(u.email).toLowerCase() === x.toLowerCase());
+  return u?.nombre || x.split("@")[0].replace(/^./, (c) => c.toUpperCase());
+}
+function equipoDia(dia){
+  const cant = new Map(todosPedidos().flatMap((p) => (p.fab_lineas ?? []).map((l) => [l.line_id, l.cantidad ?? 1])));
+  const uds = (ids) => (ids ?? []).reduce((s, id) => s + (cant.get(id) ?? 1), 0);
+  const m = new Map();
+  const reg = (quien, k, v, t) => {
+    const n = nombreDe(quien); if (!n || !v) return;
+    const r = m.get(n) ?? { hechas: 0, pers: 0, hay: 0, nohay: 0, empaq: 0, desde: null, hasta: null };
+    r[k] += v; if (t){ if (!r.desde || t < r.desde) r.desde = t; if (!r.hasta || t > r.hasta) r.hasta = t; }
+    m.set(n, r);
+  };
+  for (const x of G.mov) if (diaISO(x.created_at) === dia) reg(x.usuario, "hechas", x.n, x.created_at);
+  for (const e of G.ev) if (diaISO(e.created_at) === dia){
+    const ids = e.detalle?.line_ids;
+    if (e.tipo === "lineas" && e.detalle?.estado === "empaquetar") reg(e.usuario, "pers", uds(ids), e.created_at);
+    else if (e.tipo === "picking_hay") reg(e.detalle?.persona || e.usuario, "hay", uds(ids), e.created_at);
+    else if (e.tipo === "picking_no_hay") reg(e.detalle?.persona || e.usuario, "nohay", uds(ids), e.created_at);
+  }
+  for (const p of todosPedidos()) if (p.empaquetado_at && !p.cancelado && diaISO(p.empaquetado_at) === dia) reg(p.empaquetado_por || "Sin indicar", "empaq", 1, p.empaquetado_at);
+  return m;
+}
+const salidosDia = (dia) => todosPedidos().filter((p) => p._estado === "producido" && !p.cancelado && diaISO(p.empaquetado_at ?? p.estado_at) === dia).length;
+function estadoImportacion(){
+  const hoy = hoyISO(), del = G.ev.filter((e) => diaISO(e.created_at) === hoy);
+  const ok = del.find((e) => e.tipo === "importacion"), mal = del.find((e) => e.tipo === "importacion_error");
+  const ahora = new Date();
+  if (ok) return { ok: true, txt: `Pedidos de Shopify importados hoy a las ${new Date(ok.created_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}` };
+  if (DEMO) return { ok: true, txt: "Pedidos de Shopify importados hoy a las 08:00" };
+  if (ahora.getHours() * 60 + ahora.getMinutes() < 8 * 60 + 15) return { ok: true, txt: "La importación de hoy se hace a las 8:00" };
+  return { ok: false, txt: "La importación de las 8:00 no se ha hecho" + (mal ? `: ${mal.detalle?.error ?? ""}` : "") };
+}
+
+// ── gráficos (SVG a mano, un solo eje) ──
+function grafico({ etiquetas, barras = [], linea = null, fmt = ent, alto = 240, tip, apilar = false }){
+  const W = 960, H = alto, ml = fmt === ent ? 48 : 86, mr = 12, mt = 12, mb = 34, n = etiquetas.length;
+  const todos = [...(apilar ? etiquetas.map((_, i) => barras.reduce((s, b) => s + (b.valores[i] ?? 0), 0)) : barras.flatMap((b) => b.valores)), ...(linea ? linea.valores : [])].filter((x) => x != null);
+  const max = Math.max(1, ...todos);
+  const paso = Math.pow(10, Math.floor(Math.log10(max))), top = Math.ceil(max / paso) * paso;
+  const y = (v) => mt + (H - mt - mb) * (1 - v / top), slot = (W - ml - mr) / n, nb = apilar ? 1 : Math.max(1, barras.length);
+  const bw = Math.max(2, Math.min(28, (slot - 4) / nb - 2));
+  const grid = [0, 0.25, 0.5, 0.75, 1].map((f) => `<line x1="${ml}" x2="${W - mr}" y1="${y(top * f)}" y2="${y(top * f)}" stroke="#e3ddd3" stroke-width="1"/><text x="${ml - 8}" y="${y(top * f) + 4}" text-anchor="end" font-size="12" fill="#6f6a62">${esc(fmt(top * f))}</text>`).join("");
+  const cada = Math.ceil(n / 12);
+  const xs = etiquetas.map((t, i) => i % cada === 0 || i === n - 1 ? `<text x="${ml + slot * (i + 0.5)}" y="${H - 12}" text-anchor="middle" font-size="12" fill="#6f6a62">${esc(t)}</text>` : "").join("");
+  const base = etiquetas.map(() => 0);
+  const bars = apilar ? barras.map((b) => b.valores.map((v, i) => {
+    if (!v) return "";
+    const x = ml + slot * i + (slot - bw) / 2, y1 = y(base[i] + v), y0 = y(base[i]); base[i] += v;
+    return `<rect x="${x.toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, y0 - y1 - 1).toFixed(1)}" rx="2" fill="${b.color}"/>`;
+  }).join("")).join("") : barras.map((b, j) => b.valores.map((v, i) => {
+    if (!v) return "";
+    const x = ml + slot * i + (slot - nb * (bw + 2)) / 2 + j * (bw + 2), h = Math.max(1, y(0) - y(v));
+    return `<rect x="${x.toFixed(1)}" y="${(y(0) - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4, bw / 2)}" fill="${b.hueco ? "#fff" : b.color}" stroke="${b.hueco ? b.color : "none"}" stroke-width="${b.hueco ? 1.5 : 0}"/>`;
+  }).join("")).join("");
+  const lin = linea ? (() => {
+    const pts = linea.valores.map((v, i) => v == null ? null : [ml + slot * (i + 0.5), y(v)]);
+    let d = "", abierto = false;
+    for (const p of pts){ if (!p){ abierto = false; continue; } d += (abierto ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); abierto = true; }
+    return `<path d="${d}" fill="none" stroke="${linea.color}" stroke-width="2.5" stroke-linejoin="round"/>` + (n <= 31 ? pts.map((p) => p ? `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="${linea.color}" stroke="#fff" stroke-width="1.5"/>` : "").join("") : "");
+  })() : "";
+  const hits = etiquetas.map((t, i) => `<rect class="ghit" x="${ml + slot * i}" y="${mt}" width="${slot}" height="${H - mt - mb}" fill="transparent"><title>${esc(tip ? tip(i) : t)}</title></rect>`).join("");
+  const ley = [...barras.map((b) => `<span><i style="background:${b.hueco ? "#fff" : b.color};border:1.5px solid ${b.color}"></i>${esc(b.nombre)}</span>`), ...(linea ? [`<span><i style="background:${linea.color};height:3px;vertical-align:3px"></i>${esc(linea.nombre)}</span>`] : [])].join("");
+  return `<div class="gley">${ley}</div><div class="gchart"><svg viewBox="0 0 ${W} ${H}" role="img">${grid}${bars}${lin}${xs}<line x1="${ml}" x2="${W - mr}" y1="${y(0)}" y2="${y(0)}" stroke="#b9b2a6"/>${hits}</svg></div>`;
+}
+
+function pintarGerencia(){
+  const el = $("#gerencia");
+  if (!G.cargando && Date.now() - G.leido > 5 * 60000) cargarGerencia(true);
+  const yo = YO.nombre ? YO.nombre.split(" ")[0] : "";
+  const hora = new Date().getHours(), saludo = hora < 14 ? "Buenos días" : hora < 21 ? "Buenas tardes" : "Buenas noches";
+  const imp = estadoImportacion();
+  el.innerHTML = `<div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
+    <div class="gtop"><h2>${saludo}${yo ? ", " + esc(yo) : ""}<small>${new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}</small></h2>
+      <div class="gmodos"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}">📊 Panel</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}">✅ Mi día</button></div>
+      <button class="gtodo" data-vista="plan" title="Abre el programa completo: Plan del día, Pedidos, Resumen, Histórico">Ver todo el programa →</button></div>
+    <div class="gimp ${imp.ok ? "ok" : "mal"}">${imp.ok ? "✔" : "⚠"} ${esc(imp.txt)}${imp.ok ? "" : ` · <button data-gimportar>↻ Importar ahora</button>`}</div>
+    ${G.error ? `<div class="err">No se han podido leer los datos del panel: ${esc(G.error)}</div>` : ""}
+    ${G.cargando && !G.leido ? `<div class="vacio">Cargando el panel…</div>` : G.modo === "panel" ? panelHTML() : miDiaHTML()}`;
+}
+
+function panelHTML(){
+  const [d0, d1] = rangoPeriodo(), a = sumaVentas(d0, d1), b = sumaVentas(menosAno(d0), menosAno(d1));
+  const delta = (x, y, inv = false) => { if (!y) return ""; const p = Math.round((x - y) / y * 100); const bien = inv ? p <= 0 : p >= 0; return `<em class="d ${bien ? "up" : "down"}">${p >= 0 ? "▲" : "▼"} ${Math.abs(p)}% vs año anterior</em>`; };
+  const kpi = (n, t, extra = "", cls = "") => `<div class="kpi ${cls}"><b>${n}</b><span>${t}</span>${extra ? `<small>${extra}</small>` : ""}</div>`;
+  const ticket = a.pedidos ? a.neto / a.pedidos : 0, ticketB = b.pedidos ? b.neto / b.pedidos : 0;
+  const hayMeta = a.metaDias > 0, roas = a.gasto ? a.neto / a.gasto : 0, roasB = b.gasto ? b.neto / b.gasto : 0;
+  const ultMeta = G.meta.length ? G.meta[G.meta.length - 1].dia : null;
+  // Diario: últimos 30 días (o el periodo si es más largo, por semanas si pasa de 92 días)
+  const dd0 = d0 < masDias(d1, -29) ? d0 : masDias(d1, -29);
+  const dias = []; for (let d = dd0; d <= d1; d = masDias(d, 1)) dias.push(d);
+  const vMap = new Map(G.ventas.map((v) => [v.dia, v])), mMap = new Map(G.meta.map((m) => [m.dia, m]));
+  let grupos = dias.map((d) => [d]);
+  if (dias.length > 92){ grupos = []; for (let i = 0; i < dias.length; i += 7) grupos.push(dias.slice(i, i + 7)); }
+  const sv = (g) => g.reduce((s, d) => s + (vMap.has(d) ? neto(vMap.get(d)) : 0), 0);
+  const sm = (g) => g.some((d) => mMap.has(d)) ? g.reduce((s, d) => s + Number(mMap.get(d)?.gasto ?? 0), 0) : null;
+  const sp = (g) => g.reduce((s, d) => s + (vMap.get(d)?.pedidos ?? 0), 0);
+  const etq = grupos.map((g) => new Date(g[0] + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" }));
+  const g1 = grafico({ etiquetas: etq, fmt: (v) => eur(v),
+    barras: [{ nombre: grupos[0].length > 1 ? "Ventas por semana" : "Ventas del día", color: "#2563a8", valores: grupos.map(sv) }],
+    linea: hayMeta || G.meta.length ? { nombre: "Inversión en Meta Ads", color: "#c2410c", valores: grupos.map(sm) } : null,
+    tip: (i) => { const g = grupos[i], v = sv(g), m = sm(g), p = sp(g); return `${g.length > 1 ? "Semana del " + diaCorto(g[0]) : diaCorto(g[0])}\nVentas: ${eur(v)} · ${p} pedidos${m != null ? `\nMeta: ${eur(m)} · ROAS ${m ? (v / m).toFixed(1) : "—"} · ${p ? eur(m / p, 2) : "—"} por pedido` : ""}`; } });
+  const g4 = grafico({ etiquetas: etq, apilar: true,
+    barras: [{ nombre: "Pedidos de clientas que repiten", color: "#6a3fb5", valores: grupos.map((g) => g.reduce((s, d) => s + (vMap.get(d)?.pedidos_recurrentes ?? 0), 0)) },
+             { nombre: "Pedidos de clientas nuevas", color: "#0b8fa3", valores: grupos.map((g) => g.reduce((s, d) => s + (vMap.get(d)?.pedidos_nuevos ?? 0), 0)) }],
+    tip: (i) => { const g = grupos[i], n = g.reduce((s, d) => s + (vMap.get(d)?.pedidos_nuevos ?? 0), 0), r = g.reduce((s, d) => s + (vMap.get(d)?.pedidos_recurrentes ?? 0), 0); return `${g.length > 1 ? "Semana del " + diaCorto(g[0]) : diaCorto(g[0])}\nNuevas: ${n}\nQue repiten: ${r}${n + r ? ` (${Math.round(r / (n + r) * 100)}%)` : ""}`; } });
+  // Evolución: ventas por mes, este año frente al anterior
+  const ano = Number(hoyISO().slice(0, 4)), mesN = (y, m) => G.ventas.filter((v) => v.dia.startsWith(`${y}-${String(m).padStart(2, "0")}`)).reduce((s, v) => s + neto(v), 0);
+  const meses = [...Array(12)].map((_, i) => i + 1);
+  const mesHoy = Number(hoyISO().slice(5, 7));
+  const g2 = grafico({ etiquetas: meses.map((m) => new Date(ano, m - 1, 1).toLocaleDateString("es-ES", { month: "short" })), fmt: (v) => eur(v), alto: 220,
+    barras: [{ nombre: String(ano - 1), color: "#2563a8", hueco: true, valores: meses.map((m) => mesN(ano - 1, m)) }, { nombre: String(ano), color: "#2563a8", valores: meses.map((m) => m <= mesHoy ? mesN(ano, m) : null) }],
+    tip: (i) => { const m = meses[i], x = mesN(ano, m), y0 = mesN(ano - 1, m); return `${new Date(ano, m - 1, 1).toLocaleDateString("es-ES", { month: "long" })}\n${ano}: ${eur(x)}${m === mesHoy ? " (en curso)" : ""}\n${ano - 1}: ${eur(y0)}${y0 && x ? `\n${x >= y0 ? "+" : ""}${Math.round((x - y0) / y0 * 100)}%` : ""}`; } });
+  // Más vendidos del periodo
+  const pm = new Map(); for (const p of G.prods){ const r = pm.get(p.titulo) ?? { u: 0, e: 0 }; r.u += p.unidades; r.e += Number(p.importe); pm.set(p.titulo, r); }
+  const top = [...pm.entries()].sort((x, y) => y[1].e - x[1].e).slice(0, 10), totProd = [...pm.values()].reduce((s, r) => s + r.e, 0);
+  // Taller ahora mismo
+  const orden = planOrden(), cola = orden.length;
+  const prendasProd = construirResumen("cortar").quedan + construirResumen("sin_vinilo").quedan;
+  const ss = lineasEnEtapa("sin_stock"), ssUds = ss.reduce((s, l) => s + l.cantidad, 0), ssPed = new Set(ss.map((l) => l.order_id ?? l.p?.order_id)).size;
+  const hoy = hoyISO(), sal7 = [...Array(7)].map((_, i) => salidosDia(masDias(hoy, -1 - i)));
+  const conSal = sal7.filter((x) => x > 0), ritmo = conSal.length ? conSal.reduce((s, x) => s + x, 0) / conSal.length : capacidad().max;
+  const diasCola = ritmo ? cola / ritmo : 0;
+  const d14 = [...Array(14)].map((_, i) => masDias(hoy, i - 13));
+  const g3 = grafico({ etiquetas: d14.map((d) => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { weekday: "narrow", day: "numeric" })), alto: 200,
+    barras: [{ nombre: "Pedidos entrados", color: "#2563a8", valores: d14.map((d) => vMap.get(d)?.pedidos ?? todosPedidos().filter((p) => !p.cancelado && diaISO(p.creado_shopify) === d).length) },
+             { nombre: "Pedidos salidos", color: "#1f7a4d", valores: d14.map(salidosDia) }],
+    tip: (i) => `${diaCorto(d14[i])}\nEntrados: ${vMap.get(d14[i])?.pedidos ?? "—"}\nSalidos: ${salidosDia(d14[i])}` });
+  // Equipo
+  const dia = G.dia ?? hoy, eq = equipoDia(dia);
+  const filas = [...eq.entries()].sort((x, y) => (y[1].hechas + y[1].pers + y[1].empaq) - (x[1].hechas + x[1].pers + x[1].empaq));
+  const tot = filas.reduce((s, [, r]) => { for (const k of ["hechas", "pers", "hay", "nohay", "empaq"]) s[k] += r[k]; return s; }, { hechas: 0, pers: 0, hay: 0, nohay: 0, empaq: 0 });
+  const hm = (t) => t ? new Date(t).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "";
+  const puestoDe = (n) => { const u = G.usu.find((u) => u.nombre === n); return u ? (PUESTOS[u.puesto]?.label ?? "Administración") : ""; };
+  const d7 = [...Array(7)].map((_, i) => masDias(hoy, i - 6)), eq7 = d7.map(equipoDia);
+  const nombres7 = [...new Set(eq7.flatMap((m) => [...m.keys()]))].sort((x, y) => x.localeCompare(y, "es"));
+  const pl = (n, a, b) => `${n} ${n === 1 ? a : b}`;
+  const celda = (r) => r ? [r.hechas + r.pers ? pl(r.hechas + r.pers, "prenda", "prendas") : "", r.empaq ? pl(r.empaq, "pedido", "pedidos") : "", r.nohay ? `${r.nohay} no hay` : ""].filter(Boolean).join("<br>") || "—" : "—";
+  return `
+    <section class="gsec">
+      <div class="gcab"><h3>Ventas<small>${d0 === d1 ? diaCorto(d0) : `${diaCorto(d0)} – ${diaCorto(d1)}`} · comparado con las mismas fechas del año anterior</small></h3>
+        <div class="gper">${PERIODOS.map(([k, t]) => `<button data-gper="${k}" class="${G.periodo === k ? "on" : ""}">${t}</button>`).join("")}</div></div>
+      <div class="kpis">
+        ${kpi(eur(a.neto), "Facturación", delta(a.neto, b.neto) + `<br>IVA y envío incluidos, menos devoluciones`)}
+        ${kpi(ent(a.pedidos), "Pedidos", delta(a.pedidos, b.pedidos))}
+        ${kpi(eur(ticket, 2), "Ticket medio", delta(ticket, ticketB))}
+        ${kpi(ent(a.unidades), "Prendas vendidas", a.pedidos ? `${(a.unidades / a.pedidos).toFixed(1).replace(".", ",")} por pedido` : "")}
+        ${hayMeta ? kpi(eur(a.gasto), "Inversión Meta Ads", `${a.neto ? Math.round(a.gasto / a.neto * 100) : 0}% de la facturación`) : kpi("—", "Inversión Meta Ads", ultMeta ? `último dato: ${diaCorto(ultMeta)}` : "sin conectar todavía")}
+        ${hayMeta ? kpi(roas.toFixed(1).replace(".", ","), "ROAS", `${eur(roas, 2)} vendidos por cada 1 € en Meta` + (roasB ? `<br>año anterior: ${roasB.toFixed(1).replace(".", ",")}` : "")) : ""}
+        ${hayMeta ? kpi(eur(a.nuevos ? a.gasto / a.nuevos : 0, 2), "Coste por clienta nueva", "inversión en Meta ÷ pedidos de clientas nuevas") : ""}
+      </div>
+      ${g1}
+      <p class="gmini">ROAS = facturación de la tienda ÷ inversión en Meta (todas las ventas, no solo las que Meta se atribuye). Pasa el ratón por encima de cada barra para ver el detalle del día.${ultMeta && ultMeta < masDias(hoy, -1) ? ` <b>Meta Ads sin actualizar desde el ${diaCorto(ultMeta)}.</b>` : ""}</p>
+    </section>
+    <section class="gsec"><h3>Clientas nuevas y recurrentes<small>${d0 === d1 ? diaCorto(d0) : "por día"}</small></h3>
+      <div class="kpis">
+        ${kpi(ent(a.nuevos), "Pedidos de clientas nuevas", (a.pedidos ? Math.round(a.nuevos / a.pedidos * 100) : 0) + "% de los pedidos " + delta(a.nuevos, b.nuevos))}
+        ${kpi(ent(a.recurrentes), "Pedidos de clientas que repiten", (a.pedidos ? Math.round(a.recurrentes / a.pedidos * 100) : 0) + "% de los pedidos " + delta(a.recurrentes, b.recurrentes))}
+        ${kpi(eur(a.nuevos ? a.vNuevos / a.nuevos : 0, 2), "Ticket clienta nueva")}
+        ${kpi(eur(a.recurrentes ? a.vRec / a.recurrentes : 0, 2), "Ticket clienta que repite")}
+        ${kpi(eur(a.vRec), "Ventas de clientas que repiten", (a.neto ? Math.round(a.vRec / a.neto * 100) : 0) + "% de la facturación")}
+      </div>
+      ${g4}
+      <p class="gmini">Clienta nueva = es su primer pedido en la tienda. Que repite = ya había comprado antes (desde 2019).</p></section>
+    <section class="gsec"><h3>Evolución<small>ventas por mes, ${ano} frente a ${ano - 1}</small></h3>${g2}</section>
+    <section class="gsec"><h3>Lo más vendido<small>${PERIODOS.find((p) => p[0] === G.periodo)?.[1].toLowerCase()}</small></h3>
+      ${top.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>#</th><th>Producto</th><th class="r">Unidades</th><th class="r">Ventas</th><th class="r">% del total</th></tr></thead><tbody>
+        ${top.map(([t, r], i) => `<tr><td>${i + 1}</td><td>${esc(t)}</td><td class="r">${ent(r.u)}</td><td class="r">${eur(r.e)}</td><td class="r">${totProd ? Math.round(r.e / totProd * 100) : 0}%</td></tr>`).join("")}</tbody></table></div>`
+        : `<div class="gmini">Sin datos de productos para este periodo.</div>`}</section>
+    <section class="gsec"><h3>Taller ahora mismo</h3>
+      <div class="kpis">
+        ${kpi(ent(cola), "Pedidos por salir", `≈ ${diasCola < 1 ? "menos de 1 día" : diasCola.toFixed(1).replace(".", ",") + " días"} de trabajo al ritmo de ${Math.round(ritmo)}/día`, diasCola > 2 ? "rojo" : "")}
+        ${kpi(ent(salidosDia(hoy)), "Salidos hoy", `ayer ${sal7[0]}`)}
+        ${kpi(ent(prendasProd), "Prendas por hacer", "en Producción", "et-cortar")}
+        ${kpi(ent(pedidosEn("empaquetar").length), "Listos para empaquetar", "", "et-empaquetar")}
+        ${kpi(ent(ssUds), "Prendas sin stock", `${ssPed} pedidos parados`, ssUds ? "rojo" : "")}
+        ${kpi(ent(orden.filter((p) => p._urg).length), "Urgentes por salir")}
+        ${kpi(ent(orden.filter(retrasado).length), "Retrasados", "más de 7 días (urgentes 3)", orden.some(retrasado) ? "rojo" : "")}
+      </div>
+      <h4 class="gh4">Pedidos entrados y salidos · últimos 14 días</h4>${g3}
+    </section>
+    <section class="gsec"><div class="gcab"><h3>Qué ha hecho cada una<small>${dia === hoy ? "hoy" : diaCorto(dia)}</small></h3>
+      <div class="gper"><button data-gdia="-1">‹ Día anterior</button><button data-gdia="0" class="${dia === hoy ? "on" : ""}">Hoy</button><button data-gdia="1" ${dia >= hoy ? "disabled" : ""}>Día siguiente ›</button></div></div>
+      ${filas.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>Persona</th><th class="r">Prendas hechas</th><th class="r">Personalizadas</th><th class="r">Stock revisado</th><th class="r">Marcadas «No hay»</th><th class="r">Pedidos empaquetados</th><th>Horario</th></tr></thead><tbody>
+        ${filas.map(([n, r]) => `<tr><td><b style="color:${colorPersona(n)}">${esc(n)}</b><small>${esc(puestoDe(n))}</small></td><td class="r">${ent(r.hechas)}</td><td class="r">${ent(r.pers)}</td><td class="r">${ent(r.hay)}</td><td class="r">${ent(r.nohay)}</td><td class="r"><b>${ent(r.empaq)}</b></td><td>${hm(r.desde)}${r.hasta && r.hasta !== r.desde ? " – " + hm(r.hasta) : ""}<small>primera y última acción</small></td></tr>`).join("")}
+        <tr class="tot"><td>Total</td><td class="r">${ent(tot.hechas)}</td><td class="r">${ent(tot.pers)}</td><td class="r">${ent(tot.hay)}</td><td class="r">${ent(tot.nohay)}</td><td class="r">${ent(tot.empaq)}</td><td></td></tr></tbody></table></div>`
+        : `<div class="gmini">Nadie ha marcado nada en el programa ${dia === hoy ? "todavía hoy" : "ese día"}.</div>`}
+      <h4 class="gh4">Últimos 7 días</h4>
+      ${nombres7.length ? `<div class="hwrap"><table class="htabla g7"><thead><tr><th>Persona</th>${d7.map((d) => `<th>${esc(new Date(d + "T12:00:00").toLocaleDateString("es-ES", { weekday: "short", day: "numeric" }))}</th>`).join("")}</tr></thead><tbody>
+        ${nombres7.map((n) => `<tr><td><b style="color:${colorPersona(n)}">${esc(n)}</b></td>${eq7.map((m) => `<td>${celda(m.get(n))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<div class="gmini">Sin actividad registrada.</div>`}
+      <p class="gmini">Prendas hechas = las que Producción apunta con ✔ Hechas o ✔ Preparadas. Personalizadas = ✔ Hecha. Stock revisado = ✔ Hay y ✔ Han llegado. Pedidos empaquetados = los que salen a su nombre.</p>
+    </section>`;
+}
+
+function miDiaHTML(){
+  const hoy = hoyISO(), orden = planOrden();
+  const tarea = (estado, icono, n, titulo, cuerpo, acciones = "") => `<section class="gtarea ${estado}"><div class="cab"><span class="ic">${icono}</span><span class="t">${titulo}</span><b class="n">${n}</b></div>${cuerpo}${acciones ? `<div class="acc">${acciones}</div>` : ""}</section>`;
+  // 1 · Lista de la compra (Sin stock)
+  const ss = agruparPrendas(orden.flatMap((p) => (p.fab_lineas ?? []).filter((l) => l.estado === "sin_stock").map((l) => ({ ...l, p }))));
+  const ssUds = ss.reduce((s, f) => s + f.uds, 0);
+  const desde = (f) => { const t = Math.min(...f.lineas.map((l) => new Date(l.estado_at ?? l.p.creado_shopify).getTime())); const d = diasDesde(new Date(t).toISOString()); return d ? `hace ${d} día${d > 1 ? "s" : ""}` : "hoy"; };
+  const compra = tarea((ssUds ? "mal" : "ok") + " gtcompra", "🛒", ssUds, "Comprar: prendas que faltan (Sin stock)",
+    ssUds ? `<div class="hwrap gcompra"><table class="htabla"><thead><tr><th>Modelo</th><th>Talla</th><th class="r">Faltan</th><th>Pedidos</th><th>Desde</th></tr></thead><tbody>
+      ${ss.map((f) => `<tr class="${f.urg ? "urg" : ""}"><td><b>${esc(f.titulo)}</b></td><td>${esc(f.v.talla ?? "—")}${f.v.resto ? ` <small>${esc(f.v.resto)}</small>` : ""}</td><td class="r"><b>${f.uds}</b></td><td>${[...new Set(f.lineas.map((l) => l.p))].map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}</td><td>${desde(f)}</td></tr>`).join("")}</tbody></table></div>`
+      : `<div class="gmini">No falta nada. 👍</div>`,
+    ssUds ? `<button class="prim" data-gir="resumen:sin_stock">Marcar lo que ha llegado</button><button data-gimprcompra>🖨 Imprimir la lista</button>` : "");
+  // 2 · Revisión de stock de la mañana
+  const porMirar = construirResumen("stock").quedan;
+  const stock = tarea(porMirar ? (new Date().getHours() >= 9 ? "aviso" : "") : "ok", "📦", porMirar, "Revisión de stock de la mañana",
+    `<div class="gmini">${porMirar ? `Quedan ${porMirar} prendas por mirar (Dania desde Revisar stock o Andrea desde Por hacer). Hasta que no se miren, la lista de la compra no está completa.` : "Todo el stock del día está revisado."}</div>`);
+  // 3 · Retrasados y urgentes
+  const ret = orden.filter(retrasado), urg = orden.filter((p) => p._urg);
+  const lista = (ps) => `<div class="gpeds">${ps.slice(0, 12).map((p) => `<button class="lnkped" data-irped="${esc(p.order_name)}">${esc(p.order_name)}</button><span class="chip" style="${colorVars(p._estado)}">${ETAPA[p._estado]?.label ?? p._estado}</span>`).join(" ")}${ps.length > 12 ? ` <span class="gmini">y ${ps.length - 12} más</span>` : ""}</div>`;
+  const retrasos = tarea(ret.length ? "mal" : "ok", "⏰", ret.length, "Pedidos retrasados", ret.length ? `<div class="gmini">Más de 7 días sin salir (urgentes, más de 3). Mira en qué etapa están y desbloquéalos.</div>${lista(ret)}` : `<div class="gmini">Ningún pedido retrasado.</div>`, ret.length ? `<button class="prim" data-gir="pedidos:retrasados">Ver los retrasados</button>` : "");
+  const urgentes = tarea(urg.length ? "aviso" : "ok", "⚡", urg.length, "Urgentes (Exprés) por salir", urg.length ? lista(urg) : `<div class="gmini">No hay urgentes pendientes.</div>`);
+  // 4 · Cambios de clientas
+  const mods = orden.filter(modificado);
+  const cambios = tarea(mods.length ? "aviso" : "ok", "✏️", mods.length, "Cambios de clientas por revisar", mods.length ? `<div class="gmini">Cambiaron talla, dirección o prendas en Shopify. Comprueba que el taller lo ha visto y pulsa ✔ Visto.</div>${lista(mods)}` : `<div class="gmini">Sin cambios pendientes.</div>`, mods.length ? `<button class="prim" data-gir="pedidos:modificados">Revisar los cambios</button>` : "");
+  // 5 · Etiquetas con problema
+  const sinEt = sinEtiqueta(), errGls = pedidos.filter((p) => p.gls_error && activo(p) && p._estado !== "producido");
+  const etiquetas = tarea(sinEt.length + errGls.length ? "mal" : "ok", "🏷", sinEt.length + errGls.length, "Etiquetas GLS con problema", sinEt.length + errGls.length ? `<div class="gmini">Pedidos que han salido sin etiqueta o con error de GLS: no se pueden enviar así. Avisa a Tito.</div>${lista([...sinEt, ...errGls])}` : `<div class="gmini">Todas las etiquetas de hoy están bien.</div>`, sinEt.length ? `<button data-gir="pedidos:sin_etiqueta">Ver los pedidos</button>` : "");
+  // 6 · Otros envíos de hoy: hay que marcarlos a mano como enviados en Shopify
+  const otros = pedidos.filter((p) => p._estado === "producido" && p.envio_tipo === "otros" && esHoy(p.estado_at) && !p.cancelado);
+  const otrosT = tarea(otros.length ? "aviso" : "ok", "✈️", otros.length, "Otros envíos de hoy: marcarlos como enviados en Shopify", otros.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>Pedido</th><th>Cliente</th><th>Cómo ha salido</th></tr></thead><tbody>${otros.map((p) => `<tr><td class="hnum">${esc(p.order_name)}</td><td>${esc(p.cliente_nombre ?? "")}<small>${esc([p.ciudad, p.pais].filter(Boolean).join(" · "))}</small></td><td>${esc(p.envio_info || "sin anotación")}</td></tr>`).join("")}</tbody></table></div>` : `<div class="gmini">Hoy no ha salido ninguno por Otros envíos.</div>`);
+  // 7 · Recogidas esperando
+  const rec = recogidasListas();
+  const recog = tarea(rec.length ? "" : "ok", "🏬", rec.length, "Recogidas en tienda esperando a la clienta", rec.length ? lista(rec) : `<div class="gmini">Ninguna esperando.</div>`, rec.length ? `<button data-gir="pedidos:listos">Ver las recogidas</button>` : "");
+  // Resumen del día
+  const ayer = masDias(hoy, -1), vA = G.ventas.find((v) => v.dia === ayer), vH = G.ventas.find((v) => v.dia === hoy);
+  const res = `<div class="gres"><span>Hoy: <b>${salidosDia(hoy)}</b> pedidos salidos · <b>${orden.length}</b> por salir</span>${vH ? `<span>Ventas de hoy: <b>${eur(neto(vH))}</b> (${vH.pedidos} pedidos)</span>` : ""}${vA ? `<span>Ayer: <b>${eur(neto(vA))}</b> (${vA.pedidos} pedidos)</span>` : ""}</div>`;
+  const peso = (h) => /gtarea mal/.test(h) ? 0 : /gtarea aviso/.test(h) ? 1 : /gtarea ok/.test(h) ? 3 : 2;
+  const orden2 = [compra, stock, retrasos, urgentes, cambios, etiquetas, otrosT, recog].map((h, i) => [h, i]).sort((x, y) => peso(x[0]) - peso(y[0]) || x[1] - y[1]).map((x) => x[0]);
+  const pend = orden2.filter((h) => peso(h) < 3).length;
+  return res + `<p class="gmini">${pend ? `${pend} cosa${pend > 1 ? "s" : ""} por mirar hoy, primero lo más importante. Lo que está en verde ya está bien.` : "Todo en orden por hoy. 👍"}</p><div class="gtareas">${orden2.join("")}</div>`;
+}
+
+// ── demo: datos inventados para enseñar el panel sin conexión ──
+function demoGerencia(){
+  let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const hoy = hoyISO(); G.ventas = []; G.meta = [];
+  for (let d = "2024-01-01"; d <= hoy; d = masDias(d, 1)){
+    const f = new Date(d + "T12:00:00"), m = f.getMonth(), anos = (f - new Date("2024-01-01")) / 3.15e10;
+    const temporada = [1.25, .85, .9, .95, 1, .9, 1.15, .75, 1, 1.05, 1.6, 1.4][m] * (f.getDate() >= 27 && m === 10 ? 2.6 : 1);
+    const ped = Math.round((38 + 30 * rnd()) * temporada * (1 + .35 * anos) * (d === hoy ? new Date().getHours() / 24 : 1));
+    const tot = ped * (108 + 30 * rnd());
+    const rec = Math.round(ped * (.32 + .12 * rnd()));
+    G.ventas.push({ dia: d, pedidos: ped, unidades: Math.round(ped * (1.5 + .4 * rnd())), total: tot, devuelto: tot * .03 * rnd(), pedidos_nuevos: ped - rec, pedidos_recurrentes: rec, ventas_nuevos: tot / Math.max(ped, 1) * (ped - rec) * .95, ventas_recurrentes: tot / Math.max(ped, 1) * rec * 1.1, actualizado_at: new Date().toISOString() });
+    if (d >= "2025-01-01") G.meta.push({ dia: d, gasto: Math.round(tot * (.18 + .1 * rnd())), compras: Math.round(ped * .6), valor_compras: tot * .7 });
+  }
+  const titulos = ["Blazer “Calavera” azul", "Camisa “Why not?” azul", "Blazer “estudio 54”", "Sudadera “A star is born”", "Pantalón “cupido” crema", "Jersey “volume”", "Camisa “Why not?” blanca", "Blazer “Army” black", "Vaquero “leopard”", "Blusa “red heart”", "Chaqueta “Rock”", "Camiseta “Singular”"];
+  G.demoProds = (d0, d1) => { const n = Math.max(1, (new Date(d1) - new Date(d0)) / 864e5 + 1); return titulos.map((t, i) => ({ titulo: t, unidades: Math.round(n * (14 - i) * (.6 + .4 * rnd())), importe: Math.round(n * (14 - i) * (.6 + .4 * rnd()) * (60 + 8 * i)) })); };
+  G.usu = [{ email: "andrea@demo", nombre: "Andrea", puesto: "produccion" }, { email: "dania@demo", nombre: "Dania", puesto: "expedicion" }, { email: "irene@demo", nombre: "Irene", puesto: "expedicion" }, { email: "carlota@demo", nombre: "Carlota", puesto: "administracion" }];
+  G.mov = []; G.ev = []; G.extra = [];
+  for (let i = 0; i < 8; i++){
+    const d = masDias(hoy, -i), lab = new Date(d + "T12:00:00").getDay(); if (lab === 0 || lab === 6) continue;
+    const t = (h, m = 0) => { const x = new Date(d + "T00:00:00"); x.setHours(h, m); return x.toISOString(); };
+    const hasta = i === 0 ? Math.min(new Date().getHours(), 17) : 17;
+    for (let h = 8; h <= hasta; h++){
+      G.mov.push({ n: 5 + Math.round(5 * rnd()), motivo: "cortado", usuario: "andrea@demo", created_at: t(h, 20) });
+      G.ev.push({ tipo: "lineas", detalle: { estado: "empaquetar", line_ids: [1, 2].slice(0, 1 + Math.round(rnd())) }, usuario: "andrea@demo", created_at: t(h, 40) });
+      for (const [quien, k] of [["Dania", 5], ["Irene", 4]]) if (h >= 9) for (let j = 0; j < k + Math.round(2 * rnd()); j++)
+        G.extra.push({ order_id: -(G.extra.length + 1), order_name: "#D" + G.extra.length, _estado: "producido", estado: "producido", cancelado: false, empaquetado_por: quien, empaquetado_at: t(h, 5 + 9 * j), estado_at: t(h, 5 + 9 * j), creado_shopify: t(h), fab_lineas: [] });
+    }
+    G.ev.push({ tipo: "picking_hay", detalle: { persona: "Dania", line_ids: [...Array(30 + Math.round(20 * rnd())).keys()] }, usuario: "dania@demo", created_at: t(8, 30) });
+    G.ev.push({ tipo: "picking_no_hay", detalle: { persona: "Dania", line_ids: [...Array(2 + Math.round(4 * rnd())).keys()] }, usuario: "dania@demo", created_at: t(8, 50) });
+    G.ev.push({ tipo: "importacion", detalle: {}, usuario: "cron", created_at: t(8, 0) });
+  }
+}
+
 function pintarPedidos(){
   pintarSubbar();
   $("#barra").classList.add("hidden");
@@ -2103,6 +2517,12 @@ function pintarBarra(){
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.nohay){ noHayFila(b.dataset.nohay); return; }
+  if (b.dataset.gmodo){ G.modo = b.dataset.gmodo; pintar(); window.scrollTo(0, 0); return; }
+  if (b.dataset.gper){ G.periodo = b.dataset.gper; cargarProductos().then(pintar); return; }
+  if (b.dataset.gdia){ const k = Number(b.dataset.gdia), h = hoyISO(); G.dia = k === 0 ? null : masDias(G.dia ?? h, k); if (G.dia && G.dia >= h) G.dia = null; pintar(); return; }
+  if (b.dataset.gir){ const [v, t] = b.dataset.gir.split(":"); vista = v; if (v === "pedidos") tab = t; else etapaR = t; sel.clear(); pintar(); window.scrollTo(0, 0); return; }
+  if (b.dataset.gimportar !== undefined){ $("#bImportar").click(); return; }
+  if (b.dataset.gimprcompra !== undefined){ imprimir("imp-compra"); return; }
   if (b.dataset.hay){ hayFila(b.dataset.hay); return; }
   if (b.dataset.llegfila){ llegadoFila(b.dataset.llegfila, b.dataset.todas === "1"); return; }
   if (b.dataset.llegtodo){ llegadoTodo(); return; }
