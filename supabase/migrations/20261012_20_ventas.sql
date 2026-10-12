@@ -59,3 +59,9 @@ do $$ begin
 end $$;
 revoke all on public.fab_meta_dia from anon;
 grant select on public.fab_meta_dia to authenticated;
+
+-- Clientas nuevas y recurrentes (12-oct-2026): pedido de clienta nueva = su primer pedido en la tienda.
+alter table public.fab_ventas_dia add column if not exists pedidos_nuevos integer not null default 0;
+alter table public.fab_ventas_dia add column if not exists pedidos_recurrentes integer not null default 0;
+alter table public.fab_ventas_dia add column if not exists ventas_nuevos numeric(12,2) not null default 0;
+alter table public.fab_ventas_dia add column if not exists ventas_recurrentes numeric(12,2) not null default 0;

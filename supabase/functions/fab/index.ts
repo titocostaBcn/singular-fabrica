@@ -537,9 +537,9 @@ async function pdfDe(p: any): Promise<string | null> {
 // ───────── Ventas por día (panel de gerencia) ─────────
 // Lee de Shopify los pedidos creados entre dos días (hora de Madrid) y rehace esos días en fab_ventas_dia y fab_ventas_producto.
 // Solo lectura en Shopify. Sin pedidos de prueba; los cancelados se cuentan aparte y no suman venta.
-const Q_VENTAS = `query Ventas($q: String!, $after: String) { orders(first: 40, after: $after, query: $q, sortKey: CREATED_AT) {
+const Q_VENTAS = `query Ventas($q: String!, $after: String) { orders(first: 30, after: $after, query: $q, sortKey: CREATED_AT) {
   pageInfo { hasNextPage endCursor }
-  nodes { createdAt cancelledAt test
+  nodes { id createdAt cancelledAt test customer { id orders(first: 1, sortKey: CREATED_AT) { nodes { id } } }
     totalPriceSet { shopMoney { amount } } totalRefundedSet { shopMoney { amount } }
     totalShippingPriceSet { shopMoney { amount } } totalTaxSet { shopMoney { amount } } totalDiscountsSet { shopMoney { amount } }
     lineItems(first: 20) { nodes { title quantity discountedTotalSet { shopMoney { amount } } } } } } }`;
@@ -561,7 +561,7 @@ async function sincronizarVentas(desde: string, hasta: string) {
   const fin = sumarDia(hasta, 1);
   const q = `created_at:>='${desde}T00:00:00${desfaseMadrid(desde)}' created_at:<'${fin}T00:00:00${desfaseMadrid(fin)}'`;
   const dias = new Map<string, any>(), prods = new Map<string, any>();
-  for (let d = desde; d <= hasta; d = sumarDia(d, 1)) dias.set(d, { dia: d, pedidos: 0, unidades: 0, total: 0, devuelto: 0, envio: 0, iva: 0, descuentos: 0, cancelados: 0 });
+  for (let d = desde; d <= hasta; d = sumarDia(d, 1)) dias.set(d, { dia: d, pedidos: 0, unidades: 0, total: 0, devuelto: 0, envio: 0, iva: 0, descuentos: 0, cancelados: 0, pedidos_nuevos: 0, pedidos_recurrentes: 0, ventas_nuevos: 0, ventas_recurrentes: 0 });
   const num = (m: any) => Number(m?.shopMoney?.amount ?? 0);
   let after: string | null = null, leidos = 0;
   do {
@@ -573,6 +573,10 @@ async function sincronizarVentas(desde: string, hasta: string) {
       if (o.cancelledAt) { v.cancelados++; continue; }
       v.pedidos++; v.total += num(o.totalPriceSet); v.devuelto += num(o.totalRefundedSet);
       v.envio += num(o.totalShippingPriceSet); v.iva += num(o.totalTaxSet); v.descuentos += num(o.totalDiscountsSet);
+      // Clienta nueva = es su primer pedido en la tienda (sin cliente asociado cuenta como nueva)
+      const primero = o.customer?.orders?.nodes?.[0]?.id;
+      const venta = num(o.totalPriceSet) - num(o.totalRefundedSet);
+      if (!o.customer || !primero || primero === o.id) { v.pedidos_nuevos++; v.ventas_nuevos += venta; } else { v.pedidos_recurrentes++; v.ventas_recurrentes += venta; }
       for (const li of o.lineItems.nodes) {
         v.unidades += li.quantity;
         const k = v.dia + "|" + li.title;
@@ -583,7 +587,7 @@ async function sincronizarVentas(desde: string, hasta: string) {
     after = r.orders.pageInfo.hasNextPage ? r.orders.pageInfo.endCursor : null;
   } while (after);
   const r2 = (x: number) => Math.round(x * 100) / 100;
-  const filas = [...dias.values()].map((v) => ({ ...v, total: r2(v.total), devuelto: r2(v.devuelto), envio: r2(v.envio), iva: r2(v.iva), descuentos: r2(v.descuentos), actualizado_at: new Date().toISOString() }));
+  const filas = [...dias.values()].map((v) => ({ ...v, total: r2(v.total), devuelto: r2(v.devuelto), envio: r2(v.envio), iva: r2(v.iva), descuentos: r2(v.descuentos), ventas_nuevos: r2(v.ventas_nuevos), ventas_recurrentes: r2(v.ventas_recurrentes), actualizado_at: new Date().toISOString() }));
   const { error: e1 } = await sb.from("fab_ventas_dia").upsert(filas, { onConflict: "dia" });
   if (e1) throw new Error("ventas: " + e1.message);
   const { error: e2 } = await sb.from("fab_ventas_producto").delete().gte("dia", desde).lte("dia", hasta);
