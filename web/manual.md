@@ -406,5 +406,7 @@ Arriba eliges el periodo: Hoy, Ayer, 7 días, 30 días, Este mes o Este año. To
 - **Taller ahora mismo**: pedidos por salir (y cuántos días de trabajo son al ritmo actual), salidos hoy, prendas por hacer, listos para empaquetar, prendas sin stock, urgentes y retrasados, con los pedidos entrados y salidos de los últimos 14 días.
 - **Qué ha hecho cada una**: por persona y día, prendas hechas, personalizadas, stock revisado, prendas marcadas «No hay», pedidos empaquetados y la hora de la primera y la última acción. Con ‹ Día anterior se ven otros días, y debajo, los últimos 7 días.
 
+**Desde el iPhone.** Entra en tallersingular.netlify.app con Safari: la pantalla se adapta al móvil. Abajo hay tres botones (📊 Panel, ✅ Mi día y ☰ Todo). En el Panel, cada apartado se abre y se cierra tocando su título; cerrado, enseña a la derecha su cifra principal (facturación, % de clientas que repiten, pedidos por salir…). Para tenerlo como una app: en Safari pulsa Compartir → **Añadir a pantalla de inicio**; sale el icono «Taller».
+
 Las ventas se leen de Shopify cada mañana a las 8:00 y al abrir el panel (las de hoy). Las cifras pueden diferir un poco de las «Ventas totales» de Shopify, porque aquí las devoluciones se restan del día del pedido y no del día en que se devolvió el dinero. La inversión en Meta Ads se actualiza cada mañana.
 

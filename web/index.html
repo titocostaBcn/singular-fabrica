@@ -2,7 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Taller">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f4f1ec">
+<link rel="apple-touch-icon" href="icono-180.png">
 <title>Taller · Singular Wardrobe</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -384,7 +390,35 @@
   .gtarea .acc button.prim{background:var(--ink);color:#fff;border-color:var(--ink)}
   .gpeds{display:flex;gap:8px;flex-wrap:wrap;align-items:center} .gpeds .chip{font-size:12px;padding:3px 8px;margin-right:6px}
   .gtarea tr.urg td{background:var(--urg-bg)}
-  @media (max-width:600px){ .gsec .kpis{grid-template-columns:1fr 1fr} .gsec .kpi b{font-size:21px} .gsec{padding:12px} #gerencia{padding:12px 12px 60px} }
+  details.gsec{display:block} details.gsec > * + *{margin-top:12px}
+  details.gsec > summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;justify-content:space-between}
+  details.gsec > summary::-webkit-details-marker{display:none}
+  details.gsec > summary h3{flex:1;min-width:0}
+  .gsv{font-weight:800;font-size:15px;white-space:nowrap;color:var(--ink)}
+  details.gsec:not([open]){gap:0}
+  .gtab,.geqm,.sm{display:none}
+  .geq{border-top:1px solid var(--line);padding:10px 0;display:grid;gap:6px} .geq:first-child{border-top:0}
+  .geqn{display:flex;flex-wrap:wrap;gap:6px} .geqn span{background:#faf8f5;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px}
+  @media (min-width:641px){ details.gsec > summary{pointer-events:none} details.gsec > summary .gsv{display:none} }
+  @media (max-width:640px){
+    .gsec .kpis{grid-template-columns:1fr 1fr;gap:8px} .gsec .kpi{padding:8px 10px} .gsec .kpi b{font-size:20px} .gsec .kpi span{font-size:13px}
+    .gsec{padding:12px 14px;border-radius:14px} #gerencia{padding:10px 10px calc(84px + env(safe-area-inset-bottom));gap:10px}
+    .gsec h3{font-size:17px} .gsec h3 small{display:block;margin:2px 0 0} .lg{display:none} .sm{display:inline}
+    details.gsec:not([open]) > summary .gsv{color:var(--cortar)} details.gsec[open] > summary .gsv{display:none}
+    details.gsec > summary::after{content:"›";font-size:22px;color:var(--muted);transform:rotate(90deg);transition:transform .15s}
+    details.gsec[open] > summary::after{transform:rotate(-90deg)}
+    .gper{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -2px;padding-bottom:2px} .gper::-webkit-scrollbar{display:none} .gper button{flex:none}
+    .gtop{gap:4px} .gtop h2{font-size:22px} .gmodos,.gtodo{display:none}
+    .gimp{font-size:13px;padding:8px 12px}
+    .gtab{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fffffff2;backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+    .gtab button{flex:1;border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:12px;font-weight:700;color:var(--muted);padding:6px 0;border-radius:12px}
+    .gtab button span{font-size:22px;line-height:1} .gtab button.on{color:var(--ink);background:#f1ede6}
+    .geqm{display:block} .solo-pc{display:none} .ocm{display:none}
+    .gres{gap:6px} .gres span{font-size:13px;padding:6px 10px}
+    .gtarea{padding:12px} .gtarea .t{font-size:15px} .gtarea b.n{font-size:24px}
+    body.ger header{padding:6px 10px} body.ger header .fila{flex-wrap:nowrap;gap:6px} body.ger .marca{margin-right:auto} body.ger .marca img{height:30px} body.ger .marca span,body.ger #bUsuarios{display:none}
+    body.ger header .btn-sec{padding:7px 12px;font-size:14px}
+  }
   #zonaHojas{display:none}
   #zonaImpresion{display:none}
   @media print{
@@ -1542,7 +1576,7 @@ function pintarSubbar(){
 // ───── Gerencia (Carlota): «Panel» para decidir (ventas, Meta Ads, taller, equipo) y «Mi día» para el trabajo diario ─────
 // Datos: fab_ventas_dia / fab_ventas_producto / fab_meta_dia (los rellena la función: acción «ventas»), fab_almacen_mov y fab_eventos
 // (quién hace qué), y los pedidos ya cargados. Solo lectura; los botones llevan a la parte del programa donde se actúa.
-const G = { modo: "panel", periodo: "30", dia: null, ventas: [], meta: [], prods: [], prodsClave: "", mov: [], ev: [], usu: [], extra: [], leido: 0, cargando: false, refrescado: 0, error: null };
+const G = { abiertas: new Set(["ventas"]), modo: "panel", periodo: "30", dia: null, ventas: [], meta: [], prods: [], prodsClave: "", mov: [], ev: [], usu: [], extra: [], leido: 0, cargando: false, refrescado: 0, error: null };
 const diaISO = (t) => new Date(t).toLocaleDateString("sv-SE");
 const hoyISO = () => diaISO(new Date());
 const masDias = (d, n) => { const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return x.toLocaleDateString("sv-SE"); };
@@ -1551,6 +1585,8 @@ const eur = (n, dec = 0) => Number(n ?? 0).toLocaleString("es-ES", { style: "cur
 const ent = (n) => Math.round(Number(n ?? 0)).toLocaleString("es-ES");
 const diaCorto = (d) => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" });
 const neto = (v) => Number(v.total) - Number(v.devuelto);
+const esMovil = () => window.matchMedia("(max-width: 640px)").matches;
+const eurK = (v) => v >= 1e6 ? (v / 1e6).toLocaleString("es-ES", { maximumFractionDigits: 1 }) + " M€" : v >= 1000 ? Math.round(v / 1000).toLocaleString("es-ES") + " k€" : Math.round(v) + " €";
 const todosPedidos = () => G.extra.length ? pedidos.concat(G.extra) : pedidos;
 
 async function leerTodo(build){ // Supabase devuelve como mucho 1000 filas por consulta
@@ -1670,15 +1706,16 @@ function estadoImportacion(){
 
 // ── gráficos (SVG a mano, un solo eje) ──
 function grafico({ etiquetas, barras = [], linea = null, fmt = ent, alto = 240, tip, apilar = false }){
-  const W = 960, H = alto, ml = fmt === ent ? 48 : 86, mr = 12, mt = 12, mb = 34, n = etiquetas.length;
+  const mv = esMovil(); if (mv && fmt !== ent) fmt = eurK;
+  const W = mv ? 400 : 960, H = mv ? Math.round(alto * 0.8) : alto, ml = mv ? (fmt === ent ? 30 : 50) : (fmt === ent ? 48 : 86), mr = mv ? 6 : 12, mt = 12, mb = mv ? 28 : 34, n = etiquetas.length, fs = mv ? 11 : 12;
   const todos = [...(apilar ? etiquetas.map((_, i) => barras.reduce((s, b) => s + (b.valores[i] ?? 0), 0)) : barras.flatMap((b) => b.valores)), ...(linea ? linea.valores : [])].filter((x) => x != null);
   const max = Math.max(1, ...todos);
   const paso = Math.pow(10, Math.floor(Math.log10(max))), top = Math.ceil(max / paso) * paso;
   const y = (v) => mt + (H - mt - mb) * (1 - v / top), slot = (W - ml - mr) / n, nb = apilar ? 1 : Math.max(1, barras.length);
   const bw = Math.max(2, Math.min(28, (slot - 4) / nb - 2));
-  const grid = [0, 0.25, 0.5, 0.75, 1].map((f) => `<line x1="${ml}" x2="${W - mr}" y1="${y(top * f)}" y2="${y(top * f)}" stroke="#e3ddd3" stroke-width="1"/><text x="${ml - 8}" y="${y(top * f) + 4}" text-anchor="end" font-size="12" fill="#6f6a62">${esc(fmt(top * f))}</text>`).join("");
-  const cada = Math.ceil(n / 12);
-  const xs = etiquetas.map((t, i) => i % cada === 0 || i === n - 1 ? `<text x="${ml + slot * (i + 0.5)}" y="${H - 12}" text-anchor="middle" font-size="12" fill="#6f6a62">${esc(t)}</text>` : "").join("");
+  const grid = [0, 0.25, 0.5, 0.75, 1].map((f) => `<line x1="${ml}" x2="${W - mr}" y1="${y(top * f)}" y2="${y(top * f)}" stroke="#e3ddd3" stroke-width="1"/><text x="${ml - 8}" y="${y(top * f) + 4}" text-anchor="end" font-size="${fs}" fill="#6f6a62">${esc(fmt(top * f))}</text>`).join("");
+  const cada = Math.ceil(n / (mv ? 5 : 12));
+  const xs = etiquetas.map((t, i) => i % cada === 0 || (i === n - 1 && (n - 1) % cada > cada / 2) ? `<text x="${i === n - 1 && mv ? W - mr : ml + slot * (i + 0.5)}" y="${H - 10}" text-anchor="${i === n - 1 && mv ? "end" : "middle"}" font-size="${fs}" fill="#6f6a62">${esc(t)}</text>` : "").join("");
   const base = etiquetas.map(() => 0);
   const bars = apilar ? barras.map((b) => b.valores.map((v, i) => {
     if (!v) return "";
@@ -1693,7 +1730,7 @@ function grafico({ etiquetas, barras = [], linea = null, fmt = ent, alto = 240, 
     const pts = linea.valores.map((v, i) => v == null ? null : [ml + slot * (i + 0.5), y(v)]);
     let d = "", abierto = false;
     for (const p of pts){ if (!p){ abierto = false; continue; } d += (abierto ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); abierto = true; }
-    return `<path d="${d}" fill="none" stroke="${linea.color}" stroke-width="2.5" stroke-linejoin="round"/>` + (n <= 31 ? pts.map((p) => p ? `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="${linea.color}" stroke="#fff" stroke-width="1.5"/>` : "").join("") : "");
+    return `<path d="${d}" fill="none" stroke="${linea.color}" stroke-width="${mv ? 2 : 2.5}" stroke-linejoin="round"/>` + (n <= 31 ? pts.map((p) => p ? `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${mv ? 2.5 : 3.5}" fill="${linea.color}" stroke="#fff" stroke-width="1.5"/>` : "").join("") : "");
   })() : "";
   const hits = etiquetas.map((t, i) => `<rect class="ghit" x="${ml + slot * i}" y="${mt}" width="${slot}" height="${H - mt - mb}" fill="transparent"><title>${esc(tip ? tip(i) : t)}</title></rect>`).join("");
   const ley = [...barras.map((b) => `<span><i style="background:${b.hueco ? "#fff" : b.color};border:1.5px solid ${b.color}"></i>${esc(b.nombre)}</span>`), ...(linea ? [`<span><i style="background:${linea.color};height:3px;vertical-align:3px"></i>${esc(linea.nombre)}</span>`] : [])].join("");
@@ -1712,7 +1749,8 @@ function pintarGerencia(){
       <button class="gtodo" data-vista="plan" title="Abre el programa completo: Plan del día, Pedidos, Resumen, Histórico">Ver todo el programa →</button></div>
     <div class="gimp ${imp.ok ? "ok" : "mal"}">${imp.ok ? "✔" : "⚠"} ${esc(imp.txt)}${imp.ok ? "" : ` · <button data-gimportar>↻ Importar ahora</button>`}</div>
     ${G.error ? `<div class="err">No se han podido leer los datos del panel: ${esc(G.error)}</div>` : ""}
-    ${G.cargando && !G.leido ? `<div class="vacio">Cargando el panel…</div>` : G.modo === "panel" ? panelHTML() : miDiaHTML()}`;
+    ${G.cargando && !G.leido ? `<div class="vacio">Cargando el panel…</div>` : G.modo === "panel" ? panelHTML() : miDiaHTML()}
+    <nav class="gtab"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}"><span>📊</span>Panel</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}"><span>✅</span>Mi día</button><button data-vista="plan"><span>☰</span>Todo</button></nav>`;
 }
 
 function panelHTML(){
@@ -1772,23 +1810,25 @@ function panelHTML(){
   const nombres7 = [...new Set(eq7.flatMap((m) => [...m.keys()]))].sort((x, y) => x.localeCompare(y, "es"));
   const pl = (n, a, b) => `${n} ${n === 1 ? a : b}`;
   const celda = (r) => r ? [r.hechas + r.pers ? pl(r.hechas + r.pers, "prenda", "prendas") : "", r.empaq ? pl(r.empaq, "pedido", "pedidos") : "", r.nohay ? `${r.nohay} no hay` : ""].filter(Boolean).join("<br>") || "—" : "—";
+  const m0 = hoy.slice(0, 8) + "01", mesAct = sumaVentas(m0, hoy).neto, mesAnt = sumaVentas(menosAno(m0), menosAno(hoy)).neto;
+  const ab = (k) => (!esMovil() || G.abiertas.has(k)) ? "open" : "";
+  const sv0 = (t) => `<span class="gsv">${t}</span>`;
   return `
-    <section class="gsec">
-      <div class="gcab"><h3>Ventas<small>${d0 === d1 ? diaCorto(d0) : `${diaCorto(d0)} – ${diaCorto(d1)}`} · comparado con las mismas fechas del año anterior</small></h3>
-        <div class="gper">${PERIODOS.map(([k, t]) => `<button data-gper="${k}" class="${G.periodo === k ? "on" : ""}">${t}</button>`).join("")}</div></div>
+    <details class="gsec" data-gsec="ventas" ${ab("ventas")}><summary><h3>Ventas<small>${d0 === d1 ? diaCorto(d0) : `${diaCorto(d0)} – ${diaCorto(d1)}`}<span class="lg"> · comparado con las mismas fechas del año anterior</span></small></h3>${sv0(eur(a.neto))}</summary>
+        <div class="gper">${PERIODOS.map(([k, t]) => `<button data-gper="${k}" class="${G.periodo === k ? "on" : ""}">${t}</button>`).join("")}</div>
       <div class="kpis">
-        ${kpi(eur(a.neto), "Facturación", delta(a.neto, b.neto) + `<br>IVA y envío incluidos, menos devoluciones`)}
+        ${kpi(eur(a.neto), "Facturación", delta(a.neto, b.neto) + `<span class="lg"><br>IVA y envío incluidos, menos devoluciones</span>`)}
         ${kpi(ent(a.pedidos), "Pedidos", delta(a.pedidos, b.pedidos))}
         ${kpi(eur(ticket, 2), "Ticket medio", delta(ticket, ticketB))}
         ${kpi(ent(a.unidades), "Prendas vendidas", a.pedidos ? `${(a.unidades / a.pedidos).toFixed(1).replace(".", ",")} por pedido` : "")}
         ${hayMeta ? kpi(eur(a.gasto), "Inversión Meta Ads", `${a.neto ? Math.round(a.gasto / a.neto * 100) : 0}% de la facturación`) : kpi("—", "Inversión Meta Ads", ultMeta ? `último dato: ${diaCorto(ultMeta)}` : "sin conectar todavía")}
-        ${hayMeta ? kpi(roas.toFixed(1).replace(".", ","), "ROAS", `${eur(roas, 2)} vendidos por cada 1 € en Meta` + (roasB ? `<br>año anterior: ${roasB.toFixed(1).replace(".", ",")}` : "")) : ""}
-        ${hayMeta ? kpi(eur(a.nuevos ? a.gasto / a.nuevos : 0, 2), "Coste por clienta nueva", "inversión en Meta ÷ pedidos de clientas nuevas") : ""}
+        ${hayMeta ? kpi(roas.toFixed(1).replace(".", ","), "ROAS", `<span class="lg">${eur(roas, 2)} vendidos por cada 1 € en Meta</span>` + (roasB ? `<br>año anterior: ${roasB.toFixed(1).replace(".", ",")}` : "")) : ""}
+        ${hayMeta ? kpi(eur(a.nuevos ? a.gasto / a.nuevos : 0, 2), "Coste por clienta nueva", `<span class="lg">inversión en Meta ÷ pedidos de clientas nuevas</span>`) : ""}
       </div>
       ${g1}
-      <p class="gmini">ROAS = facturación de la tienda ÷ inversión en Meta (todas las ventas, no solo las que Meta se atribuye). Pasa el ratón por encima de cada barra para ver el detalle del día.${ultMeta && ultMeta < masDias(hoy, -1) ? ` <b>Meta Ads sin actualizar desde el ${diaCorto(ultMeta)}.</b>` : ""}</p>
-    </section>
-    <section class="gsec"><h3>Clientas nuevas y recurrentes<small>${d0 === d1 ? diaCorto(d0) : "por día"}</small></h3>
+      <p class="gmini">ROAS = facturación de la tienda ÷ inversión en Meta (todas las ventas, no solo las que Meta se atribuye). <span class="lg">Pasa el ratón por encima de cada barra para ver el detalle del día.</span><span class="sm">Toca una barra para ver el detalle del día.</span>${ultMeta && ultMeta < masDias(hoy, -1) ? ` <b>Meta Ads sin actualizar desde el ${diaCorto(ultMeta)}.</b>` : ""}</p>
+    </details>
+    <details class="gsec" data-gsec="clientas" ${ab("clientas")}><summary><h3>Clientas nuevas y recurrentes<small>${d0 === d1 ? diaCorto(d0) : "por día"}</small></h3>${sv0(`${a.pedidos ? Math.round(a.recurrentes / a.pedidos * 100) : 0}% repiten`)}</summary>
       <div class="kpis">
         ${kpi(ent(a.nuevos), "Pedidos de clientas nuevas", (a.pedidos ? Math.round(a.nuevos / a.pedidos * 100) : 0) + "% de los pedidos " + delta(a.nuevos, b.nuevos))}
         ${kpi(ent(a.recurrentes), "Pedidos de clientas que repiten", (a.pedidos ? Math.round(a.recurrentes / a.pedidos * 100) : 0) + "% de los pedidos " + delta(a.recurrentes, b.recurrentes))}
@@ -1797,13 +1837,13 @@ function panelHTML(){
         ${kpi(eur(a.vRec), "Ventas de clientas que repiten", (a.neto ? Math.round(a.vRec / a.neto * 100) : 0) + "% de la facturación")}
       </div>
       ${g4}
-      <p class="gmini">Clienta nueva = es su primer pedido en la tienda. Que repite = ya había comprado antes (desde 2019).</p></section>
-    <section class="gsec"><h3>Evolución<small>ventas por mes, ${ano} frente a ${ano - 1}</small></h3>${g2}</section>
-    <section class="gsec"><h3>Lo más vendido<small>${PERIODOS.find((p) => p[0] === G.periodo)?.[1].toLowerCase()}</small></h3>
-      ${top.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>#</th><th>Producto</th><th class="r">Unidades</th><th class="r">Ventas</th><th class="r">% del total</th></tr></thead><tbody>
-        ${top.map(([t, r], i) => `<tr><td>${i + 1}</td><td>${esc(t)}</td><td class="r">${ent(r.u)}</td><td class="r">${eur(r.e)}</td><td class="r">${totProd ? Math.round(r.e / totProd * 100) : 0}%</td></tr>`).join("")}</tbody></table></div>`
-        : `<div class="gmini">Sin datos de productos para este periodo.</div>`}</section>
-    <section class="gsec"><h3>Taller ahora mismo</h3>
+      <p class="gmini">Clienta nueva = es su primer pedido en la tienda. Que repite = ya había comprado antes (desde 2019).</p></details>
+    <details class="gsec" data-gsec="evolucion" ${ab("evolucion")}><summary><h3>Evolución<small>ventas por mes, ${ano} frente a ${ano - 1}</small></h3>${mesAnt ? sv0(`este mes ${mesAct >= mesAnt ? "+" : ""}${Math.round((mesAct - mesAnt) / mesAnt * 100)}%`) : ""}</summary>${g2}</details>
+    <details class="gsec" data-gsec="top" ${ab("top")}><summary><h3>Lo más vendido<small>${PERIODOS.find((p) => p[0] === G.periodo)?.[1].toLowerCase()}</small></h3>${top.length ? sv0(esc(top[0][0])) : ""}</summary>
+      ${top.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>#</th><th>Producto</th><th class="r">Unidades</th><th class="r">Ventas</th><th class="r ocm">% del total</th></tr></thead><tbody>
+        ${top.map(([t, r], i) => `<tr><td>${i + 1}</td><td>${esc(t)}</td><td class="r">${ent(r.u)}</td><td class="r">${eur(r.e)}</td><td class="r ocm">${totProd ? Math.round(r.e / totProd * 100) : 0}%</td></tr>`).join("")}</tbody></table></div>`
+        : `<div class="gmini">Sin datos de productos para este periodo.</div>`}</details>
+    <details class="gsec" data-gsec="taller" ${ab("taller")}><summary><h3>Taller ahora mismo</h3>${sv0(`${ent(cola)} por salir`)}</summary>
       <div class="kpis">
         ${kpi(ent(cola), "Pedidos por salir", `≈ ${diasCola < 1 ? "menos de 1 día" : diasCola.toFixed(1).replace(".", ",") + " días"} de trabajo al ritmo de ${Math.round(ritmo)}/día`, diasCola > 2 ? "rojo" : "")}
         ${kpi(ent(salidosDia(hoy)), "Salidos hoy", `ayer ${sal7[0]}`)}
@@ -1814,10 +1854,12 @@ function panelHTML(){
         ${kpi(ent(orden.filter(retrasado).length), "Retrasados", "más de 7 días (urgentes 3)", orden.some(retrasado) ? "rojo" : "")}
       </div>
       <h4 class="gh4">Pedidos entrados y salidos · últimos 14 días</h4>${g3}
-    </section>
-    <section class="gsec"><div class="gcab"><h3>Qué ha hecho cada una<small>${dia === hoy ? "hoy" : diaCorto(dia)}</small></h3>
-      <div class="gper"><button data-gdia="-1">‹ Día anterior</button><button data-gdia="0" class="${dia === hoy ? "on" : ""}">Hoy</button><button data-gdia="1" ${dia >= hoy ? "disabled" : ""}>Día siguiente ›</button></div></div>
-      ${filas.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>Persona</th><th class="r">Prendas hechas</th><th class="r">Personalizadas</th><th class="r">Stock revisado</th><th class="r">Marcadas «No hay»</th><th class="r">Pedidos empaquetados</th><th>Horario</th></tr></thead><tbody>
+    </details>
+    <details class="gsec" data-gsec="equipo" ${ab("equipo")}><summary><h3>Qué ha hecho cada una<small>${dia === hoy ? "hoy" : diaCorto(dia)}</small></h3>${sv0(`${ent(tot.empaq)} pedidos · ${ent(tot.hechas + tot.pers)} prendas`)}</summary>
+      <div class="gper"><button data-gdia="-1">‹ Día anterior</button><button data-gdia="0" class="${dia === hoy ? "on" : ""}">Hoy</button><button data-gdia="1" ${dia >= hoy ? "disabled" : ""}>Día siguiente ›</button></div>
+      ${filas.length ? `<div class="geqm">${filas.map(([n, r]) => `<div class="geq"><div><b style="color:${colorPersona(n)}">${esc(n)}</b> <small>${esc(puestoDe(n))}${r.desde ? ` · ${hm(r.desde)}${r.hasta && r.hasta !== r.desde ? "–" + hm(r.hasta) : ""}` : ""}</small></div>
+        <div class="geqn">${[[r.hechas, "prenda hecha", "prendas hechas"], [r.pers, "personalizada", "personalizadas"], [r.hay, "stock revisado", "stock revisado"], [r.nohay, "«no hay»", "«no hay»"], [r.empaq, "pedido", "pedidos"]].filter(([v]) => v).map(([v, t1, t]) => `<span><b>${ent(v)}</b> ${v === 1 ? t1 : t}</span>`).join("")}</div></div>`).join("")}</div>
+        <div class="hwrap solo-pc"><table class="htabla"><thead><tr><th>Persona</th><th class="r">Prendas hechas</th><th class="r">Personalizadas</th><th class="r">Stock revisado</th><th class="r">Marcadas «No hay»</th><th class="r">Pedidos empaquetados</th><th>Horario</th></tr></thead><tbody>
         ${filas.map(([n, r]) => `<tr><td><b style="color:${colorPersona(n)}">${esc(n)}</b><small>${esc(puestoDe(n))}</small></td><td class="r">${ent(r.hechas)}</td><td class="r">${ent(r.pers)}</td><td class="r">${ent(r.hay)}</td><td class="r">${ent(r.nohay)}</td><td class="r"><b>${ent(r.empaq)}</b></td><td>${hm(r.desde)}${r.hasta && r.hasta !== r.desde ? " – " + hm(r.hasta) : ""}<small>primera y última acción</small></td></tr>`).join("")}
         <tr class="tot"><td>Total</td><td class="r">${ent(tot.hechas)}</td><td class="r">${ent(tot.pers)}</td><td class="r">${ent(tot.hay)}</td><td class="r">${ent(tot.nohay)}</td><td class="r">${ent(tot.empaq)}</td><td></td></tr></tbody></table></div>`
         : `<div class="gmini">Nadie ha marcado nada en el programa ${dia === hoy ? "todavía hoy" : "ese día"}.</div>`}
@@ -1825,7 +1867,7 @@ function panelHTML(){
       ${nombres7.length ? `<div class="hwrap"><table class="htabla g7"><thead><tr><th>Persona</th>${d7.map((d) => `<th>${esc(new Date(d + "T12:00:00").toLocaleDateString("es-ES", { weekday: "short", day: "numeric" }))}</th>`).join("")}</tr></thead><tbody>
         ${nombres7.map((n) => `<tr><td><b style="color:${colorPersona(n)}">${esc(n)}</b></td>${eq7.map((m) => `<td>${celda(m.get(n))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<div class="gmini">Sin actividad registrada.</div>`}
       <p class="gmini">Prendas hechas = las que Producción apunta con ✔ Hechas o ✔ Preparadas. Personalizadas = ✔ Hecha. Stock revisado = ✔ Hay y ✔ Han llegado. Pedidos empaquetados = los que salen a su nombre.</p>
-    </section>`;
+    </details>`;
 }
 
 function miDiaHTML(){
@@ -2513,6 +2555,10 @@ function pintarBarra(){
     <button class="go" data-bmover="${E.sig}">${E.sigTxt}</button>`;
 }
 
+// Gerencia en el móvil: recuerda qué apartados están abiertos y repinta al cambiar de tamaño
+document.addEventListener("toggle", (e) => { const d = e.target; if (d.matches?.("details[data-gsec]") && esMovil()){ d.open ? G.abiertas.add(d.dataset.gsec) : G.abiertas.delete(d.dataset.gsec); } }, true);
+let movilAntes = esMovil();
+window.addEventListener("resize", () => { if (esMovil() !== movilAntes){ movilAntes = esMovil(); if (vista === "gerencia") pintar(); } });
 // ───── eventos ─────
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
