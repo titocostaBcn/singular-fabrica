@@ -31,7 +31,7 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 | --- | --- |
 | Administración | El programa entero: Plan del día, Pedidos, Resumen producción, Histórico y Ayuda. |
 | Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. **Prendas sin vinilo**: los productos que no se cortan (como «cupido»), con ✔ Preparadas, Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas, ✔ Han llegado todas (el modelo entero) y ✔ Ha llegado todo. |
-| Expedición | **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
+| Expedición | **Revisar stock**: lo primero de la mañana, las prendas del día por modelo y talla, con ✔ Hay y ✖ No hay (las de estampar) y ✔ Preparadas (las sin vinilo). **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
 En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
 
@@ -90,6 +90,19 @@ La pantalla **Plan del día** la mira Administración cada mañana. Dice cuánto
 2. Si hay la prenda, pulsa **✔ Hay**. Si solo hay algunas, escribe cuántas y pulsa ✔ Hay: los urgentes y más antiguos se quedan las que hay y el resto pasa a Sin stock.
 3. Si no hay ninguna, pulsa **✖ No hay**: el pedido pasa a Sin stock aunque Shopify diga que hay stock.
 4. Arriba salen las prendas en **Sin stock**: si ya han llegado, pulsa **✔ Ha llegado**.
+
+**La revisión de stock de la mañana**
+
+Antes de las 9 tiene que estar mirado el stock del día, para que **Carlota**, que compra, vea en **Sin stock** lo que falta. Lo hace quien llegue primero:
+
+| Si llegan… | Producción (Andrea) | Expedición (Dania) |
+| --- | --- | --- |
+| Las dos a la vez | Empieza a cortar vinilo. | Abre **Revisar stock**: busca las prendas que se van a estampar y se las deja a Producción (✔ Hay o ✖ No hay); prepara las «sin vinilo» en la estantería de hechas (✔ Preparadas) y marca ✖ No hay lo que falte. |
+| Expedición más tarde | Mira el stock ella misma desde **Por hacer** y **Prendas sin vinilo** (✖ No hay, ✔ Preparadas) y después corta y estampa. | Al llegar, empieza por Empaquetar. |
+
+En **Revisar stock**, ✔ Hay marca la prenda como mirada y desaparece de la lista; queda para Producción. Lo que ya se miró otro día no vuelve a salir. ✖ No hay con un número pasa a Sin stock solo esas (las de los pedidos más nuevos); sin número, toda la línea.
+
+**Carlota** ve la lista de lo que falta en **Resumen producción → Sin stock** (con 🖨 Imprimir listado y ⬇ Excel). Cuando llega lo que ha comprado, se marca ✔ Han llegado (apartado 8).
 
 Ya no se imprime una hoja por pedido: Producción trabaja con su pantalla y Expedición ve cada pedido en la suya.
 
@@ -249,7 +262,7 @@ Algunos productos no se cortan ni se estampan: se venden tal cual, como los pant
 - Salen en **Producción**, en su propia pestaña **Prendas sin vinilo**, por modelo y talla.
 - Si hay, cógelas, déjalas en la estantería de hechas y pulsa **✔ Preparadas** (o **Todas**). El programa las reparte a los pedidos como las demás.
 - Si no hay, pulsa **✖ No hay**: van a Sin stock. Cuando lleguen, **✔ Han llegado** las devuelve a Producción.
-- Expedición no tiene que mirar el stock: un pedido solo le sale cuando todas sus prendas están hechas o preparadas.
+- Por la mañana, si Expedición llega a la vez que Producción, las prepara ella desde **Revisar stock** (apartado 3). Para empaquetar no tiene que mirar el stock: un pedido solo le sale en Empaquetar cuando todas sus prendas están hechas o preparadas.
 - En la tarjeta, estas prendas llevan la marca **Sin vinilo · stock N** (el stock que dice Shopify, solo como referencia).
 
 **Producto nuevo que no se corta**: hay que ponerle la etiqueta «sin vinilo» en Shopify. Lo hace quien da de alta los productos; si ves uno que falta, avísale.
