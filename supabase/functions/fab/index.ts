@@ -1,7 +1,7 @@
 // fab v11 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (vinilo) → estampar → empaquetar, y sin_stock; el pedido (trigger en BD) toma el de su prenda más atrasada.
 // Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir ·
-// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · ventas · diag · prueba_gls
+// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · ventas · meta · diag · prueba_gls
 // v7: recoge los cambios hechos en Shopify en pedidos ya importados (talla/prenda, cantidad, dirección, nota, envío).
 // v8 (ola 1): Sin stock marcado a mano manda sobre el stock de Shopify; prendas quitadas con vinilo asignado lo devuelven al almacén;
 //     Shopify (apagado hasta tener permiso de escritura): enviado en Otros envíos y metacampos estampado_por / empaquetado_por.
@@ -710,6 +710,13 @@ Deno.serve(async (req) => {
       let meta: unknown = null;
       try { meta = await sincronizarMeta(desde, hasta); } catch (e) { meta = { error: String((e as Error).message ?? e) }; }
       return json({ ok: true, ...res, meta });
+    }
+
+    if (accion === "meta") {
+      // Solo la tarea programada: rehace la inversión en Meta Ads de un rango (para cargar el histórico)
+      if (usuario !== "cron") return json({ ok: false, error: "no autorizado" }, 403);
+      const hoy = diaMadrid(new Date().toISOString());
+      return json({ ok: true, ...(await sincronizarMeta(String(body.desde ?? sumarDia(hoy, -7)), String(body.hasta ?? hoy))) });
     }
 
     const order_id = Number(body.order_id);
