@@ -408,5 +408,5 @@ Arriba eliges el periodo: Hoy, Ayer, 7 días, 30 días, Este mes o Este año. To
 
 **Desde el iPhone.** Entra en tallersingular.netlify.app con Safari: la pantalla se adapta al móvil. Abajo hay tres botones (📊 Panel, ✅ Mi día y ☰ Todo). En el Panel, cada apartado se abre y se cierra tocando su título; cerrado, enseña a la derecha su cifra principal (facturación, % de clientas que repiten, pedidos por salir…). Para tenerlo como una app: en Safari pulsa Compartir → **Añadir a pantalla de inicio**; sale el icono «Taller».
 
-Las ventas se leen de Shopify cada mañana a las 8:00 y al abrir el panel (las de hoy). Las cifras pueden diferir un poco de las «Ventas totales» de Shopify, porque aquí las devoluciones se restan del día del pedido y no del día en que se devolvió el dinero. La inversión en Meta Ads se actualiza cada mañana.
+Las ventas se leen de Shopify cada mañana a las 8:00 y al abrir el panel (las de hoy). Las devoluciones se restan el día en que se devuelve el dinero, como en Shopify. Aun así, algún día puede diferir un poco de las «Ventas totales» de Shopify, porque Shopify también resta devoluciones registradas antes de reembolsarlas y prendas quitadas al editar un pedido. La inversión en Meta Ads se actualiza cada mañana.
 
