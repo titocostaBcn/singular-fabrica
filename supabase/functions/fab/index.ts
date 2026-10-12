@@ -1,13 +1,14 @@
 // fab v11 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (vinilo) → estampar → empaquetar, y sin_stock; el pedido (trigger en BD) toma el de su prenda más atrasada.
 // Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir ·
-// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · diag · prueba_gls
+// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · ventas · diag · prueba_gls
 // v7: recoge los cambios hechos en Shopify en pedidos ya importados (talla/prenda, cantidad, dirección, nota, envío).
 // v8 (ola 1): Sin stock marcado a mano manda sobre el stock de Shopify; prendas quitadas con vinilo asignado lo devuelven al almacén;
 //     Shopify (apagado hasta tener permiso de escritura): enviado en Otros envíos y metacampos estampado_por / empaquetado_por.
 // v9: usuarios desde la pantalla (solo fab_usuarios.admin): alta con contraseña, contraseña nueva y quitar acceso, sin correos.
 // v10: puesto por usuario (administracion, produccion, expedicion): cada una tiene su pantalla.
 // v11: las prendas «sin vinilo» las revisa Producción (ya no pasan solas a Empaquetar según el stock de Shopify).
+// v12: ventas por día para el panel de gerencia (acción «ventas», solo lectura de Shopify): fab_ventas_dia y fab_ventas_producto.
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
@@ -533,6 +534,106 @@ async function pdfDe(p: any): Promise<string | null> {
   return p.gls_codbarras ? await glsEtiquetaEnvio(p.gls_codbarras) : null;
 }
 
+// ───────── Ventas por día (panel de gerencia) ─────────
+// Lee de Shopify los pedidos creados entre dos días (hora de Madrid) y rehace esos días en fab_ventas_dia y fab_ventas_producto.
+// Solo lectura en Shopify. Sin pedidos de prueba; los cancelados se cuentan aparte y no suman venta.
+const Q_VENTAS = `query Ventas($q: String!, $after: String) { orders(first: 40, after: $after, query: $q, sortKey: CREATED_AT) {
+  pageInfo { hasNextPage endCursor }
+  nodes { createdAt cancelledAt test
+    totalPriceSet { shopMoney { amount } } totalRefundedSet { shopMoney { amount } }
+    totalShippingPriceSet { shopMoney { amount } } totalTaxSet { shopMoney { amount } } totalDiscountsSet { shopMoney { amount } }
+    lineItems(first: 20) { nodes { title quantity discountedTotalSet { shopMoney { amount } } } } } } }`;
+const diaMadrid = (iso: string) => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(new Date(iso));
+const sumarDia = (d: string, n: number) => { const x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+// Desfase de Madrid respecto a UTC en un día concreto («+01:00» o «+02:00»)
+function desfaseMadrid(d: string) {
+  const h = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", hour12: false }).format(new Date(d + "T12:00:00Z")));
+  return `+0${h - 12}:00`;
+}
+async function gqlReintento(query: string, vars: Record<string, unknown>) {
+  for (let i = 0; ; i++) {
+    try { return await gql(query, vars); }
+    catch (e) { if (i >= 4 || !/THROTTLED|throttl|429|50\d/i.test(String((e as Error).message))) throw e; await new Promise((r) => setTimeout(r, 2000 * (i + 1))); }
+  }
+}
+async function sincronizarVentas(desde: string, hasta: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta) || desde > hasta) throw new Error("fechas no válidas");
+  const fin = sumarDia(hasta, 1);
+  const q = `created_at:>='${desde}T00:00:00${desfaseMadrid(desde)}' created_at:<'${fin}T00:00:00${desfaseMadrid(fin)}'`;
+  const dias = new Map<string, any>(), prods = new Map<string, any>();
+  for (let d = desde; d <= hasta; d = sumarDia(d, 1)) dias.set(d, { dia: d, pedidos: 0, unidades: 0, total: 0, devuelto: 0, envio: 0, iva: 0, descuentos: 0, cancelados: 0 });
+  const num = (m: any) => Number(m?.shopMoney?.amount ?? 0);
+  let after: string | null = null, leidos = 0;
+  do {
+    const r: any = await gqlReintento(Q_VENTAS, { q, after });
+    for (const o of r.orders.nodes) {
+      if (o.test) continue;
+      const v = dias.get(diaMadrid(o.createdAt)); if (!v) continue;
+      leidos++;
+      if (o.cancelledAt) { v.cancelados++; continue; }
+      v.pedidos++; v.total += num(o.totalPriceSet); v.devuelto += num(o.totalRefundedSet);
+      v.envio += num(o.totalShippingPriceSet); v.iva += num(o.totalTaxSet); v.descuentos += num(o.totalDiscountsSet);
+      for (const li of o.lineItems.nodes) {
+        v.unidades += li.quantity;
+        const k = v.dia + "|" + li.title;
+        const p = prods.get(k) ?? { dia: v.dia, titulo: li.title, unidades: 0, importe: 0 };
+        p.unidades += li.quantity; p.importe += num(li.discountedTotalSet); prods.set(k, p);
+      }
+    }
+    after = r.orders.pageInfo.hasNextPage ? r.orders.pageInfo.endCursor : null;
+  } while (after);
+  const r2 = (x: number) => Math.round(x * 100) / 100;
+  const filas = [...dias.values()].map((v) => ({ ...v, total: r2(v.total), devuelto: r2(v.devuelto), envio: r2(v.envio), iva: r2(v.iva), descuentos: r2(v.descuentos), actualizado_at: new Date().toISOString() }));
+  const { error: e1 } = await sb.from("fab_ventas_dia").upsert(filas, { onConflict: "dia" });
+  if (e1) throw new Error("ventas: " + e1.message);
+  const { error: e2 } = await sb.from("fab_ventas_producto").delete().gte("dia", desde).lte("dia", hasta);
+  if (e2) throw new Error("ventas productos: " + e2.message);
+  const lp = [...prods.values()].map((p) => ({ ...p, importe: r2(p.importe) }));
+  for (let i = 0; i < lp.length; i += 1000) {
+    const { error } = await sb.from("fab_ventas_producto").insert(lp.slice(i, i + 1000));
+    if (error) throw new Error("ventas productos: " + error.message);
+  }
+  return { desde, hasta, dias: filas.length, pedidos: filas.reduce((s, f) => s + f.pedidos, 0), leidos, productos: lp.length };
+}
+
+// Inversión en Meta Ads por día → fab_meta_dia. Windsor.ai (vault windsor_api_key) o la API de Meta (vault meta_token + meta_cuenta).
+// Sin clave en el vault no hace nada (el histórico se cargó aparte) y lo dice en la respuesta.
+async function sincronizarMeta(desde: string, hasta: string) {
+  const r2 = (x: number) => Math.round(Number(x || 0) * 100) / 100;
+  let filas: any[] = [];
+  const wk = await secret("windsor_api_key");
+  if (wk) {
+    const u = `https://connectors.windsor.ai/facebook?api_key=${encodeURIComponent(wk)}&date_from=${desde}&date_to=${hasta}&fields=date,spend,impressions,clicks,actions_purchase,action_values_purchase`;
+    const r = await fetch(u);
+    if (!r.ok) throw new Error(`Windsor ${r.status}`);
+    const j = await r.json();
+    const por = new Map<string, any>();
+    for (const x of (j.data ?? [])) {
+      const f = por.get(x.date) ?? { dia: x.date, gasto: 0, impresiones: 0, clics: 0, compras: 0, valor_compras: 0 };
+      f.gasto += Number(x.spend || 0); f.impresiones += Number(x.impressions || 0); f.clics += Number(x.clicks || 0);
+      f.compras += Number(x.actions_purchase || 0); f.valor_compras += Number(x.action_values_purchase || 0); por.set(x.date, f);
+    }
+    filas = [...por.values()];
+  } else {
+    const tk = await secret("meta_token"), cuenta = await secret("meta_cuenta");
+    if (!tk || !cuenta) return { omitido: "sin clave de Windsor ni de Meta en el vault" };
+    let url: string | null = `https://graph.facebook.com/v21.0/act_${cuenta}/insights?level=account&time_increment=1&fields=spend,impressions,clicks,actions,action_values`
+      + `&time_range=${encodeURIComponent(JSON.stringify({ since: desde, until: hasta }))}&access_token=${encodeURIComponent(tk)}`;
+    while (url) {
+      const r = await fetch(url); const j = await r.json();
+      if (j.error) throw new Error(`Meta: ${j.error.message}`);
+      for (const x of j.data ?? []) {
+        const compra = (l: any[]) => Number((l ?? []).find((a: any) => a.action_type === "purchase" || a.action_type === "omni_purchase")?.value ?? 0);
+        filas.push({ dia: x.date_start, gasto: Number(x.spend || 0), impresiones: Number(x.impressions || 0), clics: Number(x.clicks || 0), compras: compra(x.actions), valor_compras: compra(x.action_values) });
+      }
+      url = j.paging?.next ?? null;
+    }
+  }
+  const out = filas.map((f) => ({ ...f, gasto: r2(f.gasto), valor_compras: r2(f.valor_compras), compras: Math.round(f.compras), actualizado_at: new Date().toISOString() }));
+  if (out.length) { const { error } = await sb.from("fab_meta_dia").upsert(out, { onConflict: "dia" }); if (error) throw new Error("meta: " + error.message); }
+  return { dias: out.length, gasto: r2(out.reduce((s, f) => s + f.gasto, 0)) };
+}
+
 // Puestos (fab_usuarios.puesto): deciden la pantalla de cada persona. Sin puesto = administración (todo).
 const PUESTOS = ["administracion", "produccion", "expedicion"];
 
@@ -577,12 +678,34 @@ Deno.serve(async (req) => {
       const hora = url.searchParams.get("hora") ?? (url.searchParams.get("solo7") === "1" ? "7" : null);
       if (usuario === "cron" && hora && horaMadrid() !== Number(hora)) return json({ ok: true, omitido: `no son las ${hora} en Madrid` });
       try {
-        return json({ ok: true, ...(await importar(usuario)) });
+        const res = await importar(usuario);
+        let ventas: unknown = null;
+        try { const hoy = diaMadrid(new Date().toISOString()); ventas = await sincronizarVentas(sumarDia(hoy, -7), hoy); }
+        catch (e) { ventas = { error: String((e as Error).message ?? e) }; await evento(null, "ventas_error", ventas, usuario); }
+        let meta: unknown = null;
+        try { const hoy = diaMadrid(new Date().toISOString()); meta = await sincronizarMeta(sumarDia(hoy, -7), hoy); }
+        catch (e) { meta = { error: String((e as Error).message ?? e) }; await evento(null, "meta_error", meta, usuario); }
+        return json({ ok: true, ...res, ventas, meta });
       } catch (e) {
         // Queda registrado: la pantalla muestra "ERROR no actualizado hoy" si no hay importación correcta del día
         await evento(null, "importacion_error", { error: String((e as Error).message ?? e) }, usuario);
         throw e;
       }
+    }
+
+    if (accion === "ventas") {
+      // Panel de gerencia: solo la tarea programada o Administración (sin puesto o administracion, o admin)
+      if (usuario !== "cron") {
+        const { data: yo } = await sb.from("fab_usuarios").select("admin, puesto").eq("email", usuario.toLowerCase()).maybeSingle();
+        if (!yo || !(yo.admin || !yo.puesto || yo.puesto === "administracion")) return json({ ok: false, error: "Solo Administración" }, 403);
+      }
+      const hoy = diaMadrid(new Date().toISOString());
+      const desde = String(body.desde ?? hoy), hasta = String(body.hasta ?? hoy);
+      if (usuario !== "cron" && (desde < sumarDia(hoy, -31))) return json({ ok: false, error: "Desde la pantalla solo se pueden refrescar los últimos 31 días" }, 400);
+      const res = await sincronizarVentas(desde, hasta);
+      let meta: unknown = null;
+      try { meta = await sincronizarMeta(desde, hasta); } catch (e) { meta = { error: String((e as Error).message ?? e) }; }
+      return json({ ok: true, ...res, meta });
     }
 
     const order_id = Number(body.order_id);
