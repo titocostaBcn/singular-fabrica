@@ -176,6 +176,7 @@
   .otros-f input{flex:1;min-width:200px;font:inherit;padding:12px;border:2px solid var(--line);border-radius:10px}
   .otros-f button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:12px 14px;font-weight:700}
   .otros-f button.go{background:var(--c);border-color:var(--c);color:#fff}
+  .pc .otros-f input{flex:1 1 100%;font-size:18px;padding:14px}
   .acciones .otrosb{flex:1}
   .hecho .entregar{background:var(--producido);border-color:var(--producido);color:#fff;padding:12px 16px;font-weight:800}
   .card.entregado{opacity:.6}
@@ -1632,7 +1633,7 @@ function pintarResumen(){
   const hoyTxt = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
   const E = ETAPA[etapaR];
   $("#resumen").innerHTML = `<div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
-    <div class="rtitulo"><h2>${etapaR === "todos" ? "Todo lo pendiente de producir" : etapaR === "cortar" ? "Producción: cortar y estampar" : etapaR === "sin_vinilo" ? "Prendas sin vinilo: mira si hay" : etapaR === "stock" ? "Revisar stock del día" : E.plural}</h2><span class="tot">${contador ? `<b>${quedan} por hacer</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
+    <div class="rtitulo"><h2>${etapaR === "todos" ? "Todo lo pendiente de producir" : etapaR === "cortar" ? "Producción: cortar y estampar" : etapaR === "sin_vinilo" ? "Prendas sin vinilo: mira si hay" : etapaR === "stock" ? "Revisar stock del día" : E.plural}</h2><span class="tot">${contador ? `<b>${quedan} ${etapaR === "stock" ? "por mirar" : "por hacer"}</b> · ${total} en pedidos` : `${total} prendas`} · ${lista.length} modelos${fTxt} · ${hoyTxt}</span>
       <span style="margin-left:auto;display:flex;gap:8px"><button class="btn-sec" id="bExcel">⬇ Excel</button><button class="btn-sec" id="bImprLista">🖨 Imprimir listado</button></span></div>
     ${etapaR === "stock" ? `<div class="ayudacorte">Lo primero de la mañana. <b>Para estampar</b>: busca cada prenda y déjala a Producción; pulsa <b>✔ Hay</b> o <b>✖ No hay</b> (con un número, solo las que faltan). <b>Sin vinilo</b>: si hay, déjalas en la estantería de hechas y pulsa <b>✔ Preparadas</b>; pasan solas a Empaquetar. Lo que marques ✖ No hay sale a Carlota en <b>Sin stock</b> para comprarlo.</div>`
       : etapaR === "sin_vinilo" ? `<div class="ayudacorte">Productos que no llevan vinilo (como «cupido»). Mira si hay, déjalos en la estantería de hechas y pulsa <b>✔ Preparadas</b> (o <b>Todas</b>): el programa los reparte a los pedidos, urgentes y más antiguos primero. Si no hay, pulsa <b>✖ No hay</b>.</div>`
