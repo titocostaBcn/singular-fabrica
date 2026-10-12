@@ -570,12 +570,14 @@ async function sincronizarVentas(desde: string, hasta: string) {
       if (o.test) continue;
       const v = dias.get(diaMadrid(o.createdAt)); if (!v) continue;
       leidos++;
-      if (o.cancelledAt) { v.cancelados++; continue; }
-      v.pedidos++; v.total += num(o.totalPriceSet); v.devuelto += num(o.totalRefundedSet);
+      // Como Shopify («Ventas totales»): el pedido cuenta el día que se hizo, también si luego se cancela;
+      // las devoluciones y cancelaciones reembolsadas se restan el día en que se devuelve el dinero (segunda consulta).
+      if (o.cancelledAt) v.cancelados++;
+      v.pedidos++; v.total += num(o.totalPriceSet);
       v.envio += num(o.totalShippingPriceSet); v.iva += num(o.totalTaxSet); v.descuentos += num(o.totalDiscountsSet);
       // Clienta nueva = es su primer pedido en la tienda (sin cliente asociado cuenta como nueva)
       const primero = o.customer?.orders?.nodes?.[0]?.id;
-      const venta = num(o.totalPriceSet) - num(o.totalRefundedSet);
+      const venta = num(o.totalPriceSet);
       if (!o.customer || !primero || primero === o.id) { v.pedidos_nuevos++; v.ventas_nuevos += venta; } else { v.pedidos_recurrentes++; v.ventas_recurrentes += venta; }
       for (const li of o.lineItems.nodes) {
         v.unidades += li.quantity;
@@ -586,6 +588,22 @@ async function sincronizarVentas(desde: string, hasta: string) {
     }
     after = r.orders.pageInfo.hasNextPage ? r.orders.pageInfo.endCursor : null;
   } while (after);
+  // Devoluciones por fecha de reembolso (de pedidos de cualquier día), como hace Shopify
+  const desdeTz = `${desde}T00:00:00${desfaseMadrid(desde)}`;
+  const q2 = `(financial_status:refunded OR financial_status:partially_refunded) updated_at:>='${desdeTz}'`;
+  let after2: string | null = null, reembolsos = 0;
+  do {
+    const r: any = await gqlReintento(`query Reemb($q: String!, $after: String) { orders(first: 100, after: $after, query: $q) {
+      pageInfo { hasNextPage endCursor } nodes { test refunds { createdAt totalRefundedSet { shopMoney { amount } } } } } }`, { q: q2, after: after2 });
+    for (const o of r.orders.nodes) {
+      if (o.test) continue;
+      for (const rf of o.refunds ?? []) {
+        const v = dias.get(diaMadrid(rf.createdAt)); if (!v) continue;
+        v.devuelto += num(rf.totalRefundedSet); reembolsos++;
+      }
+    }
+    after2 = r.orders.pageInfo.hasNextPage ? r.orders.pageInfo.endCursor : null;
+  } while (after2);
   const r2 = (x: number) => Math.round(x * 100) / 100;
   const filas = [...dias.values()].map((v) => ({ ...v, total: r2(v.total), devuelto: r2(v.devuelto), envio: r2(v.envio), iva: r2(v.iva), descuentos: r2(v.descuentos), ventas_nuevos: r2(v.ventas_nuevos), ventas_recurrentes: r2(v.ventas_recurrentes), actualizado_at: new Date().toISOString() }));
   const { error: e1 } = await sb.from("fab_ventas_dia").upsert(filas, { onConflict: "dia" });
@@ -597,7 +615,7 @@ async function sincronizarVentas(desde: string, hasta: string) {
     const { error } = await sb.from("fab_ventas_producto").insert(lp.slice(i, i + 1000));
     if (error) throw new Error("ventas productos: " + error.message);
   }
-  return { desde, hasta, dias: filas.length, pedidos: filas.reduce((s, f) => s + f.pedidos, 0), leidos, productos: lp.length };
+  return { desde, hasta, dias: filas.length, pedidos: filas.reduce((s, f) => s + f.pedidos, 0), leidos, reembolsos, productos: lp.length };
 }
 
 // Inversión en Meta Ads por día → fab_meta_dia. Windsor.ai (vault windsor_api_key) o la API de Meta (vault meta_token + meta_cuenta).
