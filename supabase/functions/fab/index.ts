@@ -730,6 +730,13 @@ Deno.serve(async (req) => {
       return json({ ok: true, ...res, meta });
     }
 
+    if (accion === "prueba_shopifyql") {
+      if (usuario !== "cron") return json({ ok: false, error: "no autorizado" }, 403);
+      try {
+        const d = await gql(`query Q($q: String!) { shopifyqlQuery(query: $q) { tableData { columns { name dataType } rows } parseErrors } }`, { q: String(body.q ?? "FROM sales SHOW total_sales SINCE -1d UNTIL today") });
+        return json({ ok: true, d });
+      } catch (e) { return json({ ok: false, error: String((e as Error).message) }); }
+    }
     if (accion === "meta") {
       // Solo la tarea programada: rehace la inversión en Meta Ads de un rango (para cargar el histórico)
       if (usuario !== "cron") return json({ ok: false, error: "no autorizado" }, 403);
