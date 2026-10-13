@@ -9,6 +9,7 @@
 // v10: puesto por usuario (administracion, produccion, expedicion): cada una tiene su pantalla.
 // v11: las prendas «sin vinilo» las revisa Producción (ya no pasan solas a Empaquetar según el stock de Shopify).
 // v12: ventas por día para el panel de gerencia (acción «ventas», solo lectura de Shopify): fab_ventas_dia y fab_ventas_producto.
+// v13: «Responsable» por usuario (fab_usuarios.jefe) en la lista de usuarios: en Expedición reparte, pausa y recupera pedidos.
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
@@ -848,12 +849,12 @@ Deno.serve(async (req) => {
       if (accion === "soy_admin") return json({ ok: true, admin: !!yo?.admin });
       if (!yo?.admin) return json({ ok: false, error: "Solo un administrador puede gestionar usuarios" }, 403);
       if (accion === "usuarios") {
-        const { data: filas, error } = await sb.from("fab_usuarios").select("email, nombre, admin, puesto, creado_at").order("creado_at");
+        const { data: filas, error } = await sb.from("fab_usuarios").select("email, nombre, admin, puesto, jefe, creado_at").order("creado_at");
         if (error) throw error;
         const auth = await usuariosAuth();
         return json({ ok: true, yo: usuario.toLowerCase(), usuarios: (filas ?? []).map((f: any) => {
           const u = auth.get(String(f.email).toLowerCase());
-          return { email: f.email, nombre: f.nombre, admin: !!f.admin, puesto: f.puesto ?? null, tiene_clave: !!u, ultimo_acceso: u?.last_sign_in_at ?? null };
+          return { email: f.email, nombre: f.nombre, admin: !!f.admin, puesto: f.puesto ?? null, jefe: !!f.jefe, tiene_clave: !!u, ultimo_acceso: u?.last_sign_in_at ?? null };
         }) });
       }
       const email = String(body.email ?? "").trim().toLowerCase();
@@ -878,6 +879,8 @@ Deno.serve(async (req) => {
         puesto = body.puesto === null || body.puesto === "" ? null : String(body.puesto);
         if (puesto !== null && !PUESTOS.includes(puesto)) return json({ ok: false, error: "Puesto no válido" }, 400);
       }
+      // Responsable (fab_usuarios.jefe): la responsable de su puesto. En Expedición reparte, pausa y recupera pedidos.
+      const jefe = body.jefe === undefined ? undefined : !!body.jefe;
       const u = (await usuariosAuth()).get(email);
       let hecho = "";
       if (!u) {
@@ -895,13 +898,13 @@ Deno.serve(async (req) => {
         hecho = fila ? "datos" : "acceso";
       }
       if (!fila) {
-        const { error } = await sb.from("fab_usuarios").insert({ email, nombre: nombre ?? null, puesto: puesto ?? null });
+        const { error } = await sb.from("fab_usuarios").insert({ email, nombre: nombre ?? null, puesto: puesto ?? null, jefe: jefe ?? false });
         if (error) throw error;
-      } else if (nombre !== undefined || puesto !== undefined) {
-        const { error } = await sb.from("fab_usuarios").update({ ...(nombre !== undefined ? { nombre } : {}), ...(puesto !== undefined ? { puesto } : {}) }).eq("email", email);
+      } else if (nombre !== undefined || puesto !== undefined || jefe !== undefined) {
+        const { error } = await sb.from("fab_usuarios").update({ ...(nombre !== undefined ? { nombre } : {}), ...(puesto !== undefined ? { puesto } : {}), ...(jefe !== undefined ? { jefe } : {}) }).eq("email", email);
         if (error) throw error;
       }
-      await evento(null, "usuario", { accion: hecho, email, ...(puesto !== undefined ? { puesto } : {}) }, usuario);
+      await evento(null, "usuario", { accion: hecho, email, ...(puesto !== undefined ? { puesto } : {}), ...(jefe !== undefined ? { responsable: jefe } : {}) }, usuario);
       return json({ ok: true, hecho });
     }
     if (accion === "diag") {

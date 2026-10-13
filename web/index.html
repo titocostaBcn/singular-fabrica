@@ -739,7 +739,7 @@ async function cargarYo(){
   }
   $("#bUsuarios").classList.toggle("hidden", !YO.admin);
   document.body.classList.toggle("puesto", modoPuesto());
-  $(".marca span").textContent = modoPuesto() ? `${PUESTOS[YO.puesto].label}${YO.nombre ? " · " + YO.nombre : ""}${YO.jefe ? " · jefa" : ""}` : "Taller" + (YO.nombre ? " · " + YO.nombre : "");
+  $(".marca span").textContent = modoPuesto() ? `${PUESTOS[YO.puesto].label}${YO.nombre ? " · " + YO.nombre : ""}${YO.jefe ? " · Responsable" : ""}` : "Taller" + (YO.nombre ? " · " + YO.nombre : "");
   // Lo que haga queda a su nombre (quién estampó, quién empaquetó) sin preguntar
   if (modoPuesto() && YO.nombre) filtroAsig = YO.nombre;
 }
@@ -791,13 +791,13 @@ function pintarPuesto(){
   const nuevo = document.querySelector(`#puestoLista input[data-otrosinfo="${otrosAbierto}"]`);
   if (nuevo && otrosVal != null){ nuevo.value = otrosVal; if (otrosFoco) nuevo.focus(); }
 }
-// La jefa de Expedición recupera pedidos de otra: todos de golpe o los que marque (rpc fab_recuperar)
+// La responsable de Expedición recupera pedidos de otra: todos de golpe o los que marque (rpc fab_recuperar)
 const marcRec = new Set(); let recTodosPend = null;
 function barraRecuperar(){
   if (!YO.nombre) return "";
   const pausa = pausadosReparto(cfg);
   // A quien está en pausa se le avisa en su pantalla
-  if (!YO.jefe) return pausa.includes(YO.nombre) ? `<div class="recbar pausa"><b>⏸ Ahora no te llegan pedidos nuevos: tu reparto está en pausa.</b><span class="recnota">Lo que ya tienes a tu nombre sigue siendo tuyo. Cuando vuelvas, pide a la jefa que pulse «▶ Volver a repartir».</span></div>` : "";
+  if (!YO.jefe) return pausa.includes(YO.nombre) ? `<div class="recbar pausa"><b>⏸ Ahora no te llegan pedidos nuevos: tu reparto está en pausa.</b><span class="recnota">Lo que ya tienes a tu nombre sigue siendo tuyo. Cuando vuelvas, pide a la responsable que pulse «▶ Volver a repartir».</span></div>` : "";
   const por = new Map();
   for (const n of listaReparto(cfg)) if (n !== YO.nombre) por.set(n, []);
   for (const p of pedidosEn("empaquetar")) if (p.asignado_a && p.asignado_a !== YO.nombre) por.set(p.asignado_a, [...(por.get(p.asignado_a) ?? []), p.order_id]);
@@ -1050,6 +1050,7 @@ const Demo = (() => {
       const u = usuariosDemo.find((x) => x.email === email);
       if (!u){ if (!b.clave) return { ok: false, error: "Pon una contraseña para el usuario nuevo" }; usuariosDemo.push({ email, nombre: b.nombre || null, admin: false, puesto: b.puesto ?? null, tiene_clave: true, ultimo_acceso: null }); return { ok: true, hecho: "alta" }; }
       if (b.puesto) u.puesto = b.puesto;
+      if (b.jefe !== undefined) u.jefe = !!b.jefe;
       return { ok: true, hecho: b.clave ? "contraseña" : "datos" };
     }
     if (b.accion === "usuario_quitar"){ const i = usuariosDemo.findIndex((x) => x.email === b.email && !x.admin); if (i >= 0) usuariosDemo.splice(i, 1); return { ok: true }; }
@@ -1057,7 +1058,7 @@ const Demo = (() => {
   }
   const usuariosDemo = [
     { email: "fabrica@demo", nombre: "Tito", admin: true, puesto: null, tiene_clave: true, ultimo_acceso: new Date().toISOString() },
-    { email: "dania@singularwardrobe.com", nombre: "Dania", admin: false, puesto: "produccion", tiene_clave: true, ultimo_acceso: new Date(Date.now() - 864e5).toISOString() },
+    { email: "dania@singularwardrobe.com", nombre: "Dania", admin: false, puesto: "expedicion", jefe: true, tiene_clave: true, ultimo_acceso: new Date(Date.now() - 864e5).toISOString() },
     { email: "irene@singularwardrobe.com", nombre: "Irene", admin: false, puesto: "expedicion", tiene_clave: true, ultimo_acceso: null } ];
   const cortados = {};
   function sumarCortados(titulo, variante, n){ const k = titulo + "|" + (variante ?? ""); cortados[k] = Math.max((cortados[k] ?? 0) + n, 0); if (n > 0) autoasignar(); return cortados[k]; }
@@ -2787,9 +2788,9 @@ async function cargarUsuarios(){
 function pintarUsuarios(){
   const fecha = (t) => t ? new Date(t).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "nunca ha entrado";
   $("#usuLista").innerHTML = U.lista.map((u, i) => `<div class="usu">
-    <div class="fila1"><span class="nom">${esc(u.nombre || u.email.split("@")[0])}</span>${u.admin ? `<span class="b-carril">Administrador</span>` : ""}${u.email === U.yo ? `<span class="b-carril">Tú</span>` : ""}<span class="acc">Último acceso: ${fecha(u.ultimo_acceso)}</span></div>
+    <div class="fila1"><span class="nom">${esc(u.nombre || u.email.split("@")[0])}</span>${u.admin ? `<span class="b-carril">Administrador</span>` : ""}${u.jefe && !u.admin ? `<span class="b-carril">⭐ Responsable</span>` : ""}${u.email === U.yo ? `<span class="b-carril">Tú</span>` : ""}<span class="acc">Último acceso: ${fecha(u.ultimo_acceso)}</span></div>
     <div class="mail">${esc(u.email)}</div>
-    ${u.admin ? `<div class="puestos"><span class="nota">Administrador: ve todo el programa y gestiona los usuarios</span></div>` : `<div class="puestos">${chipsPuestos(u.puesto ?? "administracion", `name="pu${i}" data-usupuesto="${i}"`)}</div>`}
+    ${u.admin ? `<div class="puestos"><span class="nota">Administrador: ve todo el programa y gestiona los usuarios</span></div>` : `<div class="puestos">${chipsPuestos(u.puesto ?? "administracion", `name="pu${i}" data-usupuesto="${i}"`)}${u.puesto === "expedicion" ? `<label title="Reparte el trabajo de Expedición: pausa y reanuda el reparto y recupera pedidos de las compañeras"><input type="checkbox" data-usujefe="${i}" ${u.jefe ? "checked" : ""}> ⭐ Responsable de Expedición</label>` : ""}</div>`}
     ${U.editando === i ? `<form class="bots" data-usuclave="${i}" novalidate autocomplete="off"><input id="ucClave" type="text" placeholder="Contraseña nueva (mínimo 8)" autocomplete="new-password" style="flex:1"><button type="button" data-usugen="1">Generar</button><button type="submit" class="go">Guardar</button><button type="button" data-usucancel="1">Cancelar</button></form>`
       : `<div class="bots"><button type="button" data-usueditar="${i}">🔑 Poner contraseña</button>${u.admin || u.email === U.yo ? "" : `<button type="button" class="peligro" data-usuquitar="${i}">${U.quitando === i ? "¿Seguro? Pulsa otra vez" : "Quitar acceso"}</button>`}</div>`}
   </div>`).join("") || `<p class="ayuda">No hay usuarios.</p>`;
@@ -2838,6 +2839,8 @@ $("#usuLista").addEventListener("click", async (e) => {
   }
 });
 $("#usuLista").addEventListener("change", async (e) => {
+  const r = e.target.closest("input[data-usujefe]");
+  if (r){ const u = U.lista[Number(r.dataset.usujefe)]; await guardarUsuario({ email: u.email, jefe: r.checked }, () => `${u.nombre || u.email}: ${r.checked ? "ahora es Responsable de Expedición" : "ya no es Responsable"}. Lo verá al recargar o volver a entrar.`); return; }
   const c = e.target.closest("input[data-usupuesto]"); if (!c) return;
   const u = U.lista[Number(c.dataset.usupuesto)], puesto = c.value;
   await guardarUsuario({ email: u.email, puesto }, () => `${u.nombre || u.email}: ${PUESTOS[puesto].label}. Lo verá al recargar o volver a entrar.`);

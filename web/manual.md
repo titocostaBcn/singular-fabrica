@@ -23,7 +23,7 @@ El botón **👥** de arriba solo le sale al administrador. Sirve para dar de al
 3. Escribe una contraseña o pulsa **Generar** (sale una fácil de dictar, como «Coral-4821-mar»), elige su **puesto** y pulsa **Añadir**.
 4. Dile a esa persona su email y su contraseña. Después puede cambiarla ella con 🔑.
 
-Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. Para cambiarle el puesto, márcalo en su fila: lo verá al recargar la página. Para que alguien deje de entrar, pulsa **Quitar acceso** dos veces.
+Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. Para cambiarle el puesto, márcalo en su fila: lo verá al recargar la página. En las personas de Expedición sale además la casilla **⭐ Responsable de Expedición**: quien la tenga marcada puede pausar y reanudar el reparto y recuperar pedidos de sus compañeras (apartado 6). Hoy es Dania. Para que alguien deje de entrar, pulsa **Quitar acceso** dos veces.
 
 **Tu pantalla según tu puesto**
 
@@ -33,7 +33,7 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 | Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. **Prendas sin vinilo**: los productos que no se cortan (como «cupido»), con ✔ Preparadas, Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas, ✔ Han llegado todas (el modelo entero) y ✔ Ha llegado todo. |
 | Expedición | **Revisar stock**: lo primero de la mañana, las prendas del día por modelo y talla, con ✔ Hay y ✖ No hay (las de estampar) y ✔ Preparadas (las sin vinilo). **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
-En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, los pedidos de Empaquetar se reparten solos por turnos entre Dania e Irene, y Dania (jefa) puede recuperar los de Irene (apartado 6). En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
+En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, los pedidos de Empaquetar se reparten solos por turnos entre Dania e Irene, y Dania (Responsable de Expedición) puede recuperar los de Irene (apartado 6). En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
 
 **Botones de la parte de arriba**
 
@@ -174,7 +174,7 @@ Encima de la lista de pedidos hay una barra con: **Todos · Libres · Dania · I
 
 **En Empaquetar el reparto es automático (Expedición: Dania e Irene).** Cada pedido que llega a Empaquetar se asigna por turnos: uno a Dania, uno a Irene, y así sucesivamente. Si llegan varios a la vez, van primero los urgentes y los más antiguos. Cada una ve primero sus pedidos y el número de la pestaña Empaquetar cuenta solo los suyos; los de la compañera salen al final, en gris.
 
-- **Dania es la jefa y puede recuperar los pedidos de Irene.** Arriba de Empaquetar le sale «👤 Irene tiene N pedidos para empaquetar» con dos botones:
+- **Dania es la Responsable de Expedición y puede recuperar los pedidos de Irene.** Arriba de Empaquetar le sale «👤 Irene tiene N pedidos para empaquetar» con dos botones:
   - **↩ Pasar a mí todos**: hay que pulsarlo dos veces, para no hacerlo sin querer.
   - **↩ Pasar a mí los marcados**: primero se marca la casilla «Pasar a mí» en los pedidos de Irene que quiera quedarse.
 - Los pedidos recuperados pasan a nombre de Dania. Irene ya no los ve como suyos.
