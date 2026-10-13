@@ -963,7 +963,11 @@ Deno.serve(async (req) => {
         PT: { cliente_nombre: "Teste Singular", direccion1: "Rua Augusta 100", ciudad: "Lisboa", provincia: "Lisboa", cp: "1100-053", pais: "PT", telefono: "+351 912 345 678" },
       };
       const dest = destinos[String(body.pais ?? "ES").toUpperCase()] ?? destinos.ES;
-      const g = await glsGrabar({ order_name: "PRUEBA" + Date.now().toString().slice(-8), ...dest, email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: "pruebas" });
+      // body.real = true (solo cron): UN envío REAL con el UID de producción, a Singular en el propio taller, para anularlo después en el Extranet
+      const real = body.real === true && usuario === "cron";
+      const destReal = { cliente_nombre: "Tito Costa (PRUEBA - ANULAR)", direccion1: cfg.remite_direccion, ciudad: cfg.remite_poblacion, provincia: cfg.remite_provincia, cp: cfg.remite_cp, pais: "ES", telefono: cfg.remite_telefono };
+      const g = await glsGrabar({ order_name: (real ? "PRUEBAREAL" : "PRUEBA") + Date.now().toString().slice(-5), ...(real ? destReal : dest), email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: real ? "real" : "pruebas" });
+      if (real) { await evento(null, "gls_prueba_real", { codbarras: g.codbarras, uid: g.uid }, usuario); return json({ ok: true, real: true, codbarras: g.codbarras, uid: g.uid, pdf_bytes: g.pdf ? decodeBase64(g.pdf).length : 0, pdf: g.pdf }); }
       let reimp = 0, reimpError: string | null = null;
       try { const r = await glsEtiquetaEnvio(g.codbarras, "pruebas"); reimp = r ? decodeBase64(r).length : 0; } catch (e) { reimpError = String((e as Error).message ?? e); }
       return json({ ok: true, url: GLS_URL, pais: dest.pais, codbarras: g.codbarras, uid: g.uid, pdf_bytes: g.pdf ? decodeBase64(g.pdf).length : 0, reimpresion_bytes: reimp, reimpError, reimpRaw: reimp ? undefined : glsUltimaReimpresion, raw: g.raw });
