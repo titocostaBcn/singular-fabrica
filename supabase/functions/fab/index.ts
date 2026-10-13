@@ -9,6 +9,8 @@
 // v10: puesto por usuario (administracion, produccion, expedicion): cada una tiene su pantalla.
 // v11: las prendas «sin vinilo» las revisa Producción (ya no pasan solas a Empaquetar según el stock de Shopify).
 // v12: ventas por día para el panel de gerencia (acción «ventas», solo lectura de Shopify): fab_ventas_dia y fab_ventas_producto.
+// v14: GLS con la documentación oficial de iClientes (13-oct): dirección ws-customer.gls-spain.es, reimpresión EtiquetaEnvioV2 con uid,
+//      móvil 00+prefijo para EuroBusinessParcel; prueba_gls admite {pais:"FR"}.
 // v13: «Responsable» por usuario (fab_usuarios.jefe) en la lista de usuarios: en Expedición reparte, pausa y recupera pedidos.
 // Auth: JWT de usuario de la pantalla de fábrica, o cabecera x-fab-cron (vault: fab_cron_key) para la tarea programada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -16,7 +18,8 @@ import { encodeBase64, decodeBase64 } from "jsr:@std/encoding@1/base64";
 
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const API = "2026-01";
-const GLS_URL = "https://wsclientes.asmred.com/b2b.asmx";
+// Dirección oficial desde 2025 (documentación de iClientes v1.12): la antigua wsclientes.asmred.com se sustituye por esta.
+const GLS_URL = "https://ws-customer.gls-spain.es/b2b.asmx";
 const GLS_UID_PRUEBAS = "6BAB7A53-3B6D-4D5A-9450-702D2FAC0B11"; // usuario público de pruebas de GLS/ASM
 const NACIONAL = new Set(["ES", "PT", "AD"]);
 
@@ -330,12 +333,20 @@ async function repartirSinVinilo(usuario: string) {
 
 // ───────── GLS ─────────
 const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").trim();
-function telefono(t: string | null): string {
-  let x = (t ?? "").replace(/[^\d+]/g, "");
-  if (x.startsWith("+34")) x = x.slice(3);
-  else if (x.startsWith("0034")) x = x.slice(4);
-  return x;
+// Prefijo telefónico por país (para el móvil de EuroBusinessParcel, que GLS pide como 00 + prefijo + número)
+const PREFIJO: Record<string, string> = { ES: "34", PT: "351", FR: "33", DE: "49", IT: "39", NL: "31", BE: "32", LU: "352", AT: "43", IE: "353",
+  DK: "45", SE: "46", FI: "358", PL: "48", CZ: "420", SK: "421", SI: "386", HU: "36", HR: "385", RO: "40", BG: "359", GR: "30", CY: "357",
+  MT: "356", EE: "372", LV: "371", LT: "370", AD: "376" };
+// Teléfono nacional (sin prefijo del país, máx. 10 cifras) y móvil internacional (00 + prefijo + número)
+function telefonos(t: string | null, pais: string): { tel: string; movilIntl: string } {
+  const p = PREFIJO[(pais || "ES").toUpperCase()] ?? "";
+  let x = (t ?? "").replace(/[^\d+]/g, "").replace(/^\+/, "00");
+  if (p && x.startsWith("00" + p)) x = x.slice(2 + p.length);
+  else if (x.startsWith("00")) return { tel: "", movilIntl: x };      // número de otro país: se manda tal cual en el móvil
+  const nac = x.replace(/^0+/, "");
+  return { tel: x.slice(-10), movilIntl: p && nac ? "00" + p + nac : "" };
 }
+function telefono(t: string | null): string { return telefonos(t, "ES").tel; }
 
 async function glsGrabar(p: any, cfg: Record<string, string>) {
   const modo = cfg.gls_modo === "real" ? "real" : "pruebas";
@@ -345,7 +356,8 @@ async function glsGrabar(p: any, cfg: Record<string, string>) {
   const servicio = nac ? cfg.gls_servicio_nacional : cfg.gls_servicio_internacional;
   const horario = nac ? cfg.gls_horario_nacional : cfg.gls_horario_internacional;
   const ref = String(p.order_name).replace(/[^0-9A-Za-z-]/g, "").slice(0, 15);
-  const tel = telefono(p.telefono);
+  const { tel, movilIntl } = telefonos(p.telefono, p.pais ?? "ES");
+  const movil = nac ? tel : movilIntl;
   const direccion = [p.direccion1, p.direccion2].filter(Boolean).join(", ");
 
   const docIn = `<Servicios uidcliente="${uid}" xmlns="http://www.asmred.com/">
@@ -376,7 +388,7 @@ async function glsGrabar(p: any, cfg: Record<string, string>) {
       <Pais>${esc(p.pais ?? "ES")}</Pais>
       <CP>${esc(p.cp)}</CP>
       <Telefono>${esc(tel)}</Telefono>
-      <Movil>${esc(tel)}</Movil>
+      <Movil>${esc(movil)}</Movil>
       <Email>${esc(p.email)}</Email>
       <Observaciones></Observaciones>
     </Destinatario>
@@ -404,10 +416,13 @@ async function glsGrabar(p: any, cfg: Record<string, string>) {
   return { modo, codbarras, uid: attr("uid"), pdf, raw: pdf ? null : xml.slice(0, 3000) };
 }
 
-async function glsEtiquetaEnvio(codigo: string): Promise<string | null> {
+// Reimpresión: EtiquetaEnvioV2 (pide el uid del cliente; el modo es el del envío: pruebas o real)
+async function glsEtiquetaEnvio(codigo: string, modo: string | null): Promise<string | null> {
+  const uid = modo === "real" ? await secret("gls_uid_cliente") : GLS_UID_PRUEBAS;
+  if (!uid) throw new Error("Falta el UID de cliente GLS en el vault (gls_uid_cliente)");
   const body = `<?xml version="1.0" encoding="utf-8"?>
 <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"><soap12:Body>
-<EtiquetaEnvio xmlns="http://www.asmred.com/"><codigo>${esc(codigo)}</codigo><tipoEtiqueta>PDF</tipoEtiqueta></EtiquetaEnvio>
+<EtiquetaEnvioV2 xmlns="http://www.asmred.com/"><uidcliente>${esc(uid)}</uidcliente><codigo>${esc(codigo)}</codigo><tipoEtiqueta>PDF</tipoEtiqueta></EtiquetaEnvioV2>
 </soap12:Body></soap12:Envelope>`;
   const r = await fetch(GLS_URL, { method: "POST", headers: { "Content-Type": "application/soap+xml; charset=utf-8" }, body });
   const xml = await r.text();
@@ -532,7 +547,7 @@ async function pdfDe(p: any): Promise<string | null> {
     const { data } = await sb.storage.from("fab-etiquetas").download(p.etiqueta_path);
     if (data) return encodeBase64(new Uint8Array(await data.arrayBuffer()));
   }
-  return p.gls_codbarras ? await glsEtiquetaEnvio(p.gls_codbarras) : null;
+  return p.gls_codbarras ? await glsEtiquetaEnvio(p.gls_codbarras, p.gls_modo) : null;
 }
 
 // ───────── Ventas por día (panel de gerencia) ─────────
@@ -913,9 +928,16 @@ Deno.serve(async (req) => {
     }
     if (accion === "prueba_gls") {
       // Graba un envío de prueba en el entorno de pruebas de GLS (no genera envío real)
+      // body.pais = "FR" prueba EuroBusinessParcel (internacional); también prueba la reimpresión (EtiquetaEnvioV2)
       const cfg = await config();
-      const g = await glsGrabar({ order_name: "PRUEBA1", cliente_nombre: "Prueba Singular", direccion1: "Calle Mayor 1", ciudad: "Madrid", provincia: "Madrid", cp: "28013", pais: "ES", telefono: "600000000", email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: "pruebas" });
-      return json({ ok: true, codbarras: g.codbarras, uid: g.uid, pdf_bytes: g.pdf ? decodeBase64(g.pdf).length : 0, raw: g.raw });
+      const fr = String(body.pais ?? "ES").toUpperCase() === "FR";
+      const dest = fr
+        ? { cliente_nombre: "Test Singular", direccion1: "10 Rue de Rivoli", ciudad: "Paris", provincia: "Paris", cp: "75001", pais: "FR", telefono: "+33 6 12 34 56 78" }
+        : { cliente_nombre: "Prueba Singular", direccion1: "Calle Mayor 1", ciudad: "Madrid", provincia: "Madrid", cp: "28013", pais: "ES", telefono: "600000000" };
+      const g = await glsGrabar({ order_name: "PRUEBA" + Date.now().toString().slice(-8), ...dest, email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: "pruebas" });
+      let reimp = 0, reimpError: string | null = null;
+      try { const r = await glsEtiquetaEnvio(g.codbarras, "pruebas"); reimp = r ? decodeBase64(r).length : 0; } catch (e) { reimpError = String((e as Error).message ?? e); }
+      return json({ ok: true, url: GLS_URL, pais: dest.pais, codbarras: g.codbarras, uid: g.uid, pdf_bytes: g.pdf ? decodeBase64(g.pdf).length : 0, reimpresion_bytes: reimp, reimpError, raw: g.raw });
     }
     return json({ ok: false, error: `acción desconocida: ${accion}` }, 400);
   } catch (e) {
