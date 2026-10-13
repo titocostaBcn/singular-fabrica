@@ -1576,7 +1576,7 @@ function pintarSubbar(){
 // ───── Gerencia (Carlota): «Panel» para decidir (ventas, Meta Ads, taller, equipo) y «Mi día» para el trabajo diario ─────
 // Datos: fab_ventas_dia / fab_ventas_producto / fab_meta_dia (los rellena la función: acción «ventas»), fab_almacen_mov y fab_eventos
 // (quién hace qué), y los pedidos ya cargados. Solo lectura; los botones llevan a la parte del programa donde se actúa.
-const G = { abiertas: new Set(["ventas"]), modo: "panel", periodo: "30", dia: null, ventas: [], meta: [], prods: [], prodsClave: "", mov: [], ev: [], usu: [], extra: [], leido: 0, cargando: false, refrescado: 0, error: null };
+const G = { abiertas: new Set(["taller", "ventas"]), modo: "panel", periodo: "30", dia: null, ventas: [], meta: [], prods: [], prodsClave: "", mov: [], ev: [], usu: [], extra: [], leido: 0, cargando: false, refrescado: 0, error: null };
 const diaISO = (t) => new Date(t).toLocaleDateString("sv-SE");
 const hoyISO = () => diaISO(new Date());
 const masDias = (d, n) => { const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return x.toLocaleDateString("sv-SE"); };
@@ -1745,12 +1745,12 @@ function pintarGerencia(){
   const imp = estadoImportacion();
   el.innerHTML = `<div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
     <div class="gtop"><h2>${saludo}${yo ? ", " + esc(yo) : ""}<small>${new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}</small></h2>
-      <div class="gmodos"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}">📊 Panel</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}">✅ Mi día</button></div>
+      <div class="gmodos"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}">📊 Dashboard</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}">✅ Mi día</button></div>
       <button class="gtodo" data-vista="plan" title="Abre el programa completo: Plan del día, Pedidos, Resumen, Histórico">Ver todo el programa →</button></div>
     <div class="gimp ${imp.ok ? "ok" : "mal"}">${imp.ok ? "✔" : "⚠"} ${esc(imp.txt)}${imp.ok ? "" : ` · <button data-gimportar>↻ Importar ahora</button>`}</div>
     ${G.error ? `<div class="err">No se han podido leer los datos del panel: ${esc(G.error)}</div>` : ""}
     ${G.cargando && !G.leido ? `<div class="vacio">Cargando el panel…</div>` : G.modo === "panel" ? panelHTML() : miDiaHTML()}
-    <nav class="gtab"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}"><span>📊</span>Panel</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}"><span>✅</span>Mi día</button><button data-vista="plan"><span>☰</span>Todo</button></nav>`;
+    <nav class="gtab"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}"><span>📊</span>Dashboard</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}"><span>✅</span>Mi día</button><button data-vista="plan"><span>☰</span>Todo</button></nav>`;
 }
 
 function panelHTML(){
@@ -1814,6 +1814,18 @@ function panelHTML(){
   const ab = (k) => (!esMovil() || G.abiertas.has(k)) ? "open" : "";
   const sv0 = (t) => `<span class="gsv">${t}</span>`;
   return `
+    <details class="gsec" data-gsec="taller" ${ab("taller")}><summary><h3>Taller ahora mismo</h3>${sv0(`${ent(cola)} por salir`)}</summary>
+      <div class="kpis">
+        ${kpi(ent(cola), "Pedidos por salir", `≈ ${diasCola < 1 ? "menos de 1 día" : diasCola.toFixed(1).replace(".", ",") + " días"} de trabajo al ritmo de ${Math.round(ritmo)}/día`, diasCola > 2 ? "rojo" : "")}
+        ${kpi(ent(salidosDia(hoy)), "Salidos hoy", `ayer ${sal7[0]}`)}
+        ${kpi(ent(prendasProd), "Prendas por hacer", "en Producción", "et-cortar")}
+        ${kpi(ent(pedidosEn("empaquetar").length), "Listos para empaquetar", "", "et-empaquetar")}
+        ${kpi(ent(ssUds), "Prendas sin stock", `${ssPed} pedidos parados`, ssUds ? "rojo" : "")}
+        ${kpi(ent(orden.filter((p) => p._urg).length), "Urgentes por salir")}
+        ${kpi(ent(orden.filter(retrasado).length), "Retrasados", "más de 7 días (urgentes 3)", orden.some(retrasado) ? "rojo" : "")}
+      </div>
+      <h4 class="gh4">Pedidos entrados y salidos · últimos 14 días</h4>${g3}
+    </details>
     <details class="gsec" data-gsec="ventas" ${ab("ventas")}><summary><h3>Ventas<small>${d0 === d1 ? diaCorto(d0) : `${diaCorto(d0)} – ${diaCorto(d1)}`}<span class="lg"> · comparado con las mismas fechas del año anterior</span></small></h3>${sv0(eur(a.neto))}</summary>
         <div class="gper">${PERIODOS.map(([k, t]) => `<button data-gper="${k}" class="${G.periodo === k ? "on" : ""}">${t}</button>`).join("")}</div>
       <div class="kpis">
@@ -1843,18 +1855,6 @@ function panelHTML(){
       ${top.length ? `<div class="hwrap"><table class="htabla"><thead><tr><th>#</th><th>Producto</th><th class="r">Unidades</th><th class="r">Ventas</th><th class="r ocm">% del total</th></tr></thead><tbody>
         ${top.map(([t, r], i) => `<tr><td>${i + 1}</td><td>${esc(t)}</td><td class="r">${ent(r.u)}</td><td class="r">${eur(r.e)}</td><td class="r ocm">${totProd ? Math.round(r.e / totProd * 100) : 0}%</td></tr>`).join("")}</tbody></table></div>`
         : `<div class="gmini">Sin datos de productos para este periodo.</div>`}</details>
-    <details class="gsec" data-gsec="taller" ${ab("taller")}><summary><h3>Taller ahora mismo</h3>${sv0(`${ent(cola)} por salir`)}</summary>
-      <div class="kpis">
-        ${kpi(ent(cola), "Pedidos por salir", `≈ ${diasCola < 1 ? "menos de 1 día" : diasCola.toFixed(1).replace(".", ",") + " días"} de trabajo al ritmo de ${Math.round(ritmo)}/día`, diasCola > 2 ? "rojo" : "")}
-        ${kpi(ent(salidosDia(hoy)), "Salidos hoy", `ayer ${sal7[0]}`)}
-        ${kpi(ent(prendasProd), "Prendas por hacer", "en Producción", "et-cortar")}
-        ${kpi(ent(pedidosEn("empaquetar").length), "Listos para empaquetar", "", "et-empaquetar")}
-        ${kpi(ent(ssUds), "Prendas sin stock", `${ssPed} pedidos parados`, ssUds ? "rojo" : "")}
-        ${kpi(ent(orden.filter((p) => p._urg).length), "Urgentes por salir")}
-        ${kpi(ent(orden.filter(retrasado).length), "Retrasados", "más de 7 días (urgentes 3)", orden.some(retrasado) ? "rojo" : "")}
-      </div>
-      <h4 class="gh4">Pedidos entrados y salidos · últimos 14 días</h4>${g3}
-    </details>
     <details class="gsec" data-gsec="equipo" ${ab("equipo")}><summary><h3>Qué ha hecho cada una<small>${dia === hoy ? "hoy" : diaCorto(dia)}</small></h3>${sv0(`${ent(tot.empaq)} pedidos · ${ent(tot.hechas + tot.pers)} prendas`)}</summary>
       <div class="gper"><button data-gdia="-1">‹ Día anterior</button><button data-gdia="0" class="${dia === hoy ? "on" : ""}">Hoy</button><button data-gdia="1" ${dia >= hoy ? "disabled" : ""}>Día siguiente ›</button></div>
       ${filas.length ? `<div class="geqm">${filas.map(([n, r]) => `<div class="geq"><div><b style="color:${colorPersona(n)}">${esc(n)}</b> <small>${esc(puestoDe(n))}${r.desde ? ` · ${hm(r.desde)}${r.hasta && r.hasta !== r.desde ? "–" + hm(r.hasta) : ""}` : ""}</small></div>
