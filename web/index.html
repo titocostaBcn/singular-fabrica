@@ -98,6 +98,7 @@
   .recbar b{margin-right:auto}
   .recbar button{border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 14px;font-size:16px;font-weight:800}
   .recbar button.go{background:var(--ink);border-color:var(--ink);color:#fff}
+  .recbar button.ir{background:#0e7490;border-color:#0e7490;color:#fff}
   .recbar button.reanuda{background:#1b7f4b;border-color:#1b7f4b}
   .recbar.pausa{border-style:solid;border-color:#b45309;background:#fff7ed}
   .recbar button:disabled{opacity:.45}
@@ -813,9 +814,10 @@ function barraRecuperar(){
       : `<button data-pausa="${esc(n)}" data-valor="1">⏸ Pausar reparto a ${esc(n)}</button>`;
     return `<div class="recbar ${p ? "pausa" : ""}"><b>👤 ${esc(n)}${p ? " · ⏸ en pausa" : ""} · ${ids.length ? `tiene ${ids.length} pedido${ids.length === 1 ? "" : "s"} para empaquetar` : "no tiene pedidos ahora"}</b>
       ${bp}
-      ${ids.length ? `<button data-recmarc="${esc(n)}" ${k ? "" : "disabled"}>↩ Pasar a mí los marcados${k ? ` (${k})` : ""}</button>
+      ${ids.length ? `<button class="ir" data-irajeno="${esc(n)}">↓ Ver los pedidos de ${esc(n)}</button>
+      <button data-recmarc="${esc(n)}" ${k ? "" : "disabled"}>↩ Pasar a mí los marcados${k ? ` (${k})` : ""}</button>
       <button class="go" data-rectodos="${esc(n)}">${recTodosPend === n ? `¿Seguro? Pulsa otra vez para quedarte los ${ids.length}` : "↩ Pasar a mí todos"}</button>` : ""}
-      <span class="recnota">${p ? `Los pedidos nuevos te llegan todos a ti hasta que pulses «▶ Volver a repartir a ${esc(n)}». ` : ""}${ids.length ? `Sus pedidos están más abajo, en gris: en cada uno tienes «↩ Pasar a mí». Para pasar varios, márcalos con «Marcar» y pulsa «Pasar a mí los marcados». <button class="lnk" data-irajeno="1">Ir a los pedidos de ${esc(n)} ↓</button>` : ""}</span></div>`;
+      <span class="recnota">${p ? `Los pedidos nuevos te llegan todos a ti hasta que pulses «▶ Volver a repartir a ${esc(n)}». ` : ""}${ids.length ? `Sus pedidos están más abajo, en gris: en cada uno tienes «↩ Pasar a mí». Para pasar varios, márcalos con «Marcar» y pulsa «Pasar a mí los marcados».` : ""}</span></div>`;
   }).join("");
 }
 async function pausarReparto(n, pausa){
@@ -2654,7 +2656,7 @@ document.addEventListener("click", (e) => {
   if (b.dataset.llegfila){ llegadoFila(b.dataset.llegfila, b.dataset.todas === "1"); return; }
   if (b.dataset.llegtodo){ llegadoTodo(); return; }
   if (b.dataset.llegids){ const ids = b.dataset.llegids.split(",").map(Number); picking(ids, true, `✔ Han llegado todas · ${b.dataset.llegtit} → Producción`); return; }
-  if (b.dataset.irajeno){ document.querySelector("#puestoLista .pc.ajeno")?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  if (b.dataset.irajeno){ document.querySelector("#puestoLista .pc.recup")?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (b.dataset.recuno){ recuperar(b.dataset.de, [Number(b.dataset.recuno)]); return; }
   if (b.dataset.pausa){ pausarReparto(b.dataset.pausa, b.dataset.valor === "1"); return; }
   if (b.dataset.rectodos){ const n = b.dataset.rectodos; if (recTodosPend === n){ recuperar(n, null); } else { recTodosPend = n; pintar(); clearTimeout(barraRecuperar.t); barraRecuperar.t = setTimeout(() => { recTodosPend = null; pintar(); }, 6000); } return; }

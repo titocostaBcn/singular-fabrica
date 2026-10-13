@@ -177,7 +177,7 @@ Encima de la lista de pedidos hay una barra con: **Todos · Libres · Dania · I
 - **Dania es la Responsable de Expedición y puede recuperar los pedidos de Irene.** Arriba de Empaquetar le sale «👤 Irene tiene N pedidos para empaquetar» con dos botones:
   - **↩ Pasar a mí todos**: hay que pulsarlo dos veces, para no hacerlo sin querer.
   - **↩ Pasar a mí los marcados**: primero se marca la casilla «Marcar» en los pedidos de Irene que quiera quedarse.
-- **Uno a uno**: los pedidos de Irene salen más abajo, en gris, con «👤 Es de Irene» y el botón **↩ Pasar a mí**, que se lo queda al momento. El enlace «Ir a los pedidos de Irene ↓» de la barra baja directamente hasta ellos.
+- **Uno a uno**: los pedidos de Irene salen más abajo, en gris, con «👤 Es de Irene» y el botón **↩ Pasar a mí**, que se lo queda al momento. El botón azul **↓ Ver los pedidos de Irene** de la barra de arriba baja directamente hasta ellos.
 - Los pedidos recuperados pasan a nombre de Dania. Irene ya no los ve como suyos.
 - El reparto empieza solo cuando Dania e Irene tienen las dos su usuario, con esos nombres exactos. Mientras tanto, los pedidos llegan libres como antes.
 - **Pausar el reparto a Irene** (porque se ha ido, porque trabaja menos horas o porque hoy no viene): Dania pulsa **⏸ Pausar reparto a Irene**. Desde ese momento todos los pedidos nuevos le llegan a Dania, hasta que pulse **▶ Volver a repartir a Irene**. Lo que Irene ya tenía sigue siendo suyo. Si Dania lo quiere, lo recupera con «↩ Pasar a mí todos».
