@@ -405,7 +405,7 @@ async function glsGrabar(p: any, cfg: Record<string, string>, metodo: "GrabaServ
   const r = await fetch(GLS_URL, { method: "POST", headers: { "Content-Type": "application/soap+xml; charset=utf-8" }, body });
   const xml = await r.text();
   // ValidaEuroBusiness solo valida los datos (no crea envío): devuelve <Resultado return="0" result="E000" /> si todo está bien
-  if (metodo !== "GrabaServicios") return { modo, http: r.status, resultado: xml.replace(/&lt;/g, "<").replace(/&gt;/g, ">").match(/<Resultado[^>]*>/)?.[0] ?? xml.slice(0, 600) } as any;
+  if (metodo !== "GrabaServicios") { const x = xml.replace(/&lt;/g, "<").replace(/&gt;/g, ">"); return { modo, http: r.status, resultado: x.match(/<Resultado[^>]*>/)?.[0] ?? null, respuesta: x.replace(/^[\s\S]*?<soap:Body>/, "").slice(0, 900) } as any; }
   const envioTag = xml.match(/<Envio\b[^>]*>/)?.[0] ?? "";
   const attr = (n: string) => envioTag.match(new RegExp(`\\b${n}="([^"]*)"`))?.[1] ?? null;
   const ret = Number(xml.match(/<Resultado[^>]*return="(-?\d+)"/)?.[1] ?? "NaN");
@@ -937,7 +937,7 @@ Deno.serve(async (req) => {
       if (usuario !== "cron") return json({ ok: false, error: "Solo con la clave de la tarea programada" }, 403);
       const cfg = await config();
       const dest = { cliente_nombre: "Test Singular", direccion1: "10 Rue de Rivoli", ciudad: "Paris", provincia: "Paris", cp: "75001", pais: String(body.pais ?? "FR").toUpperCase(), telefono: "+33 6 12 34 56 78" };
-      const v = await glsGrabar({ order_name: "VALIDA" + Date.now().toString().slice(-8), ...dest, email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: "real" }, "ValidaEuroBusiness");
+      const v = await glsGrabar({ order_name: "VALIDA" + Date.now().toString().slice(-8), ...dest, email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: body.con_uid_pruebas ? "pruebas" : "real" }, "ValidaEuroBusiness");
       return json({ ok: true, ...v });
     }
     if (accion === "prueba_gls") {
