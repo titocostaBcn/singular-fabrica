@@ -932,6 +932,19 @@ Deno.serve(async (req) => {
       const d = await gql(`query { currentAppInstallation { accessScopes { handle } } }`);
       return json({ ok: true, usuario, scopes: d.currentAppInstallation.accessScopes.map((s: any) => s.handle), gls_uid_real: !!(await secret("gls_uid_cliente")), config: await config() });
     }
+    if (accion === "consulta_uid_gls") {
+      // Solo cron. Consulta de SOLO LECTURA (GetExpCli: envíos por referencia de cliente) con el UID real, el de pruebas y uno inventado,
+      // para ver si GLS reconoce el UID real. No crea ni cambia nada en GLS.
+      if (usuario !== "cron") return json({ ok: false, error: "Solo con la clave de la tarea programada" }, 403);
+      const ref = String(body.ref ?? "38693");
+      const prueba = async (uid: string | null) => {
+        if (!uid) return "sin uid";
+        const b = `<?xml version="1.0" encoding="utf-8"?><soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"><soap12:Body><GetExpCli xmlns="http://www.asmred.com/"><codigo>${esc(ref)}</codigo><uid>${esc(uid)}</uid></GetExpCli></soap12:Body></soap12:Envelope>`;
+        const r = await fetch(GLS_URL, { method: "POST", headers: { "Content-Type": "application/soap+xml; charset=utf-8" }, body: b });
+        return `${r.status} ` + (await r.text()).replace(/^[\s\S]*?<soap:Body>/, "").slice(0, 500);
+      };
+      return json({ ok: true, real: await prueba(await secret("gls_uid_cliente")), pruebas: await prueba(GLS_UID_PRUEBAS), inventado: await prueba("00000000-0000-0000-0000-000000000000") });
+    }
     if (accion === "valida_uid_gls") {
       // Solo cron. Comprueba el UID real (vault gls_uid_cliente) con ValidaEuroBusiness: GLS valida los datos SIN crear ningún envío.
       if (usuario !== "cron") return json({ ok: false, error: "Solo con la clave de la tarea programada" }, 403);
