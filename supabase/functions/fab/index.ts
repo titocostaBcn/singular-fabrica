@@ -349,7 +349,7 @@ function telefonos(t: string | null, pais: string): { tel: string; movilIntl: st
 }
 function telefono(t: string | null): string { return telefonos(t, "ES").tel; }
 
-async function glsGrabar(p: any, cfg: Record<string, string>) {
+async function glsGrabar(p: any, cfg: Record<string, string>, metodo: "GrabaServicios" | "ValidaEuroBusiness" = "GrabaServicios") {
   const modo = cfg.gls_modo === "real" ? "real" : "pruebas";
   const uid = modo === "real" ? await secret("gls_uid_cliente") : GLS_UID_PRUEBAS;
   if (!uid) throw new Error("Falta el UID de cliente GLS en el vault (gls_uid_cliente)");
@@ -400,10 +400,12 @@ async function glsGrabar(p: any, cfg: Record<string, string>) {
 
   const body = `<?xml version="1.0" encoding="utf-8"?>
 <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
-<soap12:Body><GrabaServicios xmlns="http://www.asmred.com/"><docIn>${docIn}</docIn></GrabaServicios></soap12:Body></soap12:Envelope>`;
+<soap12:Body><${metodo} xmlns="http://www.asmred.com/"><docIn>${docIn}</docIn></${metodo}></soap12:Body></soap12:Envelope>`;
 
   const r = await fetch(GLS_URL, { method: "POST", headers: { "Content-Type": "application/soap+xml; charset=utf-8" }, body });
   const xml = await r.text();
+  // ValidaEuroBusiness solo valida los datos (no crea envío): devuelve <Resultado return="0" result="E000" /> si todo está bien
+  if (metodo !== "GrabaServicios") return { modo, http: r.status, resultado: xml.replace(/&lt;/g, "<").replace(/&gt;/g, ">").match(/<Resultado[^>]*>/)?.[0] ?? xml.slice(0, 600) } as any;
   const envioTag = xml.match(/<Envio\b[^>]*>/)?.[0] ?? "";
   const attr = (n: string) => envioTag.match(new RegExp(`\\b${n}="([^"]*)"`))?.[1] ?? null;
   const ret = Number(xml.match(/<Resultado[^>]*return="(-?\d+)"/)?.[1] ?? "NaN");
@@ -929,6 +931,14 @@ Deno.serve(async (req) => {
     if (accion === "diag") {
       const d = await gql(`query { currentAppInstallation { accessScopes { handle } } }`);
       return json({ ok: true, usuario, scopes: d.currentAppInstallation.accessScopes.map((s: any) => s.handle), gls_uid_real: !!(await secret("gls_uid_cliente")), config: await config() });
+    }
+    if (accion === "valida_uid_gls") {
+      // Solo cron. Comprueba el UID real (vault gls_uid_cliente) con ValidaEuroBusiness: GLS valida los datos SIN crear ningún envío.
+      if (usuario !== "cron") return json({ ok: false, error: "Solo con la clave de la tarea programada" }, 403);
+      const cfg = await config();
+      const dest = { cliente_nombre: "Test Singular", direccion1: "10 Rue de Rivoli", ciudad: "Paris", provincia: "Paris", cp: "75001", pais: String(body.pais ?? "FR").toUpperCase(), telefono: "+33 6 12 34 56 78" };
+      const v = await glsGrabar({ order_name: "VALIDA" + Date.now().toString().slice(-8), ...dest, email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: "real" }, "ValidaEuroBusiness");
+      return json({ ok: true, ...v });
     }
     if (accion === "prueba_gls") {
       // Graba un envío de prueba en el entorno de pruebas de GLS (no genera envío real)
