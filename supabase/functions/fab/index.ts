@@ -427,7 +427,8 @@ async function glsEtiquetaEnvio(codigo: string, modo: string | null): Promise<st
   const r = await fetch(GLS_URL, { method: "POST", headers: { "Content-Type": "application/soap+xml; charset=utf-8" }, body });
   const xml = await r.text();
   glsUltimaReimpresion = xml.replace(/>[A-Za-z0-9+\/=\s]{200,}</g, ">[base64]<").slice(0, 1500);
-  return xml.match(/<base64Binary>([^<]+)<\/base64Binary>/)?.[1]?.replace(/\s/g, "") ?? null;
+  // EtiquetaEnvioV2 devuelve <Etiquetas><Etiqueta>base64</Etiqueta></Etiquetas> (la versión antigua, <base64Binary>)
+  return xml.match(/<(?:Etiqueta|base64Binary)\b[^>]*>([A-Za-z0-9+\/=\s]+)<\/(?:Etiqueta|base64Binary)>/)?.[1]?.replace(/\s/g, "") ?? null;
 }
 let glsUltimaReimpresion = "";
 
