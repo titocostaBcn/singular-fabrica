@@ -426,8 +426,10 @@ async function glsEtiquetaEnvio(codigo: string, modo: string | null): Promise<st
 </soap12:Body></soap12:Envelope>`;
   const r = await fetch(GLS_URL, { method: "POST", headers: { "Content-Type": "application/soap+xml; charset=utf-8" }, body });
   const xml = await r.text();
+  glsUltimaReimpresion = xml.replace(/>[A-Za-z0-9+\/=\s]{200,}</g, ">[base64]<").slice(0, 1500);
   return xml.match(/<base64Binary>([^<]+)<\/base64Binary>/)?.[1]?.replace(/\s/g, "") ?? null;
 }
+let glsUltimaReimpresion = "";
 
 // ───────── Shopify: marcar enviado ─────────
 async function shopifyEnviar(p: any) {
@@ -937,7 +939,7 @@ Deno.serve(async (req) => {
       const g = await glsGrabar({ order_name: "PRUEBA" + Date.now().toString().slice(-8), ...dest, email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: "pruebas" });
       let reimp = 0, reimpError: string | null = null;
       try { const r = await glsEtiquetaEnvio(g.codbarras, "pruebas"); reimp = r ? decodeBase64(r).length : 0; } catch (e) { reimpError = String((e as Error).message ?? e); }
-      return json({ ok: true, url: GLS_URL, pais: dest.pais, codbarras: g.codbarras, uid: g.uid, pdf_bytes: g.pdf ? decodeBase64(g.pdf).length : 0, reimpresion_bytes: reimp, reimpError, raw: g.raw });
+      return json({ ok: true, url: GLS_URL, pais: dest.pais, codbarras: g.codbarras, uid: g.uid, pdf_bytes: g.pdf ? decodeBase64(g.pdf).length : 0, reimpresion_bytes: reimp, reimpError, reimpRaw: reimp ? undefined : glsUltimaReimpresion, raw: g.raw });
     }
     return json({ ok: false, error: `acción desconocida: ${accion}` }, 400);
   } catch (e) {
