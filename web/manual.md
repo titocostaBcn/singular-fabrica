@@ -179,7 +179,8 @@ Encima de la lista de pedidos hay una barra con: **Todos · Libres · Dania · I
   - **↩ Pasar a mí los marcados**: primero se marca la casilla «Pasar a mí» en los pedidos de Irene que quiera quedarse.
 - Los pedidos recuperados pasan a nombre de Dania. Irene ya no los ve como suyos.
 - El reparto empieza solo cuando Dania e Irene tienen las dos su usuario, con esos nombres exactos. Mientras tanto, los pedidos llegan libres como antes.
-- Si un día Irene no viene, Dania pulsa **↩ Pasar a mí todos** por la mañana. Ojo: los pedidos que lleguen después se seguirán repartiendo por turnos; vuelve a pulsarlo antes de irte.
+- **Pausar el reparto a Irene** (porque se ha ido, porque trabaja menos horas o porque hoy no viene): Dania pulsa **⏸ Pausar reparto a Irene**. Desde ese momento todos los pedidos nuevos le llegan a Dania, hasta que pulse **▶ Volver a repartir a Irene**. Lo que Irene ya tenía sigue siendo suyo. Si Dania lo quiere, lo recupera con «↩ Pasar a mí todos».
+- Mientras está en pausa, Irene ve arriba de Empaquetar «⏸ Ahora no te llegan pedidos nuevos: tu reparto está en pausa». Cuando vuelva, avisa a Dania para que pulse «▶ Volver a repartir».
 - La lista del turno está en los ajustes (`reparto_expedicion` = «Dania, Irene»).
 
 **Si compartís un ordenador**, cuando llegues al PC toca tu nombre en la barra, y al irte toca Todos. En una tablet personal puedes dejar tu nombre marcado: la tablet lo recuerda.
