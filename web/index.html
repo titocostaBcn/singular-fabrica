@@ -91,6 +91,9 @@
   .pc.ajeno.marcado{opacity:1;border-color:var(--c)}
   .pc .rec{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:800;border:2px solid var(--line);border-radius:10px;padding:6px 12px;background:var(--panel);cursor:pointer}
   .pc .rec input{width:22px;height:22px}
+  .pc .recuno{border:0;border-radius:10px;padding:8px 14px;font-size:16px;font-weight:800;background:var(--ink);color:#fff}
+  .pc.ajeno.recup{opacity:1;background:#f4f2ee}
+  .pc.ajeno.recup .pps,.pc.ajeno.recup .dest,.pc.ajeno.recup .bts,.pc.ajeno.recup .num{opacity:.55}
   .recbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:2px dashed var(--line);border-radius:14px;padding:12px 16px;margin-bottom:12px;font-size:17px}
   .recbar b{margin-right:auto}
   .recbar button{border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 14px;font-size:16px;font-weight:800}
@@ -98,6 +101,7 @@
   .recbar button.reanuda{background:#1b7f4b;border-color:#1b7f4b}
   .recbar.pausa{border-style:solid;border-color:#b45309;background:#fff7ed}
   .recbar button:disabled{opacity:.45}
+  .recbar .recnota .lnk{border:0;background:none;padding:0 0 0 6px;font-size:14px;font-weight:800;color:var(--ink);text-decoration:underline;cursor:pointer}
   .recbar .recnota{flex-basis:100%;font-size:14px;color:var(--muted)}
   .pc .cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .pc .num{font-size:32px;font-weight:800;letter-spacing:-.01em;line-height:1}
@@ -811,7 +815,7 @@ function barraRecuperar(){
       ${bp}
       ${ids.length ? `<button data-recmarc="${esc(n)}" ${k ? "" : "disabled"}>↩ Pasar a mí los marcados${k ? ` (${k})` : ""}</button>
       <button class="go" data-rectodos="${esc(n)}">${recTodosPend === n ? `¿Seguro? Pulsa otra vez para quedarte los ${ids.length}` : "↩ Pasar a mí todos"}</button>` : ""}
-      <span class="recnota">${p ? `Los pedidos nuevos te llegan todos a ti hasta que pulses «▶ Volver a repartir a ${esc(n)}». ` : ""}${ids.length ? "Para elegir cuáles, marca la casilla «Pasar a mí» en sus pedidos (están más abajo, en gris)." : ""}</span></div>`;
+      <span class="recnota">${p ? `Los pedidos nuevos te llegan todos a ti hasta que pulses «▶ Volver a repartir a ${esc(n)}». ` : ""}${ids.length ? `Sus pedidos están más abajo, en gris: en cada uno tienes «↩ Pasar a mí». Para pasar varios, márcalos con «Marcar» y pulsa «Pasar a mí los marcados». <button class="lnk" data-irajeno="1">Ir a los pedidos de ${esc(n)} ↓</button>` : ""}</span></div>`;
   }).join("");
 }
 async function pausarReparto(n, pausa){
@@ -864,8 +868,8 @@ function tarjetaPuesto(p){
   }
   const mods = modificado(p) ? `<div class="mod"><b>✏️ Ha cambiado el pedido</b><ul>${(p.modificado ?? []).map((m) => `<li>${esc(m)}</li>`).join("")}</ul><button data-visto="${id}">✔ Visto</button></div>` : "";
   const err = [p.gls_error && `GLS: ${esc(p.gls_error)}`].filter(Boolean);
-  return `<article class="pc ${p._urg ? "urgente" : ""} ${otra ? "ajeno" : ""} ${marc ? "marcado" : ""}" style="${colorVars(e === "producido" ? "producido" : e)}">
-    <div class="cab"><span class="num">${esc(p.order_name)}</span>${p._urg ? `<span class="urg">URGENTE</span>` : ""}${retrasado(p) ? `<span class="ret">hace ${d} días</span>` : ""}${otra ? `<span class="otra">👤 ${rec ? "Es de" : "Lo está haciendo"} ${esc(otra)}</span>` : ""}${rec ? `<label class="rec"><input type="checkbox" data-marcrec="${id}" ${marc ? "checked" : ""}> Pasar a mí</label>` : ""}</div>
+  return `<article class="pc ${p._urg ? "urgente" : ""} ${otra ? "ajeno" : ""} ${rec ? "recup" : ""} ${marc ? "marcado" : ""}" style="${colorVars(e === "producido" ? "producido" : e)}">
+    <div class="cab"><span class="num">${esc(p.order_name)}</span>${p._urg ? `<span class="urg">URGENTE</span>` : ""}${retrasado(p) ? `<span class="ret">hace ${d} días</span>` : ""}${otra ? `<span class="otra">👤 ${rec ? "Es de" : "Lo está haciendo"} ${esc(otra)}</span>` : ""}${rec ? `<button class="recuno" data-recuno="${id}" data-de="${esc(otra)}">↩ Pasar a mí</button><label class="rec" title="Marcar para pasar varios de golpe"><input type="checkbox" data-marcrec="${id}" ${marc ? "checked" : ""}> Marcar</label>` : ""}</div>
     ${exp ? `<div class="dest"><span>${esc(p.cliente_nombre ?? "")}${p.ciudad ? " · " + esc(p.ciudad) : ""}${p.pais && p.pais !== "ES" ? " · " + esc(p.pais) : ""}</span><span class="salida" style="${colorVars(p.recogida || zona ? "estampar" : "cortar")}">${p.recogida ? "Recogida en tienda" : zona ? "Otros envíos · " + esc(zona) : "GLS"}</span></div>` : ""}
     ${mods}
     <div class="pps">${prendas}</div>
@@ -2650,6 +2654,8 @@ document.addEventListener("click", (e) => {
   if (b.dataset.llegfila){ llegadoFila(b.dataset.llegfila, b.dataset.todas === "1"); return; }
   if (b.dataset.llegtodo){ llegadoTodo(); return; }
   if (b.dataset.llegids){ const ids = b.dataset.llegids.split(",").map(Number); picking(ids, true, `✔ Han llegado todas · ${b.dataset.llegtit} → Producción`); return; }
+  if (b.dataset.irajeno){ document.querySelector("#puestoLista .pc.ajeno")?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  if (b.dataset.recuno){ recuperar(b.dataset.de, [Number(b.dataset.recuno)]); return; }
   if (b.dataset.pausa){ pausarReparto(b.dataset.pausa, b.dataset.valor === "1"); return; }
   if (b.dataset.rectodos){ const n = b.dataset.rectodos; if (recTodosPend === n){ recuperar(n, null); } else { recTodosPend = n; pintar(); clearTimeout(barraRecuperar.t); barraRecuperar.t = setTimeout(() => { recTodosPend = null; pintar(); }, 6000); } return; }
   if (b.dataset.recmarc){ const n = b.dataset.recmarc, ids = pedidosEn("empaquetar").filter((p) => p.asignado_a === n && marcRec.has(p.order_id)).map((p) => p.order_id); if (ids.length) recuperar(n, ids); return; }
