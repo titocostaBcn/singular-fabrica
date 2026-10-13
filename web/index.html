@@ -2733,7 +2733,14 @@ $("#corrForm").onsubmit = (e) => {
   trasElegir = guardar;
   abrirQuien(`¿Quién corrige el texto? · ${p.order_name}`, { nadie: true, destacar: p.asignado_a });
 };
-$("#bSalir").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+// Salir: cierra solo la sesión de ESTE ordenador (scope local; antes era global y al salir en un sitio echaba a la misma
+// usuaria de los demás ordenadores). Si el servidor dice que la sesión ya no existe (403), se borra igualmente aquí y se vuelve al login.
+$("#bSalir").onclick = async () => {
+  $("#bSalir").disabled = true; $("#bSalir").textContent = "Saliendo…";
+  try { await Promise.race([sb.auth.signOut({ scope: "local" }), new Promise((r) => setTimeout(r, 4000))]); } catch {}
+  try { for (const k of Object.keys(localStorage)) if (/^sb-.*-auth-token/.test(k)) localStorage.removeItem(k); } catch {}
+  location.reload();
+};
 
 // ───── contraseña: cambiarla (con la sesión abierta) y recuperarla desde el login ─────
 async function abrirClave(recuperar = false){

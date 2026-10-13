@@ -47,7 +47,7 @@ En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. 
 | ↻ Importar | Trae ahora los pedidos nuevos de la tienda y los cambios de los que ya están, sin esperar a mañana. |
 | 👥 | Solo le sale al administrador: dar de alta a las personas, ponerles contraseña o quitarles el acceso (ver arriba). |
 | 🔑 | Cambia la contraseña con la que se entra: escribe la nueva dos veces (mínimo 8 caracteres) y pulsa Guardar. Si ese usuario lo usáis varias, avisa a las demás. |
-| Salir | Cierra la sesión. Úsalo solo si el ordenador lo usa otra gente. |
+| Salir | Cierra la sesión en este ordenador y vuelve a la pantalla de entrada. No afecta a los demás ordenadores ni móviles donde esté abierto el mismo usuario. |
 
 **Avisos de colores en la franja superior**
 
