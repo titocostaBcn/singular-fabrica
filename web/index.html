@@ -88,6 +88,15 @@
   .pc{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;display:grid;gap:12px}
   .pc.urgente{border-color:var(--urg);box-shadow:inset 8px 0 0 var(--urg)}
   .pc.ajeno{opacity:.6}
+  .pc.ajeno.marcado{opacity:1;border-color:var(--c)}
+  .pc .rec{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:800;border:2px solid var(--line);border-radius:10px;padding:6px 12px;background:var(--panel);cursor:pointer}
+  .pc .rec input{width:22px;height:22px}
+  .recbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:2px dashed var(--line);border-radius:14px;padding:12px 16px;margin-bottom:12px;font-size:17px}
+  .recbar b{margin-right:auto}
+  .recbar button{border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 14px;font-size:16px;font-weight:800}
+  .recbar button.go{background:var(--ink);border-color:var(--ink);color:#fff}
+  .recbar button:disabled{opacity:.45}
+  .recbar .recnota{flex-basis:100%;font-size:14px;color:var(--muted)}
   .pc .cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .pc .num{font-size:32px;font-weight:800;letter-spacing:-.01em;line-height:1}
   .pc .hueco{background:var(--ink);color:#fff;border-radius:10px;padding:6px 12px;font-weight:800;font-size:20px}
@@ -712,20 +721,22 @@ const PUESTOS = {
   produccion:     { label: "Producción",     nota: "cortar vinilo y estampar" },
   expedicion:     { label: "Expedición",     nota: "empaquetar, etiquetas y recogidas" },
 };
-let YO = { admin: false, puesto: null, nombre: null };
+let YO = { admin: false, puesto: null, nombre: null, jefe: false };
+// Reparto de Expedición: fab_config.reparto_expedicion = «Dania, Irene» (en el orden del turno)
+function listaReparto(c){ return String(c?.reparto_expedicion ?? "").split(",").map((x) => x.trim()).filter(Boolean); }
 const modoPuesto = () => !YO.admin && (YO.puesto === "produccion" || YO.puesto === "expedicion");
 async function cargarYo(){
   if (DEMO){
     // ?demo&puesto=produccion (o expedicion) enseña la pantalla de ese puesto; sin puesto, la del administrador.
     const q = new URLSearchParams(location.search), pu = q.get("puesto");
-    YO = PUESTOS[pu] && pu !== "administracion" ? { admin: false, puesto: pu, nombre: q.get("nombre") || "Andrea" } : { admin: true, puesto: null, nombre: q.get("nombre") || "Tito" };
+    YO = PUESTOS[pu] && pu !== "administracion" ? { admin: false, puesto: pu, nombre: q.get("nombre") || "Andrea", jefe: q.has("jefe") } : { admin: true, puesto: null, nombre: q.get("nombre") || "Tito", jefe: false };
   } else {
     const { data, error } = await sb.rpc("fab_yo");
-    if (!error && data) YO = { admin: !!data.admin, puesto: PUESTOS[data.puesto] ? data.puesto : null, nombre: data.nombre ?? null };
+    if (!error && data) YO = { admin: !!data.admin, puesto: PUESTOS[data.puesto] ? data.puesto : null, nombre: data.nombre ?? null, jefe: !!data.jefe };
   }
   $("#bUsuarios").classList.toggle("hidden", !YO.admin);
   document.body.classList.toggle("puesto", modoPuesto());
-  $(".marca span").textContent = modoPuesto() ? `${PUESTOS[YO.puesto].label}${YO.nombre ? " · " + YO.nombre : ""}` : "Taller" + (YO.nombre ? " · " + YO.nombre : "");
+  $(".marca span").textContent = modoPuesto() ? `${PUESTOS[YO.puesto].label}${YO.nombre ? " · " + YO.nombre : ""}${YO.jefe ? " · jefa" : ""}` : "Taller" + (YO.nombre ? " · " + YO.nombre : "");
   // Lo que haga queda a su nombre (quién estampó, quién empaquetó) sin preguntar
   if (modoPuesto() && YO.nombre) filtroAsig = YO.nombre;
 }
@@ -747,7 +758,7 @@ const PASOS = {
   ],
   expedicion: () => [
     { id: "stock", label: "Revisar stock", n: construirResumen("stock").quedan, c: "sin_vinilo", vacio: "" },
-    { id: "empaquetar", label: "Empaquetar", n: pedidosEn("empaquetar").length, c: "empaquetar", vacio: "No hay pedidos para empaquetar ahora mismo." },
+    { id: "empaquetar", label: "Empaquetar", n: pedidosEn("empaquetar").filter((p) => !p.asignado_a || p.asignado_a === YO.nombre).length, c: "empaquetar", vacio: "No hay pedidos para empaquetar ahora mismo." },
     { id: "hechos", label: "Hechos hoy", n: hechosHoy().length, c: "producido", vacio: "Todavía no ha salido ningún pedido hoy." },
     { id: "recogidas", label: "Recogidas en tienda", n: recogidasListas().length, c: "producido", vacio: "No hay ninguna recogida esperando al cliente." },
     ...(sinEtiqueta().length ? [{ id: "sin_etiqueta", label: "⚠ Sin etiqueta", n: sinEtiqueta().length, c: "urg", vacio: "" }] : []),
@@ -766,19 +777,45 @@ function pintarPuesto(){
   $("#puesto").style.cssText = P ? colorVars(P.c) : "";
   if (paso === "ayuda"){ $("#puestoLista").innerHTML = ""; $("#ayuda").classList.remove("hidden"); pintarAyuda(); return; }
   if (paso === "cortar" || paso === "sin_vinilo" || paso === "sin_stock" || paso === "stock"){ $("#puestoLista").innerHTML = ""; etapaR = paso; $("#resumen").classList.remove("hidden"); pintarResumen(); return; }
-  const lista = paso === "estampar" ? pedidosEn("estampar") : paso === "empaquetar" ? pedidosEn("empaquetar") : paso === "hechos" ? hechosHoy() : paso === "recogidas" ? recogidasListas() : sinEtiqueta();
+  const deQuien = (p) => !p.asignado_a || p.asignado_a === YO.nombre ? (p.asignado_a ? 0 : 1) : 2;
+  const lista = paso === "estampar" ? pedidosEn("estampar") : paso === "empaquetar" ? pedidosEn("empaquetar").sort((a, b) => deQuien(a) - deQuien(b) || ordenPuesto(a, b)) : paso === "hechos" ? hechosHoy() : paso === "recogidas" ? recogidasListas() : sinEtiqueta();
   const q = buscaPuesto.trim().toLowerCase(), dig = q.replace(/\D/g, "");
   const vis = !q ? lista : lista.filter((p) => dig ? numPedido(p).includes(dig) : (p.cliente_nombre ?? "").toLowerCase().includes(q));
   // Lo que se esté escribiendo en «Otros envíos» no se pierde cuando la pantalla se actualiza sola
   const otrosIn = document.querySelector(`#puestoLista input[data-otrosinfo="${otrosAbierto}"]`), otrosVal = otrosIn?.value, otrosFoco = otrosIn && document.activeElement === otrosIn;
-  $("#puestoLista").innerHTML = vis.length ? vis.map(tarjetaPuesto).join("")
-    : `<div class="vacio">${q ? `Ningún pedido de aquí coincide con «${esc(buscaPuesto)}».` : esc(P?.vacio ?? "")}</div>`;
+  $("#puestoLista").innerHTML = (paso === "empaquetar" ? barraRecuperar() : "") + (vis.length ? vis.map(tarjetaPuesto).join("")
+    : `<div class="vacio">${q ? `Ningún pedido de aquí coincide con «${esc(buscaPuesto)}».` : esc(P?.vacio ?? "")}</div>`);
   const nuevo = document.querySelector(`#puestoLista input[data-otrosinfo="${otrosAbierto}"]`);
   if (nuevo && otrosVal != null){ nuevo.value = otrosVal; if (otrosFoco) nuevo.focus(); }
+}
+// La jefa de Expedición recupera pedidos de otra: todos de golpe o los que marque (rpc fab_recuperar)
+const marcRec = new Set(); let recTodosPend = null;
+function barraRecuperar(){
+  if (!YO.jefe || !YO.nombre) return "";
+  const por = new Map();
+  for (const p of pedidosEn("empaquetar")) if (p.asignado_a && p.asignado_a !== YO.nombre) por.set(p.asignado_a, [...(por.get(p.asignado_a) ?? []), p.order_id]);
+  for (const id of [...marcRec]) if (![...por.values()].some((l) => l.includes(id))) marcRec.delete(id);
+  return [...por].map(([n, ids]) => {
+    const k = ids.filter((id) => marcRec.has(id)).length;
+    return `<div class="recbar"><b>👤 ${esc(n)} tiene ${ids.length} pedido${ids.length === 1 ? "" : "s"} para empaquetar</b>
+      <button data-recmarc="${esc(n)}" ${k ? "" : "disabled"}>↩ Pasar a mí los marcados${k ? ` (${k})` : ""}</button>
+      <button class="go" data-rectodos="${esc(n)}">${recTodosPend === n ? `¿Seguro? Pulsa otra vez para quedarte los ${ids.length}` : "↩ Pasar a mí todos"}</button>
+      <span class="recnota">Para elegir cuáles, marca la casilla «Pasar a mí» en sus pedidos (están más abajo, en gris).</span></div>`;
+  }).join("");
+}
+async function recuperar(de, ids){
+  let r;
+  if (DEMO) r = await Demo.fn({ accion: "recuperar", de, para: YO.nombre, ids });
+  else { const { data, error } = await sb.rpc("fab_recuperar", { p_de: de, p_order_ids: ids }); r = error ? { ok: false, error: error.message } : { ok: true, ids: (data ?? []).map(Number) }; }
+  if (!r.ok){ toast(r.error, true); return; }
+  r.ids.forEach((id) => marcRec.delete(id)); recTodosPend = null;
+  toast(r.ids.length ? (r.ids.length === 1 ? `1 pedido de ${de} ahora es tuyo` : `${r.ids.length} pedidos de ${de} ahora son tuyos`) : `${de} ya no tenía esos pedidos`, !r.ids.length);
+  await cargar();
 }
 function tarjetaPuesto(p){
   const e = p._estado, id = p.order_id, busy = ocupado.has(id), zona = destinoOtros(p), exp = YO.puesto === "expedicion";
   const otra = activo(p) && e !== "producido" && p.asignado_a && p.asignado_a !== YO.nombre ? p.asignado_a : "";
+  const rec = exp && YO.jefe && otra && e === "empaquetar", marc = rec && marcRec.has(id);
   const d = diasDesde(p.creado_shopify);
   const prendas = (p.fab_lineas ?? []).map((l) => {
     const v = partes(l.variante), fuera = e === "estampar" && l.estado !== "estampar";
@@ -808,8 +845,8 @@ function tarjetaPuesto(p){
   }
   const mods = modificado(p) ? `<div class="mod"><b>✏️ Ha cambiado el pedido</b><ul>${(p.modificado ?? []).map((m) => `<li>${esc(m)}</li>`).join("")}</ul><button data-visto="${id}">✔ Visto</button></div>` : "";
   const err = [p.gls_error && `GLS: ${esc(p.gls_error)}`].filter(Boolean);
-  return `<article class="pc ${p._urg ? "urgente" : ""} ${otra ? "ajeno" : ""}" style="${colorVars(e === "producido" ? "producido" : e)}">
-    <div class="cab"><span class="num">${esc(p.order_name)}</span>${p._urg ? `<span class="urg">URGENTE</span>` : ""}${retrasado(p) ? `<span class="ret">hace ${d} días</span>` : ""}${otra ? `<span class="otra">👤 Lo está haciendo ${esc(otra)}</span>` : ""}</div>
+  return `<article class="pc ${p._urg ? "urgente" : ""} ${otra ? "ajeno" : ""} ${marc ? "marcado" : ""}" style="${colorVars(e === "producido" ? "producido" : e)}">
+    <div class="cab"><span class="num">${esc(p.order_name)}</span>${p._urg ? `<span class="urg">URGENTE</span>` : ""}${retrasado(p) ? `<span class="ret">hace ${d} días</span>` : ""}${otra ? `<span class="otra">👤 ${rec ? "Es de" : "Lo está haciendo"} ${esc(otra)}</span>` : ""}${rec ? `<label class="rec"><input type="checkbox" data-marcrec="${id}" ${marc ? "checked" : ""}> Pasar a mí</label>` : ""}</div>
     ${exp ? `<div class="dest"><span>${esc(p.cliente_nombre ?? "")}${p.ciudad ? " · " + esc(p.ciudad) : ""}${p.pais && p.pais !== "ES" ? " · " + esc(p.pais) : ""}</span><span class="salida" style="${colorVars(p.recogida || zona ? "estampar" : "cortar")}">${p.recogida ? "Recogida en tienda" : zona ? "Otros envíos · " + esc(zona) : "GLS"}</span></div>` : ""}
     ${mods}
     <div class="pps">${prendas}</div>
@@ -901,7 +938,7 @@ const Demo = (() => {
     modificado: [`Cambio de ${lm.titulo}: ${lm.variante === "S" ? "M" : "S"} → ${lm.variante}`, "Dirección de envío: Calle Nueva 3 · 46001 Valencia"] });
   Object.assign(pedidos[3], { ciudad: "Las Palmas de Gran Canaria", cp: "35001", provincia: "Las Palmas" });
   Object.assign(pedidos[5], { ciudad: "London", cp: "SW1A 1AA", pais: "GB" });
-  const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no", empaquetadoras: "Dania, Irene, Andrea, Mica, Cristina, Carlota", capacidad_min: "20", capacidad_max: "25" };
+  const cfg = { gls_modo: "pruebas", shopify_crear_envio: "no", empaquetadoras: "Dania, Irene, Andrea, Mica, Cristina, Carlota", reparto_expedicion: "Dania, Irene", capacidad_min: "20", capacidad_max: "25" };
   const modelos = { "Camisa “Why not?” blanca": "Negro", "Camisa “Why not?” azul": "Blanco", "Blazer “Calavera” azul": "Blanco", "Blazer “estudio 54”": "Dorado" };
   // hojas ya impresas en algunos pedidos
   [11, 13, 14].forEach((i, k) => Object.assign(pedidos[i], { hueco: k + 1, hoja_impresa_at: hace(30), hoja_version: 1 }));
@@ -927,6 +964,14 @@ const Demo = (() => {
   const PDF = "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyODMgNDI1XSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4gPj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA2NTUgPj4Kc3RyZWFtCkJUIC9GMSAyNiBUZiAzMCAzNzAgVGQgKEdMUyAgREVNTykgVGogRVQKQlQgL0YxIDEyIFRmIDMwIDM0MCBUZCAoRVRJUVVFVEEgREUgUFJVRUJBIC0gTk8gVkFMSURBKSBUaiBFVApCVCAvRjEgMTQgVGYgMzAgMzAwIFRkIChEZXN0aW5hdGFyaW86IENsaWVudGUgRGVtbykgVGogRVQKQlQgL0YxIDE0IFRmIDMwIDI4MCBUZCAoQ2FsbGUgTWF5b3IgMSwgMjgwMTMgTWFkcmlkKSBUaiBFVAowIDAgMCByZyAzMCAxMjAgbSAzMCAyMzAgbCAzNCAyMzAgbCAzNCAxMjAgbCBmCjQwIDEyMCA2IDExMCByZSBmIDUyIDEyMCAyIDExMCByZSBmIDYwIDEyMCA4IDExMCByZSBmIDc0IDEyMCAzIDExMCByZSBmIDgyIDEyMCA1IDExMCByZSBmIDk0IDEyMCAyIDExMCByZSBmIDEwMCAxMjAgNyAxMTAgcmUgZiAxMTIgMTIwIDMgMTEwIHJlIGYgMTIwIDEyMCA2IDExMCByZSBmIDEzMiAxMjAgMiAxMTAgcmUgZiAxNDAgMTIwIDggMTEwIHJlIGYgMTU0IDEyMCA0IDExMCByZSBmIDE2NCAxMjAgMiAxMTAgcmUgZiAxNzIgMTIwIDYgMTEwIHJlIGYgMTg0IDEyMCAzIDExMCByZSBmIDE5MiAxMjAgNyAxMTAgcmUgZiAyMDQgMTIwIDIgMTEwIHJlIGYgMjEyIDEyMCA1IDExMCByZSBmIDIyNCAxMjAgNCAxMTAgcmUgZiAyMzQgMTIwIDYgMTEwIHJlIGYgMjQ2IDEyMCAzIDExMCByZSBmCkJUIC9GMSAxNCBUZiA2MCA5NSBUZCAoNjE3NzEzMTUzMDk1MDIpIFRqIEVUCgplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MyAwMDAwMCBuIAowMDAwMDAwOTUwIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKMTAyNgolJUVPRgo=";
   let cb = 61771315309503, n = 2000;
   const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+  // Reparto de Expedición por turnos (en el servidor lo hace el trigger fab_registro_personas)
+  let turno = 0;
+  function repartir(){
+    const l = listaReparto(cfg); if (!l.length) return;
+    for (const p of pedidos.filter((x) => !x.cancelado && estadoPedido(x) === "empaquetar").sort(porPrioridad)){
+      if (!p.asignado_a || !l.includes(p.asignado_a)){ p.asignado_a = l[turno++ % l.length]; p.asignado_at = new Date().toISOString(); }
+    }
+  }
   const lineasDe = (ids) => pedidos.flatMap((p) => p.fab_lineas.filter((l) => ids.includes(l.line_id)).map((l) => [p, l]));
   async function fn(b){
     await espera(250);
@@ -958,6 +1003,11 @@ const Demo = (() => {
     }
     if (b.accion === "reimprimir") return { ok: true, pdf: PDF };
     if (b.accion === "actualizar"){ await espera(500); return { ok: true, order_id: b.order_id, cambios: [] }; }
+    if (b.accion === "recuperar"){
+      const hechos = [];
+      for (const p of pedidos) if (p.asignado_a === b.de && estadoPedido(p) === "empaquetar" && !p.cancelado && (!b.ids || b.ids.includes(p.order_id))){ p.asignado_a = b.para; p.asignado_at = new Date().toISOString(); hechos.push(p.order_id); }
+      return { ok: true, ids: hechos };
+    }
     if (b.accion === "asignar"){
       const hechos = [];
       for (const id of b.ids){
@@ -1004,7 +1054,7 @@ const Demo = (() => {
       for (const l of ls) if (l.estado === "cortar" && est(l)) l.estado = "empaquetar";
     }
   }
-  return { pedidos, cfg, fn, cortados, sumarCortados, modelos, picking, viniloMal, hojas };
+  return { pedidos, cfg, fn, cortados, sumarCortados, modelos, picking, viniloMal, hojas, repartir };
 })();
 
 // ───── datos ─────
@@ -1031,6 +1081,7 @@ setInterval(() => comprobarImportacion(), 5 * 60 * 1000);
 async function cargar(){
   let data, c;
   if (DEMO){
+    Demo.repartir();
     data = JSON.parse(JSON.stringify(Demo.pedidos));
     c = { data: Object.entries(Demo.cfg).map(([clave, valor]) => ({ clave, valor })) };
     cortados = new Map(Object.entries(Demo.cortados));
@@ -1063,6 +1114,12 @@ async function cargar(){
   $("#aviso").textContent = avisos.join("  ·  ");
   $("#aviso").classList.toggle("hidden", !avisos.length);
   pintar();
+  // Reparto de Expedición: si hay pedidos libres en Empaquetar, se reparten por turnos (solo funciona cuando ya hay dos con usuario)
+  if (!DEMO && YO.puesto === "expedicion" && listaReparto(cfg).length > 1 && !cargar.repartiendo
+      && pedidos.some((p) => activo(p) && p._estado === "empaquetar" && !p.asignado_a)){
+    cargar.repartiendo = true;
+    try { const { data } = await sb.rpc("fab_repartir"); if (data > 0) await cargar(); } finally { cargar.repartiendo = false; }
+  }
 }
 
 async function fn(body){
@@ -2573,6 +2630,8 @@ document.addEventListener("click", (e) => {
   if (b.dataset.llegfila){ llegadoFila(b.dataset.llegfila, b.dataset.todas === "1"); return; }
   if (b.dataset.llegtodo){ llegadoTodo(); return; }
   if (b.dataset.llegids){ const ids = b.dataset.llegids.split(",").map(Number); picking(ids, true, `✔ Han llegado todas · ${b.dataset.llegtit} → Producción`); return; }
+  if (b.dataset.rectodos){ const n = b.dataset.rectodos; if (recTodosPend === n){ recuperar(n, null); } else { recTodosPend = n; pintar(); clearTimeout(barraRecuperar.t); barraRecuperar.t = setTimeout(() => { recTodosPend = null; pintar(); }, 6000); } return; }
+  if (b.dataset.recmarc){ const n = b.dataset.recmarc, ids = pedidosEn("empaquetar").filter((p) => p.asignado_a === n && marcRec.has(p.order_id)).map((p) => p.order_id); if (ids.length) recuperar(n, ids); return; }
   if (b.dataset.paso){ paso = b.dataset.paso; otrosAbierto = null; pintar(); window.scrollTo(0, 0); return; }
   if (b.dataset.vista){ vista = b.dataset.vista; try { localStorage.setItem("fab_vista", vista); } catch {} sel.clear(); if (vista === "plan") planModo = "plan"; if (vista === "historico") H.cargando = true; pintar(); if (vista === "historico") cargarHistorico(); }
   else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
@@ -2632,6 +2691,7 @@ document.addEventListener("change", (e) => {
   const ids = (c.dataset.selg || c.dataset.self || "").split(",").filter(Boolean).map(Number);
   if (ids.length){ ids.forEach((i) => c.checked ? sel.add(i) : sel.delete(i)); pintarResumen(); }
   if (c.id === "fFecha"){ sel.clear(); pintar(); }
+  if (c.dataset.marcrec){ const id = Number(c.dataset.marcrec); c.checked ? marcRec.add(id) : marcRec.delete(id); pintar(); }
 });
 $("#buscar").addEventListener("input", pintar);
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset?.otrosinfo){ e.preventDefault(); const id = Number(e.target.dataset.otrosinfo); otrosAbierto === id ? otrosCon(id, e.target.value) : otroEnvio(id, e.target.value, false); return; } });
