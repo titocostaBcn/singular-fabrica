@@ -56,6 +56,13 @@ En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. 
 
 Todas las pantallas, los listados impresos, los PDF y los Excel llevan el logo de Singular Wardrobe.
 
+**Pantalla táctil (sin ratón ni teclado).** En un monitor táctil o una tablet, el programa se pone solo en modo táctil:
+- **Más grande:** en el monitor de 24" de Expedición se ve todo un 25 % más grande, para leerlo de pie, y los botones son más altos y separados.
+- **Cantidades sin teclear:** en lugar de escribir el número, se usan los botones **−** y **+** (por ejemplo, en «Revisar stock» antes de «✖ No hay»).
+- **Otros envíos:** salen botones rápidos (**Correos**, **Correos Express**, **Entregado en mano**) que escriben el texto solos. El número de seguimiento, si hace falta, se escribe tocando la casilla, y Windows saca el teclado de pantalla.
+- **Botón «↑ Arriba»:** abajo a la derecha, para volver al principio de una lista larga.
+- Si un ordenador no se pone en modo táctil, ábrelo una vez con **?tactil=1** al final de la dirección; para quitarlo, con **?tactil=0**. El ordenador lo recuerda.
+
 La pantalla se actualiza sola: lo que hace una compañera aparece en tu pantalla en unos segundos. Si dudas, recarga la página con Cmd + Shift + R en Mac o Ctrl + F5 en Windows.
 
 ## 2. El recorrido de un pedido
