@@ -21,7 +21,8 @@ const API = "2026-01";
 // Dirección oficial desde 2025 (documentación de iClientes v1.12): la antigua wsclientes.asmred.com se sustituye por esta.
 const GLS_URL = "https://ws-customer.gls-spain.es/b2b.asmx";
 const GLS_UID_PRUEBAS = "6BAB7A53-3B6D-4D5A-9450-702D2FAC0B11"; // usuario público de pruebas de GLS/ASM
-const NACIONAL = new Set(["ES", "PT", "AD"]);
+// Servicio nacional (96/18 BusinessParcel) solo para España: GLS confirma (13-oct) que el 96 no vale para ES→PT; Portugal va con EuroBusiness (74/3).
+const NACIONAL = new Set(["ES"]);
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -933,10 +934,12 @@ Deno.serve(async (req) => {
       // Graba un envío de prueba en el entorno de pruebas de GLS (no genera envío real)
       // body.pais = "FR" prueba EuroBusinessParcel (internacional); también prueba la reimpresión (EtiquetaEnvioV2)
       const cfg = await config();
-      const fr = String(body.pais ?? "ES").toUpperCase() === "FR";
-      const dest = fr
-        ? { cliente_nombre: "Test Singular", direccion1: "10 Rue de Rivoli", ciudad: "Paris", provincia: "Paris", cp: "75001", pais: "FR", telefono: "+33 6 12 34 56 78" }
-        : { cliente_nombre: "Prueba Singular", direccion1: "Calle Mayor 1", ciudad: "Madrid", provincia: "Madrid", cp: "28013", pais: "ES", telefono: "600000000" };
+      const destinos: Record<string, any> = {
+        ES: { cliente_nombre: "Prueba Singular", direccion1: "Calle Mayor 1", ciudad: "Madrid", provincia: "Madrid", cp: "28013", pais: "ES", telefono: "600000000" },
+        FR: { cliente_nombre: "Test Singular", direccion1: "10 Rue de Rivoli", ciudad: "Paris", provincia: "Paris", cp: "75001", pais: "FR", telefono: "+33 6 12 34 56 78" },
+        PT: { cliente_nombre: "Teste Singular", direccion1: "Rua Augusta 100", ciudad: "Lisboa", provincia: "Lisboa", cp: "1100-053", pais: "PT", telefono: "+351 912 345 678" },
+      };
+      const dest = destinos[String(body.pais ?? "ES").toUpperCase()] ?? destinos.ES;
       const g = await glsGrabar({ order_name: "PRUEBA" + Date.now().toString().slice(-8), ...dest, email: "hola@singularwardrobe.com", bultos: 1, peso_kg: 1 }, { ...cfg, gls_modo: "pruebas" });
       let reimp = 0, reimpError: string | null = null;
       try { const r = await glsEtiquetaEnvio(g.codbarras, "pruebas"); reimp = r ? decodeBase64(r).length : 0; } catch (e) { reimpError = String((e as Error).message ?? e); }
