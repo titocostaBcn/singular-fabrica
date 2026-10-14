@@ -52,6 +52,7 @@ En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. 
 **Avisos de colores en la franja superior**
 
 - **Franja roja «ERROR: no actualizado hoy»**: la actualización de las 8:00 ha fallado. Pulsa ↻ Importar. Si vuelve a salir, avisa a Tito.
+- **Franja roja «La hora de este ordenador está mal»**: el reloj del ordenador va adelantado o atrasado y por eso salen todos los pedidos a 0. En Windows: Configuración → Hora e idioma → activa «Establecer la hora automáticamente» y pulsa «Sincronizar ahora». Después recarga la página.
 - **Franja amarilla «MODO PRUEBAS»**: las etiquetas de GLS todavía son de prueba y no sirven para enviar. Desaparecerá cuando el programa funcione de verdad.
 
 Todas las pantallas, los listados impresos, los PDF y los Excel llevan el logo de Singular Wardrobe.

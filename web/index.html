@@ -1135,9 +1135,26 @@ const Demo = (() => {
 
 // ───── datos ─────
 // Importación diaria de Shopify a las 8:00. A partir de las 8:15, si hoy no hay una importación correcta → aviso rojo.
+// Reloj del ordenador: si va mal (más de 5 min), la sesión parece caducada y la base de datos devuelve las listas vacías.
+// Se compara con la hora del servidor web (cabecera Date de Netlify).
+let desfaseReloj = 0;
+async function comprobarReloj(){
+  if (DEMO) return 0;
+  try {
+    const t0 = Date.now(), r = await fetch(location.pathname + "?hora=" + t0, { method: "HEAD", cache: "no-store" }); // misma web: la cabecera Date se puede leer
+    const srv = Date.parse(r.headers.get("date") || ""); if (!srv) return 0;
+    desfaseReloj = (t0 + Date.now()) / 2 - srv;
+  } catch {}
+  return desfaseReloj;
+}
 async function comprobarImportacion(){
   const el = $("#avisoError");
   let error = null;
+  if (Math.abs(await comprobarReloj()) > 5 * 60 * 1000){
+    const h = Math.round(Math.abs(desfaseReloj) / 36e5 * 10) / 10;
+    el.innerHTML = `⚠ La hora de este ordenador está mal (va ${h} h ${desfaseReloj > 0 ? "adelantada" : "atrasada"})<small>Por eso no salen los pedidos. Arréglalo: Windows → Configuración → Hora e idioma → «Establecer la hora automáticamente» y pulsa «Sincronizar ahora». Después recarga la página.</small>`;
+    el.classList.remove("hidden"); return;
+  }
   const ahora = new Date(), hoy = new Date(ahora); hoy.setHours(0, 0, 0, 0);
   if (DEMO){
     if (new URLSearchParams(location.search).has("errorimport")) error = "Shopify: demo de fallo";
