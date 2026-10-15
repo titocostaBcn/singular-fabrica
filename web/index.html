@@ -869,7 +869,7 @@ function barraRecuperar(){
   if (!YO.nombre) return "";
   const pausa = pausadosReparto(cfg);
   // A quien está en pausa se le avisa en su pantalla
-  if (!YO.jefe) return pausa.includes(YO.nombre) ? `<div class="recbar pausa"><b>⏸ Ahora no te llegan pedidos nuevos: tu reparto está en pausa.</b><span class="recnota">Lo que ya tienes a tu nombre sigue siendo tuyo. Cuando vuelvas, pide a la responsable que pulse «▶ Volver a repartir».</span></div>` : "";
+  if (!YO.jefe) return pausa.includes(YO.nombre) ? `<div class="recbar pausa"><b>⏸ Ahora no te llegan pedidos nuevos: tu reparto está en pausa.</b><span class="recnota">Los pedidos que tenías han pasado a la Responsable. Cuando vuelvas, pide a la Responsable que pulse «▶ Volver a repartir».</span></div>` : "";
   const por = new Map();
   for (const n of listaReparto(cfg)) if (n !== YO.nombre) por.set(n, []);
   for (const p of pedidosEn("empaquetar")) if (p.asignado_a && p.asignado_a !== YO.nombre) por.set(p.asignado_a, [...(por.get(p.asignado_a) ?? []), p.order_id]);
@@ -884,15 +884,18 @@ function barraRecuperar(){
       ${ids.length ? `<button class="ir" data-irajeno="${esc(n)}">↓ Ver los pedidos de ${esc(n)}</button>
       <button data-recmarc="${esc(n)}" ${k ? "" : "disabled"}>↩ Pasar a mí los marcados${k ? ` (${k})` : ""}</button>
       <button class="go" data-rectodos="${esc(n)}">${recTodosPend === n ? `¿Seguro? Pulsa otra vez para quedarte los ${ids.length}` : "↩ Pasar a mí todos"}</button>` : ""}
-      <span class="recnota">${p ? `Los pedidos nuevos se reparten entre las demás hasta que pulses «▶ Volver a repartir a ${esc(n)}». ` : ""}${ids.length ? `Sus pedidos están más abajo, en gris: en cada uno tienes «↩ Pasar a mí». Para pasar varios, márcalos con «Marcar» y pulsa «Pasar a mí los marcados».` : ""}</span></div>`;
+      <span class="recnota">${p ? `Los pedidos nuevos se reparten entre las demás hasta que pulses «▶ Volver a repartir a ${esc(n)}». ` : `Al pausarla, sus pedidos pendientes pasan a ti. `}${ids.length ? `Sus pedidos están más abajo, en gris: en cada uno tienes «↩ Pasar a mí». Para pasar varios, márcalos con «Marcar» y pulsa «Pasar a mí los marcados».` : ""}</span></div>`;
   }).join("");
 }
 async function pausarReparto(n, pausa){
   let r;
-  if (DEMO){ const l = pausadosReparto(Demo.cfg).filter((x) => x !== n); if (pausa) l.push(n); Demo.cfg.reparto_pausados = l.join(", "); r = { ok: true }; }
+  // al sacarla del reparto, sus pedidos de Empaquetar pasan solos a la Responsable (lo hace la BD: fab_pausar_reparto)
+  const suyos = pedidosEn("empaquetar").filter((p) => p.asignado_a === n).length;
+  const resp = YO.jefe && YO.nombre !== n ? YO.nombre : "la Responsable";
+  if (DEMO){ const l = pausadosReparto(Demo.cfg).filter((x) => x !== n); if (pausa){ l.push(n); for (const p of Demo.pedidos) if (p.asignado_a === n && estadoPedido(p) === "empaquetar") p.asignado_a = YO.jefe && YO.nombre !== n ? YO.nombre : "Dania"; } Demo.cfg.reparto_pausados = l.join(", "); r = { ok: true }; }
   else { const { error } = await sb.rpc("fab_pausar_reparto", { p_nombre: n, p_pausa: pausa }); r = error ? { ok: false, error: error.message } : { ok: true }; }
   if (!r.ok){ toast(r.error, true); return; }
-  toast(pausa ? `${n} fuera del reparto: los pedidos nuevos se reparten entre las demás` : `${n} vuelve al reparto`);
+  toast(pausa ? `${n} fuera del reparto${suyos ? ` · ${suyos === 1 ? "su pedido" : `sus ${suyos} pedidos`} de Empaquetar pasa${suyos === 1 ? "" : "n"} a ${resp === "la Responsable" ? resp : resp === YO.nombre ? "ti" : resp}` : ""}. Los nuevos se reparten entre las demás.` : `${n} vuelve al reparto`);
   await cargar();
   if (!$("#usuM").classList.contains("hidden")) pintarUsuarios();
 }
