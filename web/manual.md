@@ -62,6 +62,7 @@ Todas las pantallas, los listados impresos, los PDF y los Excel llevan el logo d
 - **Cantidades sin teclear:** en lugar de escribir el número, se usan los botones **−** y **+** (por ejemplo, en «Revisar stock» antes de «✖ No hay»).
 - **Otros envíos:** salen botones rápidos (**Correos**, **Correos Express**, **Entregado en mano**) que escriben el texto solos. El número de seguimiento, si hace falta, se escribe tocando la casilla, y Windows saca el teclado de pantalla.
 - **Botón «↑ Arriba»:** abajo a la derecha, para volver al principio de una lista larga.
+- **Sin «Tocar para buscar» de Google:** en modo táctil el texto no se puede seleccionar, para que la tablet no abra la búsqueda de Google al pulsar un botón. Si aun así sale, en Chrome de la tablet: Ajustes → Google Services → desactivar «Tocar para buscar».
 - Si un ordenador no se pone en modo táctil, ábrelo una vez con **?tactil=1** al final de la dirección; para quitarlo, con **?tactil=0**. El ordenador lo recuerda.
 
 La pantalla se actualiza sola: lo que hace una compañera aparece en tu pantalla en unos segundos. Si dudas, recarga la página con Cmd + Shift + R en Mac o Ctrl + F5 en Windows.

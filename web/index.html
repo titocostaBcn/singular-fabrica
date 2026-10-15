@@ -327,7 +327,7 @@
   .rq .rqd{font-size:11px;font-weight:600;color:var(--muted);line-height:1.2;text-align:right}
   .rrow .rpers{justify-self:start;background:#1d1b18;color:#fff;border-radius:9px;padding:6px 14px;font-size:24px;font-weight:800;letter-spacing:.06em;white-space:pre-wrap;word-break:break-word}
   .rrow .rpers small{display:block;font-size:11px;font-weight:600;letter-spacing:.04em;opacity:.65;text-transform:uppercase}
-  .rrow .rpers.vacia{background:none;color:var(--muted);font-size:14px;font-weight:500;letter-spacing:0;padding:0}
+  .rrow .rpers.vacia{background:none;color:var(--muted);font-size:14px;font-weight:500;letter-spacing:0;padding:0;white-space:normal;word-break:normal}
   .rrow .runit{font-size:12px;color:var(--muted);font-weight:700}
   .rrow:first-of-type{border-top:0}
   .rrow.urg{background:var(--urg-bg)}
@@ -444,6 +444,9 @@
   #bArriba{display:none}
   body.tactil{-webkit-tap-highlight-color:transparent}
   body.tactil button, body.tactil label{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+  /* tablets Android: «Tocar para buscar» de Google salta al tocar texto seleccionable → en táctil nada se selecciona salvo los campos */
+  body.tactil{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+  body.tactil input, body.tactil textarea{-webkit-user-select:text;user-select:text}
   body.tactil button:active:not([disabled]){transform:scale(.96);filter:brightness(.9)}
   body.tactil header .btn-sec{min-height:52px;min-width:52px;padding:12px 20px;font-size:17px}
   /* En un monitor grande, todo un 25 % más grande: se lee de pie y a un brazo de distancia */
