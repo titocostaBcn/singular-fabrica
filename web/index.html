@@ -40,6 +40,12 @@
   #login button.olvido{background:none;color:var(--muted);padding:2px;font-weight:500;text-decoration:underline;font-size:14px;justify-self:center}
   #claveM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
   #claveM.hidden{display:none}
+  #impM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+  #impM .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:440px;width:100%;display:grid;gap:10px}
+  #impM .op{display:grid;gap:2px;text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:700}
+  #impM .op small{font-weight:500;color:var(--muted);font-size:13px}
+  #impM .op.on{border-color:#1b7f4b;background:#eef7f1}
+  #impM .estado{font-size:13px;color:var(--muted);margin:0}
   #claveM .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:400px;width:100%;display:grid;gap:12px}
   #claveM input[type=password],#claveM input[type=text]{font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
   #claveM .quien{margin:0;font-size:14px;color:var(--muted)}
@@ -582,6 +588,7 @@
       <div class="vistas"><button data-vista="gerencia">Gerencia</button><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec hidden" id="bUsuarios" title="Usuarios: dar de alta y poner contraseñas" aria-label="Usuarios">👥</button>
+      <button class="btn-sec" id="bImp" title="Dónde se imprimen las etiquetas en este dispositivo" aria-label="Impresión">🖨</button>
       <button class="btn-sec" id="bClave" title="Cambiar la contraseña" aria-label="Cambiar la contraseña">🔑</button>
       <button class="btn-sec" id="bSalir">Salir</button>
     </div>
@@ -640,6 +647,14 @@
   <div id="claveErr"></div>
   <div class="bots"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="claveCerrar">Cancelar</button></div>
 </form></div>
+<div id="impM" class="hidden"><div class="caja">
+  <h3 style="margin:0">¿Dónde se imprimen las etiquetas desde aquí?</h3>
+  <p class="estado" id="impEstado"></p>
+  <button type="button" class="op" data-impmodo="remoto">📲 En la impresora de Expedición<small>Para el iPhone, la tablet o un ordenador sin impresora: la etiqueta se manda al ordenador de Expedición y sale allí sola.</small></button>
+  <button type="button" class="op" data-impmodo="servidor">🖨 Este ordenador ES la impresora de Expedición<small>Imprime aquí sus etiquetas y también las que mandan el iPhone y la tablet. Dejar el programa abierto.</small></button>
+  <button type="button" class="op" data-impmodo="aqui">💻 Aquí mismo<small>Abre la impresión de este dispositivo (como siempre).</small></button>
+  <button type="button" class="btn-sec" id="impCerrar">Cerrar</button>
+</div></div>
 <div id="usuM" class="hidden"><div class="caja">
   <div class="cab"><h3 style="margin:0">Usuarios del taller</h3><button type="button" class="btn-sec" id="usuCerrar">Cerrar</button></div>
   <p class="ayuda">Aquí das de alta a cada persona y le pones la contraseña, sin correos. El email es solo su nombre de usuario: no hace falta que exista (por ejemplo dania@singularwardrobe.com). Dile a cada una su email y su contraseña; luego puede cambiarla con 🔑.</p>
@@ -1251,6 +1266,7 @@ async function empaquetado(id){
     const j = await fn({ accion: "producido", order_id: id });
     if (!j.ok){ toast(j.error || "Error", true); return; }
     if (j.recogida){ toast("Listo para recoger en taller"); return; }
+    if (MODO_IMP === "remoto"){ await mandarCola(id); return; }
     if (!j.pdf){ toast("Etiqueta creada en GLS pero sin PDF. Usa Reimprimir.", true); return; }
     await imprimirPdf(j.pdf);
     await fn({ accion: "impresa", order_id: id });
@@ -1537,7 +1553,64 @@ async function imprimirHojas(lista, { copia = false } = {}){
   await cargar();
 }
 
+// ───── Dónde se imprimen las etiquetas (por dispositivo; localStorage fab_impresion) ─────
+// aqui = diálogo de este dispositivo · remoto = se manda a la cola y la imprime el ordenador de Expedición · servidor = este ordenador imprime la cola
+let MODO_IMP = (() => {
+  const u = new URLSearchParams(location.search).get("impresora");
+  try { if (["aqui", "remoto", "servidor"].includes(u)) localStorage.setItem("fab_impresion", u); const g = localStorage.getItem("fab_impresion"); if (g) return g; } catch {}
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? "remoto" : "aqui";
+})();
+const TXT_IMP = { aqui: "💻 Imprime aquí", remoto: "📲 Imprime en Expedición", servidor: "🖨 Impresora de Expedición" };
+function abrirImp(){
+  const ult = Date.parse(cfg.impresora_ultimo || "");
+  $("#impEstado").textContent = isNaN(ult) ? "Todavía no hay ningún ordenador marcado como impresora de Expedición."
+    : Date.now() - ult < 3 * 60e3 ? "✔ La impresora de Expedición está encendida (ha mirado la cola hace " + Math.max(1, Math.round((Date.now() - ult) / 1000)) + " s)."
+    : "⚠ La impresora de Expedición no da señales desde " + new Date(ult).toLocaleString("es-ES", { weekday: "short", hour: "2-digit", minute: "2-digit" }) + ": ¿está el ordenador encendido con el programa abierto?";
+  for (const b of document.querySelectorAll("[data-impmodo]")) b.classList.toggle("on", b.dataset.impmodo === MODO_IMP);
+  $("#impM").classList.remove("hidden");
+}
+function ponerModoImp(m){
+  MODO_IMP = m; try { localStorage.setItem("fab_impresion", m); } catch {}
+  $("#bImp").title = TXT_IMP[m]; $("#impM").classList.add("hidden");
+  toast(TXT_IMP[m]); if (m === "servidor") revisarCola();
+}
+// El móvil manda la etiqueta al ordenador de Expedición
+async function mandarCola(id){
+  const p = pedidos.find((x) => x.order_id === id);
+  if (DEMO){ toast(`${p?.order_name ?? ""}: etiqueta enviada a la impresora de Expedición (demo)`); return; }
+  const { data: cid, error } = await sb.rpc("fab_cola_mandar", { p_order_id: id });
+  if (error){ toast("No se ha podido mandar a la impresora: " + error.message, true); return; }
+  const ult = Date.parse(cfg.impresora_ultimo || "");
+  if (isNaN(ult) || Date.now() - ult > 3 * 60e3){ toast(`⚠ ${p?.order_name ?? ""}: enviada, pero la impresora de Expedición no da señales. Enciende ese ordenador y abre el programa (tiene 30 min).`, true); }
+  else toast(`📲 ${p?.order_name ?? ""}: etiqueta enviada a la impresora de Expedición`);
+  setTimeout(async () => { // a los 30 s, comprobar que ha salido
+    const { data } = await sb.from("fab_cola_impresion").select("impreso_at,error").eq("id", cid).maybeSingle();
+    if (data?.error) toast(`✖ ${p?.order_name ?? ""}: la impresora de Expedición no ha podido imprimirla (${data.error})`, true);
+    else if (!data?.impreso_at) toast(`⚠ ${p?.order_name ?? ""}: todavía no ha salido en Expedición. ¿Está el ordenador encendido con el programa abierto?`, true);
+  }, 30000);
+}
+// El ordenador-impresora imprime lo que hay en la cola (al llegar un encargo y cada 20 s)
+async function revisarCola(){
+  if (DEMO || MODO_IMP !== "servidor" || revisarCola.ocupado) return;
+  revisarCola.ocupado = true;
+  try {
+    const { data, error } = await sb.rpc("fab_cola_coger", { p_quien: YO.nombre || "" });
+    if (error) return;
+    for (const t of data ?? []){
+      try {
+        const j = await fn({ accion: "reimprimir", order_id: t.order_id });
+        if (!j.ok || !j.pdf) throw new Error(j.error || "sin etiqueta");
+        await imprimirPdf(j.pdf);
+        await fn({ accion: "impresa", order_id: t.order_id });
+        await sb.rpc("fab_cola_hecho", { p_id: t.id, p_error: null });
+        toast("🖨 Impresa la etiqueta de " + (pedidos.find((x) => x.order_id === t.order_id)?.order_name ?? "un pedido") + " (enviada desde otro dispositivo)");
+      } catch (e){ await sb.rpc("fab_cola_hecho", { p_id: t.id, p_error: String(e.message || e) }); }
+    }
+    if ((data ?? []).length) await cargar();
+  } finally { revisarCola.ocupado = false; }
+}
 async function reimprimir(id){
+  if (MODO_IMP === "remoto") return mandarCola(id);
   const j = await fn({ accion: "reimprimir", order_id: id });
   if (!j.ok){ toast(j.error, true); return; }
   await imprimirPdf(j.pdf);
@@ -2856,6 +2929,9 @@ function cerrarClave(){
   if (recuperar){ history.replaceState(null, "", location.pathname + location.search); iniciar(); }
 }
 $("#bClave").onclick = () => abrirClave(false);
+$("#bImp").onclick = abrirImp; $("#bImp").title = TXT_IMP[MODO_IMP];
+$("#impCerrar").onclick = () => $("#impM").classList.add("hidden");
+for (const b of document.querySelectorAll("[data-impmodo]")) b.onclick = () => ponerModoImp(b.dataset.impmodo);
 $("#claveCerrar").onclick = cerrarClave;
 $("#claveVer").onchange = (e) => { $("#clave1").type = $("#clave2").type = e.target.checked ? "text" : "password"; };
 $("#claveForm").onsubmit = async (e) => {
@@ -2994,8 +3070,10 @@ async function iniciar(){
     .on("postgres_changes", { event: "*", schema: "public", table: "fab_pedidos" }, refrescar)
     .on("postgres_changes", { event: "*", schema: "public", table: "fab_lineas" }, refrescar)
     .on("postgres_changes", { event: "*", schema: "public", table: "fab_cortados" }, refrescar)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "fab_cola_impresion" }, () => revisarCola())
     .subscribe();
   setInterval(cargar, 60000);
+  setInterval(revisarCola, 20000); revisarCola();
 }
 iniciar();
 </script>
