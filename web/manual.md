@@ -258,7 +258,7 @@ En los tres casos, al pulsar sale **«¿Quién lo ha empaquetado?»**: toca tu n
 
 Si aparece un error de GLS, el pedido queda en la pestaña Sin etiqueta. No lo envíes sin etiqueta: avisa a Tito.
 
-**Impresora de etiquetas (Honeywell PC42E-T).** El programa manda la etiqueta en una hoja de 10 × 15 cm sin márgenes: sale una sola etiqueta, del tamaño del rollo, sin copias en blanco ni la dirección de la web. Si el rollo es de otra medida, Tito la cambia en el ajuste `etiqueta_tamano` (por ejemplo 100x100). Para que imprima sola, sin elegir impresora ni pulsar Imprimir, el ordenador de Expedición abre el programa con un acceso directo de Chrome preparado para imprimir directo en la Honeywell (lo deja montado Tito). Con ese acceso directo, todo lo que se imprima desde ese ordenador sale por la Honeywell.
+**Impresora de etiquetas (Honeywell PC42E-T).** El programa manda la etiqueta en una hoja de 10 × 15 cm sin márgenes: sale una sola etiqueta, del tamaño del rollo, sin copias en blanco ni la dirección de la web. Si el rollo es de otra medida, Tito la cambia en el ajuste `etiqueta_tamano` (por ejemplo 100x100). Para que imprima sola, sin elegir impresora ni pulsar Imprimir, el ordenador de Expedición abre el programa con un acceso directo de Chrome preparado para imprimir directo en la Honeywell (lo deja montado Tito). Con ese acceso directo, todo lo que se imprima desde ese ordenador sale por la Honeywell. El driver de Windows tiene que ser el de **203 dpi**: con el de 300 dpi la etiqueta sale más grande y cortada.
 
 **Si te has equivocado** y un pedido ha llegado a Empaquetar sin estar terminado, pulsa **↶** en su tarjeta: las prendas con vinilo vuelven a Producción.
 
