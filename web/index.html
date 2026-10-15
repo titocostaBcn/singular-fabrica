@@ -1575,6 +1575,12 @@ function imprimir(modo, despues){
   window.print(); setTimeout(fin, 1000);
 }
 
+// En el móvil las pestañas ocupan toda la pantalla: al elegir una (o venir del panel de Carlota) se baja hasta los pedidos
+function irALista(){
+  if (!esMovil()) return;
+  const el = vista === "pedidos" ? ($("#buscar") || $("#lista")) : vista === "resumen" ? $("#resumen") : null;
+  if (el && !el.classList.contains("hidden")) requestAnimationFrame(() => window.scrollTo({ top: el.getBoundingClientRect().top + scrollY - 70, behavior: "smooth" }));
+}
 // ───── pintar ─────
 function pintar(){
   if (modoPuesto()) return pintarPuesto();
@@ -2729,7 +2735,7 @@ document.addEventListener("click", (e) => {
   if (b.dataset.gmodo){ G.modo = b.dataset.gmodo; pintar(); window.scrollTo(0, 0); return; }
   if (b.dataset.gper){ G.periodo = b.dataset.gper; cargarProductos().then(pintar); return; }
   if (b.dataset.gdia){ const k = Number(b.dataset.gdia), h = hoyISO(); G.dia = k === 0 ? null : masDias(G.dia ?? h, k); if (G.dia && G.dia >= h) G.dia = null; pintar(); return; }
-  if (b.dataset.gir){ const [v, t] = b.dataset.gir.split(":"); vista = v; if (v === "pedidos") tab = t; else etapaR = t; sel.clear(); pintar(); window.scrollTo(0, 0); return; }
+  if (b.dataset.gir){ const [v, t] = b.dataset.gir.split(":"); vista = v; if (v === "pedidos") tab = t; else etapaR = t; sel.clear(); pintar(); window.scrollTo(0, 0); irALista(); return; }
   if (b.dataset.gimportar !== undefined){ $("#bImportar").click(); return; }
   if (b.dataset.gimprcompra !== undefined){ imprimir("imp-compra"); return; }
   if (b.dataset.hay){ hayFila(b.dataset.hay); return; }
@@ -2746,7 +2752,7 @@ document.addEventListener("click", (e) => {
   if (b.dataset.recmarc){ const n = b.dataset.recmarc, ids = pedidosEn("empaquetar").filter((p) => p.asignado_a === n && marcRec.has(p.order_id)).map((p) => p.order_id); if (ids.length) recuperar(n, ids); return; }
   if (b.dataset.paso){ paso = b.dataset.paso; otrosAbierto = null; pintar(); window.scrollTo(0, 0); return; }
   if (b.dataset.vista){ vista = b.dataset.vista; try { localStorage.setItem("fab_vista", vista); } catch {} sel.clear(); if (vista === "plan") planModo = "plan"; if (vista === "historico") H.cargando = true; pintar(); if (vista === "historico") cargarHistorico(); }
-  else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); }
+  else if (b.dataset.tab){ tab = b.dataset.tab; pintar(); irALista(); }
   else if (b.dataset.etapar){ etapaR = b.dataset.etapar; sel.clear(); pintar(); }
   else if (b.dataset.mover && b.dataset.hacia === "empaquetar") estampar(Number(b.dataset.mover), b.dataset.desde);
   else if (b.dataset.mover) moverPedido(Number(b.dataset.mover), b.dataset.desde, b.dataset.hacia);
