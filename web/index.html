@@ -468,10 +468,13 @@
   body.tactil #bArriba.ver{display:block;position:fixed;right:24px;bottom:24px;z-index:30;border:0;border-radius:999px;padding:18px 26px;font-size:20px;font-weight:800;background:var(--ink);color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25)}
   @media print{
     @page{margin:8mm}
-    body.imp-etiqueta *{visibility:hidden}
-    body.imp-etiqueta #zonaImpresion,body.imp-etiqueta #zonaImpresion *{visibility:visible}
-    body.imp-etiqueta #zonaImpresion{display:block;position:absolute;inset:0}
-    body.imp-etiqueta #zonaImpresion img{width:100%;display:block;page-break-after:always}
+    /* etiqueta GLS: SOLO la etiqueta, una por hoja del tamaño del rollo (fab_config.etiqueta_tamano, por defecto 100x150 mm),
+       sin márgenes (así Chrome tampoco pone la URL ni la fecha) y sin hojas en blanco detrás */
+    body.imp-etiqueta > *:not(#zonaImpresion){display:none!important}
+    html:has(body.imp-etiqueta),body.imp-etiqueta{background:#fff!important;margin:0!important;padding:0!important;zoom:1!important}
+    body.imp-etiqueta #zonaImpresion{display:block}
+    body.imp-etiqueta #zonaImpresion img{display:block;width:100mm;height:149.5mm;object-fit:contain;break-after:page;margin:0}
+    body.imp-etiqueta #zonaImpresion img:last-child{break-after:auto}
     body.imp-lista header,body.imp-lista #subbar,body.imp-lista #aviso,body.imp-lista #avisoError,body.imp-lista #barra,body.imp-lista #toast,body.imp-lista #lista,body.imp-lista input[type=checkbox]{display:none!important}
     body.imp-lista{background:#fff}
     body.imp-lista .logo-imp,body.imp-hist .logo-imp{display:block;margin:0 0 10px}
@@ -1553,11 +1556,18 @@ async function imprimirPdf(b64){
     const img = new Image(); img.src = canvas.toDataURL("image/png"); await img.decode();
     zona.appendChild(img);
   }
-  imprimir("imp-etiqueta");
+  // tamaño de la hoja = tamaño de la etiqueta del rollo (ancho x alto en mm)
+  const [w, h] = (String(cfg.etiqueta_tamano || "100x150").match(/\d+(?:[.,]\d+)?/g) || ["100", "150"]).map((x) => parseFloat(x.replace(",", ".")));
+  // (@page sin nombre: solo mientras se imprime la etiqueta; luego se quita para no afectar a los listados)
+  $("#estiloEtiqueta")?.remove();
+  const st = document.createElement("style"); st.id = "estiloEtiqueta";
+  st.textContent = `@page{size:${w}mm ${h}mm;margin:0} @media print{body.imp-etiqueta #zonaImpresion img{width:${w}mm;height:${h - 0.5}mm}}`;
+  document.head.appendChild(st);
+  imprimir("imp-etiqueta", () => st.remove());
 }
-function imprimir(modo){
+function imprimir(modo, despues){
   document.body.classList.add(modo);
-  const fin = () => { document.body.classList.remove(modo); window.removeEventListener("afterprint", fin); };
+  const fin = () => { document.body.classList.remove(modo); window.removeEventListener("afterprint", fin); despues?.(); };
   window.addEventListener("afterprint", fin);
   window.print(); setTimeout(fin, 1000);
 }

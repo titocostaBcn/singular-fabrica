@@ -258,6 +258,8 @@ En los tres casos, al pulsar sale **«¿Quién lo ha empaquetado?»**: toca tu n
 
 Si aparece un error de GLS, el pedido queda en la pestaña Sin etiqueta. No lo envíes sin etiqueta: avisa a Tito.
 
+**Impresora de etiquetas (Honeywell PC42E-T).** El programa manda la etiqueta en una hoja de 10 × 15 cm sin márgenes: sale una sola etiqueta, del tamaño del rollo, sin copias en blanco ni la dirección de la web. Si el rollo es de otra medida, Tito la cambia en el ajuste `etiqueta_tamano` (por ejemplo 100x100). Para que imprima sola, sin elegir impresora ni pulsar Imprimir, el ordenador de Expedición abre el programa con un acceso directo de Chrome preparado para imprimir directo en la Honeywell (lo deja montado Tito). Con ese acceso directo, todo lo que se imprima desde ese ordenador sale por la Honeywell.
+
 **Si te has equivocado** y un pedido ha llegado a Empaquetar sin estar terminado, pulsa **↶** en su tarjeta: las prendas con vinilo vuelven a Producción.
 
 **Otros envíos (sin GLS)**
@@ -375,6 +377,7 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 | He apuntado prendas hechas de más | En Producción pulsa −1 tantas veces como haga falta. |
 | No sale el botón de Etiqueta GLS | El destino va por Otros envíos (Canarias, Reino Unido, fuera de la UE…). Es correcto. |
 | La etiqueta no se ha impreso | En la tarjeta pulsa Reimprimir. Si no aparece, mira la pestaña Sin etiqueta y avisa a Tito. |
+| La etiqueta sale enorme, en varias etiquetas, o salen etiquetas en blanco | Recarga la página (Ctrl + F5). Si sigue, en la impresora: tamaño de etiqueta 10 × 15 cm y calibrar el rollo (apartado 10, Impresora de etiquetas). |
 | Error de GLS al pedir la etiqueta | No envíes el paquete. Avisa a Tito con el número de pedido. |
 | He elegido mal quién lo ha hecho | Avisa a Tito para corregirlo en el Histórico. |
 | La talla pone «Sin talla» | Revisa el pedido en Shopify antes de hacerlo. |
