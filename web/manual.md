@@ -33,7 +33,7 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 | Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. **Prendas sin vinilo**: los productos que no se cortan (como «cupido»), con ✔ Preparadas, Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas, ✔ Han llegado todas (el modelo entero) y ✔ Ha llegado todo. |
 | Expedición | **Revisar stock**: lo primero de la mañana, las prendas del día por modelo y talla, con ✔ Hay y ✖ No hay (las de estampar) y ✔ Preparadas (las sin vinilo). **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
-En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, los pedidos de Empaquetar se reparten solos por turnos entre Dania e Irene, y Dania (Responsable de Expedición) puede recuperar los de Irene (apartado 6). En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
+En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, los pedidos de Empaquetar se reparten solos por turnos entre las personas de Expedición que están (Dania, Irene y las que se den de alta), y Dania (Responsable de Expedición) puede recuperar los de cualquiera de ellas (apartado 6). En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
 
 **Botones de la parte de arriba**
 
@@ -188,10 +188,11 @@ Encima de la lista de pedidos hay una barra con: **Todos · Libres · Dania · I
   - **↩ Pasar a mí los marcados**: primero se marca la casilla «Marcar» en los pedidos de Irene que quiera quedarse.
 - **Uno a uno**: los pedidos de Irene salen más abajo, en gris, con «👤 Es de Irene» y el botón **↩ Pasar a mí**, que se lo queda al momento. El botón azul **↓ Ver los pedidos de Irene** de la barra de arriba baja directamente hasta ellos.
 - Los pedidos recuperados pasan a nombre de Dania. Irene ya no los ve como suyos.
-- El reparto empieza solo cuando Dania e Irene tienen las dos su usuario, con esos nombres exactos. Mientras tanto, los pedidos llegan libres como antes.
-- **Pausar el reparto a Irene** (porque se ha ido, porque trabaja menos horas o porque hoy no viene): Dania pulsa **⏸ Pausar reparto a Irene**. Desde ese momento todos los pedidos nuevos le llegan a Dania, hasta que pulse **▶ Volver a repartir a Irene**. Lo que Irene ya tenía sigue siendo suyo. Si Dania lo quiere, lo recupera con «↩ Pasar a mí todos».
-- Mientras está en pausa, Irene ve arriba de Empaquetar «⏸ Ahora no te llegan pedidos nuevos: tu reparto está en pausa». Cuando vuelva, avisa a Dania para que pulse «▶ Volver a repartir».
-- La lista del turno está en los ajustes (`reparto_expedicion` = «Dania, Irene»).
+- **Entran en el reparto todas las personas de Expedición.** Al dar de alta en 👥 a alguien nuevo con el puesto Expedición, ya empieza a recibir pedidos: se reparte entre 2, 3 o 4, las que haya. El reparto empieza cuando hay al menos dos con usuario. Mientras tanto, los pedidos llegan libres.
+- **Sacar a alguien del reparto mientras no está** (se ha ido, trabaja menos horas o hoy no viene): Dania pulsa **⏸ Pausar reparto a …** en la barra de esa persona. Tito también puede hacerlo en 👥, con el botón **▶ En el reparto · ⏸ Sacar del reparto** de cada persona de Expedición. Desde ese momento, los pedidos nuevos se reparten entre las que están: entre 3, 2 o solo Dania. Con **▶ Volver a repartir** vuelve a entrar. Lo que ya tenía sigue siendo suyo, y Dania lo puede recuperar con «↩ Pasar a mí».
+- Mientras está fuera del reparto, esa persona ve arriba de Empaquetar «⏸ Ahora no te llegan pedidos nuevos: tu reparto está en pausa». Cuando vuelva, avisa a Dania para que pulse «▶ Volver a repartir».
+- Dania tiene una barra para cada compañera de Expedición, con sus pedidos, «↓ Ver los pedidos de …», «↩ Pasar a mí todos» y «↩ Pasar a mí los marcados». Funciona igual con Irene que con cualquier persona nueva.
+- El orden del turno sale de los ajustes (`reparto_expedicion` = «Dania, Irene»). Las personas nuevas van detrás, por orden alfabético.
 
 **Si compartís un ordenador**, cuando llegues al PC toca tu nombre en la barra, y al irte toca Todos. En una tablet personal puedes dejar tu nombre marcado: la tablet lo recuerda.
 

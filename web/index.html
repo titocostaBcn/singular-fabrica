@@ -66,6 +66,8 @@
   .usu .acc{font-size:13px;color:var(--muted);margin-left:auto}
   .usu .bots,.usu-nuevo .bots{display:flex;gap:8px;flex-wrap:wrap}
   .usu .bots button,.usu-nuevo .bots button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-weight:600}
+  .usu .enrep{border:2px solid #1b7f4b;color:#1b7f4b;background:#eef7f1;border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px}
+  .usu .enrep.fuera{border-color:#c77700;color:#a35f00;background:#fff4e0}
   .usu .bots .peligro{color:var(--err);border-color:var(--err)}
   .usu .bots .go,.usu-nuevo .bots .go{border:0;background:#1b7f4b;color:#fff}
   .usu input,.usu-nuevo input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:0}
@@ -794,7 +796,8 @@ const PUESTOS = {
 };
 let YO = { admin: false, puesto: null, nombre: null, jefe: false };
 // Reparto de Expedición: fab_config.reparto_expedicion = «Dania, Irene» (en el orden del turno)
-function listaReparto(c){ return String(c?.reparto_expedicion ?? "").split(",").map((x) => x.trim()).filter(Boolean); }
+let LISTA_REP = null; // la da la BD (fab_lista_reparto): todas las de Expedición con usuario, en orden de turno
+function listaReparto(c){ if (LISTA_REP && !DEMO) return LISTA_REP; return String(c?.reparto_expedicion ?? "").split(",").map((x) => x.trim()).filter(Boolean); }
 function pausadosReparto(c){ return String(c?.reparto_pausados ?? "").split(",").map((x) => x.trim()).filter(Boolean); }
 const modoPuesto = () => !YO.admin && (YO.puesto === "produccion" || YO.puesto === "expedicion");
 async function cargarYo(){
@@ -881,7 +884,7 @@ function barraRecuperar(){
       ${ids.length ? `<button class="ir" data-irajeno="${esc(n)}">↓ Ver los pedidos de ${esc(n)}</button>
       <button data-recmarc="${esc(n)}" ${k ? "" : "disabled"}>↩ Pasar a mí los marcados${k ? ` (${k})` : ""}</button>
       <button class="go" data-rectodos="${esc(n)}">${recTodosPend === n ? `¿Seguro? Pulsa otra vez para quedarte los ${ids.length}` : "↩ Pasar a mí todos"}</button>` : ""}
-      <span class="recnota">${p ? `Los pedidos nuevos te llegan todos a ti hasta que pulses «▶ Volver a repartir a ${esc(n)}». ` : ""}${ids.length ? `Sus pedidos están más abajo, en gris: en cada uno tienes «↩ Pasar a mí». Para pasar varios, márcalos con «Marcar» y pulsa «Pasar a mí los marcados».` : ""}</span></div>`;
+      <span class="recnota">${p ? `Los pedidos nuevos se reparten entre las demás hasta que pulses «▶ Volver a repartir a ${esc(n)}». ` : ""}${ids.length ? `Sus pedidos están más abajo, en gris: en cada uno tienes «↩ Pasar a mí». Para pasar varios, márcalos con «Marcar» y pulsa «Pasar a mí los marcados».` : ""}</span></div>`;
   }).join("");
 }
 async function pausarReparto(n, pausa){
@@ -889,8 +892,9 @@ async function pausarReparto(n, pausa){
   if (DEMO){ const l = pausadosReparto(Demo.cfg).filter((x) => x !== n); if (pausa) l.push(n); Demo.cfg.reparto_pausados = l.join(", "); r = { ok: true }; }
   else { const { error } = await sb.rpc("fab_pausar_reparto", { p_nombre: n, p_pausa: pausa }); r = error ? { ok: false, error: error.message } : { ok: true }; }
   if (!r.ok){ toast(r.error, true); return; }
-  toast(pausa ? `${n} en pausa: los pedidos nuevos te llegan a ti` : `Se vuelve a repartir a ${n}`);
+  toast(pausa ? `${n} fuera del reparto: los pedidos nuevos se reparten entre las demás` : `${n} vuelve al reparto`);
   await cargar();
+  if (!$("#usuM").classList.contains("hidden")) pintarUsuarios();
 }
 async function recuperar(de, ids){
   let r;
@@ -1207,6 +1211,7 @@ async function cargar(){
       sb.from("fab_config").select("clave,valor"),
       sb.from("fab_cortados").select("clave,hechas"),
       sb.from("fab_modelos").select("titulo,color_vinilo"),
+      sb.rpc("fab_lista_reparto").then((x) => { if (!x.error && Array.isArray(x.data)) LISTA_REP = x.data; }, () => {}),
     ]);
     modelos = new Map((cm.data ?? []).filter((x) => x.color_vinilo).map((x) => [x.titulo, x.color_vinilo]));
     cortados = new Map((ct.data ?? []).map((x) => [x.clave, x.hechas]));
@@ -2970,7 +2975,7 @@ function pintarUsuarios(){
   $("#usuLista").innerHTML = U.lista.map((u, i) => `<div class="usu">
     <div class="fila1"><span class="nom">${esc(u.nombre || u.email.split("@")[0])}</span>${u.admin ? `<span class="b-carril">Administrador</span>` : ""}${u.jefe && !u.admin ? `<span class="b-carril">⭐ Responsable</span>` : ""}${u.email === U.yo ? `<span class="b-carril">Tú</span>` : ""}<span class="acc">Último acceso: ${fecha(u.ultimo_acceso)}</span></div>
     <div class="mail">${esc(u.email)}</div>
-    ${u.admin ? `<div class="puestos"><span class="nota">Administrador: ve todo el programa y gestiona los usuarios</span></div>` : `<div class="puestos">${chipsPuestos(u.puesto ?? "administracion", `name="pu${i}" data-usupuesto="${i}"`)}${u.puesto === "expedicion" ? `<label title="Reparte el trabajo de Expedición: pausa y reanuda el reparto y recupera pedidos de las compañeras"><input type="checkbox" data-usujefe="${i}" ${u.jefe ? "checked" : ""}> ⭐ Responsable de Expedición</label>` : ""}</div>`}
+    ${u.admin ? `<div class="puestos"><span class="nota">Administrador: ve todo el programa y gestiona los usuarios</span></div>` : `<div class="puestos">${chipsPuestos(u.puesto ?? "administracion", `name="pu${i}" data-usupuesto="${i}"`)}${u.puesto === "expedicion" && u.nombre ? (pausadosReparto(cfg).includes(u.nombre) ? `<button type="button" class="enrep fuera" data-usurep="${i}" data-valor="0" title="No le llegan pedidos nuevos. Pulsa cuando vuelva">⏸ Fuera del reparto · ▶ Volver a repartirle</button>` : `<button type="button" class="enrep" data-usurep="${i}" data-valor="1" title="Le llegan pedidos de Empaquetar por turnos. Pulsa cuando no esté">▶ En el reparto · ⏸ Sacar del reparto</button>`) : ""}${u.puesto === "expedicion" ? `<label title="Reparte el trabajo de Expedición: pausa y reanuda el reparto y recupera pedidos de las compañeras"><input type="checkbox" data-usujefe="${i}" ${u.jefe ? "checked" : ""}> ⭐ Responsable de Expedición</label>` : ""}</div>`}
     ${U.editando === i ? `<form class="bots" data-usuclave="${i}" novalidate autocomplete="off"><input id="ucClave" type="text" placeholder="Contraseña nueva (mínimo 8)" autocomplete="new-password" style="flex:1"><button type="button" data-usugen="1">Generar</button><button type="submit" class="go">Guardar</button><button type="button" data-usucancel="1">Cancelar</button></form>`
       : `<div class="bots"><button type="button" data-usueditar="${i}">🔑 Poner contraseña</button>${u.admin || u.email === U.yo ? "" : `<button type="button" class="peligro" data-usuquitar="${i}">${U.quitando === i ? "¿Seguro? Pulsa otra vez" : "Quitar acceso"}</button>`}</div>`}
   </div>`).join("") || `<p class="ayuda">No hay usuarios.</p>`;
@@ -3006,6 +3011,7 @@ $("#usuNuevo").onsubmit = async (e) => {
 };
 $("#usuLista").addEventListener("click", async (e) => {
   const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.usurep){ const u = U.lista[Number(b.dataset.usurep)]; await pausarReparto(u.nombre, b.dataset.valor === "1"); return; }
   if (b.dataset.usueditar){ U.editando = Number(b.dataset.usueditar); U.quitando = null; pintarUsuarios(); }
   else if (b.dataset.usucancel){ U.editando = null; pintarUsuarios(); }
   else if (b.dataset.usugen){ $("#ucClave").value = claveFacil(); }
