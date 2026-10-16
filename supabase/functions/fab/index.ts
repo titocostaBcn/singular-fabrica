@@ -1,7 +1,7 @@
 // fab v11 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (vinilo) → estampar → empaquetar, y sin_stock; el pedido (trigger en BD) toma el de su prenda más atrasada.
 // Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir ·
-// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · ventas · meta · diag · prueba_gls
+// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · ventas · enviados · meta · diag · prueba_gls
 // v7: recoge los cambios hechos en Shopify en pedidos ya importados (talla/prenda, cantidad, dirección, nota, envío).
 // v8 (ola 1): Sin stock marcado a mano manda sobre el stock de Shopify; prendas quitadas con vinilo asignado lo devuelven al almacén;
 //     Shopify (apagado hasta tener permiso de escritura): enviado en Otros envíos y metacampos estampado_por / empaquetado_por.
@@ -583,7 +583,7 @@ async function sincronizarVentas(desde: string, hasta: string) {
   const fin = sumarDia(hasta, 1);
   const q = `created_at:>='${desde}T00:00:00${desfaseMadrid(desde)}' created_at:<'${fin}T00:00:00${desfaseMadrid(fin)}'`;
   const dias = new Map<string, any>(), prods = new Map<string, any>();
-  for (let d = desde; d <= hasta; d = sumarDia(d, 1)) dias.set(d, { dia: d, pedidos: 0, unidades: 0, total: 0, devuelto: 0, envio: 0, iva: 0, descuentos: 0, cancelados: 0, pedidos_nuevos: 0, pedidos_recurrentes: 0, ventas_nuevos: 0, ventas_recurrentes: 0 });
+  for (let d = desde; d <= hasta; d = sumarDia(d, 1)) dias.set(d, { dia: d, pedidos: 0, unidades: 0, total: 0, devuelto: 0, envio: 0, iva: 0, descuentos: 0, cancelados: 0, enviados: 0, pedidos_nuevos: 0, pedidos_recurrentes: 0, ventas_nuevos: 0, ventas_recurrentes: 0 });
   const num = (m: any) => Number(m?.shopMoney?.amount ?? 0);
   let after: string | null = null, leidos = 0;
   do {
@@ -626,6 +626,9 @@ async function sincronizarVentas(desde: string, hasta: string) {
     }
     after2 = r.orders.pageInfo.hasNextPage ? r.orders.pageInfo.endCursor : null;
   } while (after2);
+  // Pedidos enviados (preparados) por día: el día de su primer envío en Shopify
+  const env = await contarEnviados(desde, hasta);
+  for (const [d, n] of env) { const v = dias.get(d); if (v) v.enviados = n; }
   const r2 = (x: number) => Math.round(x * 100) / 100;
   const filas = [...dias.values()].map((v) => ({ ...v, total: r2(v.total), devuelto: r2(v.devuelto), envio: r2(v.envio), iva: r2(v.iva), descuentos: r2(v.descuentos), ventas_nuevos: r2(v.ventas_nuevos), ventas_recurrentes: r2(v.ventas_recurrentes), actualizado_at: new Date().toISOString() }));
   const { error: e1 } = await sb.from("fab_ventas_dia").upsert(filas, { onConflict: "dia" });
@@ -638,6 +641,29 @@ async function sincronizarVentas(desde: string, hasta: string) {
     if (error) throw new Error("ventas productos: " + error.message);
   }
   return { desde, hasta, dias: filas.length, pedidos: filas.reduce((s, f) => s + f.pedidos, 0), leidos, reembolsos, productos: lp.length };
+}
+
+// Pedidos enviados por día (= «preparados»): cuenta cada pedido el día de su PRIMER envío (fulfillment) en Shopify,
+// esté enviado entero o en parte; no cuenta envíos cancelados ni pedidos de prueba. Busca entre los pedidos creados
+// hasta 120 días antes del rango (un pedido no tarda más en salir). Solo lectura.
+async function contarEnviados(desde: string, hasta: string) {
+  const ini = sumarDia(desde, -120), fin = sumarDia(hasta, 1);
+  const q = `(fulfillment_status:shipped OR fulfillment_status:partial) created_at:>='${ini}T00:00:00${desfaseMadrid(ini)}' created_at:<'${fin}T00:00:00${desfaseMadrid(fin)}'`;
+  const cuenta = new Map<string, number>();
+  let after: string | null = null;
+  do {
+    const r: any = await gqlReintento(`query Env($q: String!, $after: String) { orders(first: 100, after: $after, query: $q) {
+      pageInfo { hasNextPage endCursor } nodes { test fulfillments(first: 10) { createdAt status } } } }`, { q, after });
+    for (const o of r.orders.nodes) {
+      if (o.test) continue;
+      const fs = (o.fulfillments ?? []).filter((f: any) => f.status !== "CANCELLED" && f.status !== "ERROR" && f.status !== "FAILURE").map((f: any) => f.createdAt).sort();
+      if (!fs.length) continue;
+      const d = diaMadrid(fs[0]);
+      if (d >= desde && d <= hasta) cuenta.set(d, (cuenta.get(d) ?? 0) + 1);
+    }
+    after = r.orders.pageInfo.hasNextPage ? r.orders.pageInfo.endCursor : null;
+  } while (after);
+  return cuenta;
 }
 
 // Inversión en Meta Ads por día → fab_meta_dia. Windsor.ai (vault windsor_api_key) o la API de Meta (vault meta_token + meta_cuenta).
@@ -758,6 +784,20 @@ Deno.serve(async (req) => {
         const d = await gql(`query Q($q: String!) { shopifyqlQuery(query: $q) { tableData { columns { name dataType } rows } parseErrors } }`, { q: String(body.q ?? "FROM sales SHOW total_sales SINCE -1d UNTIL today") });
         return json({ ok: true, d });
       } catch (e) { return json({ ok: false, error: String((e as Error).message) }); }
+    }
+    if (accion === "enviados") {
+      // Solo la tarea programada: rellena fab_ventas_dia.enviados de un rango (histórico), sin tocar el resto de columnas
+      if (usuario !== "cron") return json({ ok: false, error: "no autorizado" }, 403);
+      const desde = String(body.desde), hasta = String(body.hasta);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta) || desde > hasta) return json({ ok: false, error: "fechas no válidas" }, 400);
+      const env = await contarEnviados(desde, hasta);
+      let total = 0, dias = 0;
+      for (let d = desde; d <= hasta; d = sumarDia(d, 1)) {
+        const n = env.get(d) ?? 0; total += n;
+        const { data } = await sb.from("fab_ventas_dia").update({ enviados: n }).eq("dia", d).select("dia");
+        if (data?.length) dias++;
+      }
+      return json({ ok: true, desde, hasta, enviados: total, dias });
     }
     if (accion === "meta") {
       // Solo la tarea programada: rehace la inversión en Meta Ads de un rango (para cargar el histórico)

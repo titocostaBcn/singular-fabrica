@@ -1908,9 +1908,9 @@ async function cargarProductos(){
   catch { G.prods = []; }
 }
 function sumaVentas(d0, d1){
-  const r = { neto: 0, pedidos: 0, unidades: 0, devuelto: 0, dias: 0, gasto: 0, metaDias: 0, compras: 0, valorMeta: 0, nuevos: 0, recurrentes: 0, vNuevos: 0, vRec: 0 };
+  const r = { neto: 0, pedidos: 0, enviados: 0, unidades: 0, devuelto: 0, dias: 0, gasto: 0, metaDias: 0, compras: 0, valorMeta: 0, nuevos: 0, recurrentes: 0, vNuevos: 0, vRec: 0 };
   for (const v of G.ventas) if (v.dia >= d0 && v.dia <= d1){
-    r.neto += neto(v); r.pedidos += v.pedidos; r.unidades += v.unidades; r.devuelto += Number(v.devuelto); r.dias++;
+    r.neto += neto(v); r.pedidos += v.pedidos; r.enviados += v.enviados ?? 0; r.unidades += v.unidades; r.devuelto += Number(v.devuelto); r.dias++;
     r.nuevos += v.pedidos_nuevos ?? 0; r.recurrentes += v.pedidos_recurrentes ?? 0; r.vNuevos += Number(v.ventas_nuevos ?? 0); r.vRec += Number(v.ventas_recurrentes ?? 0);
   }
   for (const m of G.meta) if (m.dia >= d0 && m.dia <= d1){ r.gasto += Number(m.gasto); r.metaDias++; r.compras += m.compras; r.valorMeta += Number(m.valor_compras); }
@@ -2081,6 +2081,7 @@ function panelHTML(){
       <div class="kpis">
         ${kpi(eur(a.neto), "Facturación", delta(a.neto, b.neto) + `<span class="lg"><br>IVA y envío incluidos, menos devoluciones</span>`)}
         ${kpi(ent(a.pedidos), "Pedidos", delta(a.pedidos, b.pedidos))}
+        ${kpi(ent(a.enviados), "Pedidos enviados", (b.enviados ? delta(a.enviados, b.enviados) : "") + `<span class="lg"><br>preparados y marcados como enviados en Shopify</span>`)}
         ${kpi(eur(ticket, 2), "Ticket medio", delta(ticket, ticketB))}
         ${kpi(ent(a.unidades), "Prendas vendidas", a.pedidos ? `${(a.unidades / a.pedidos).toFixed(1).replace(".", ",")} por pedido` : "")}
         ${hayMeta ? kpi(eur(a.gasto), "Inversión Meta Ads", `${a.neto ? Math.round(a.gasto / a.neto * 100) : 0}% de la facturación`) : kpi("—", "Inversión Meta Ads", ultMeta ? `último dato: ${diaCorto(ultMeta)}` : "sin conectar todavía")}
@@ -2172,7 +2173,7 @@ function demoGerencia(){
     const ped = Math.round((38 + 30 * rnd()) * temporada * (1 + .35 * anos) * (d === hoy ? new Date().getHours() / 24 : 1));
     const tot = ped * (108 + 30 * rnd());
     const rec = Math.round(ped * (.32 + .12 * rnd()));
-    G.ventas.push({ dia: d, pedidos: ped, unidades: Math.round(ped * (1.5 + .4 * rnd())), total: tot, devuelto: tot * .03 * rnd(), pedidos_nuevos: ped - rec, pedidos_recurrentes: rec, ventas_nuevos: tot / Math.max(ped, 1) * (ped - rec) * .95, ventas_recurrentes: tot / Math.max(ped, 1) * rec * 1.1, actualizado_at: new Date().toISOString() });
+    G.ventas.push({ dia: d, pedidos: ped, enviados: Math.round(ped * (0.85 + .2 * rnd())), unidades: Math.round(ped * (1.5 + .4 * rnd())), total: tot, devuelto: tot * .03 * rnd(), pedidos_nuevos: ped - rec, pedidos_recurrentes: rec, ventas_nuevos: tot / Math.max(ped, 1) * (ped - rec) * .95, ventas_recurrentes: tot / Math.max(ped, 1) * rec * 1.1, actualizado_at: new Date().toISOString() });
     if (d >= "2025-01-01") G.meta.push({ dia: d, gasto: Math.round(tot * (.18 + .1 * rnd())), compras: Math.round(ped * .6), valor_compras: tot * .7 });
   }
   const titulos = ["Blazer “Calavera” azul", "Camisa “Why not?” azul", "Blazer “estudio 54”", "Sudadera “A star is born”", "Pantalón “cupido” crema", "Jersey “volume”", "Camisa “Why not?” blanca", "Blazer “Army” black", "Vaquero “leopard”", "Blusa “red heart”", "Chaqueta “Rock”", "Camiseta “Singular”"];
