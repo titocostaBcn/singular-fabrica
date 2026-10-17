@@ -34,8 +34,14 @@ const json = (b: unknown, status = 200) =>
 
 // ───────── utilidades ─────────
 async function secret(name: string): Promise<string | null> {
-  const { data } = await sb.rpc("read_secret", { p_name: name });
-  return (data as string) ?? null;
+  // Reintenta: el 17-oct a las 8:00 la lectura falló una vez al arrancar (devolvió vacío → 401 y no se importó)
+  for (let i = 0; i < 3; i++) {
+    const { data, error } = await sb.rpc("read_secret", { p_name: name });
+    if (!error && data) return data as string;
+    if (!error && i > 0) return null; // de verdad no existe
+    await new Promise((r) => setTimeout(r, 700 * (i + 1)));
+  }
+  return null;
 }
 async function config(): Promise<Record<string, string>> {
   const { data, error } = await sb.from("fab_config").select("clave,valor");
@@ -746,7 +752,14 @@ Deno.serve(async (req) => {
     if (accion === "importar") {
       // El cron llama a 2 horas UTC (verano/invierno); solo actúa si en Madrid es la hora indicada (?hora=8)
       const hora = url.searchParams.get("hora") ?? (url.searchParams.get("solo7") === "1" ? "7" : null);
-      if (usuario === "cron" && hora && horaMadrid() !== Number(hora)) return json({ ok: true, omitido: `no son las ${hora} en Madrid` });
+      // Antes de esa hora no hace nada; a esa hora importa; MÁS TARDE solo importa si hoy aún no hay ninguna importación buena
+      // (red de seguridad: el cron llama también una y dos horas después por si la de las 8 falló)
+      if (usuario === "cron" && hora && horaMadrid() !== Number(hora)) {
+        if (horaMadrid() < Number(hora)) return json({ ok: true, omitido: `no son las ${hora} en Madrid` });
+        const hoy0 = `${diaMadrid(new Date().toISOString())}T00:00:00${desfaseMadrid(diaMadrid(new Date().toISOString()))}`;
+        const { count } = await sb.from("fab_eventos").select("tipo", { count: "exact", head: true }).eq("tipo", "importacion").gte("created_at", hoy0);
+        if ((count ?? 0) > 0) return json({ ok: true, omitido: "ya importado hoy" });
+      }
       try {
         const res = await importar(usuario);
         let ventas: unknown = null;

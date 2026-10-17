@@ -51,7 +51,7 @@ En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. 
 
 **Avisos de colores en la franja superior**
 
-- **Franja roja «ERROR: no actualizado hoy»**: la actualización de las 8:00 ha fallado. Pulsa ↻ Importar. Si vuelve a salir, avisa a Tito.
+- **Franja roja «ERROR: no actualizado hoy»**: la actualización de las 8:00 ha fallado. El programa lo vuelve a intentar solo a las 9:00 y a las 10:00. Si tienes prisa, pulsa ↻ Importar **una vez**: el botón pone «Importando…» y tarda unos segundos; cuando acaba, sale «✔ Importado» y la franja desaparece. Si vuelve a salir, avisa a Tito.
 - **Franja roja «La hora de este ordenador está mal»**: el reloj del ordenador va adelantado o atrasado y por eso salen todos los pedidos a 0. En Windows: Configuración → Hora e idioma → activa «Establecer la hora automáticamente» y pulsa «Sincronizar ahora». Después recarga la página.
 - **Franja amarilla «MODO PRUEBAS»**: las etiquetas de GLS todavía son de prueba y no sirven para enviar. Desaparecerá cuando el programa funcione de verdad.
 
