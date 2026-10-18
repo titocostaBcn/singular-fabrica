@@ -47,6 +47,7 @@ En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. 
 | ↻ Importar | Trae ahora los pedidos nuevos de la tienda y los cambios de los que ya están, sin esperar a mañana. |
 | 👥 | Solo le sale al administrador: dar de alta a las personas, ponerles contraseña o quitarles el acceso (ver arriba). |
 | 🔑 | Cambia la contraseña con la que se entra: escribe la nueva dos veces (mínimo 8 caracteres) y pulsa Guardar. Si ese usuario lo usáis varias, avisa a las demás. |
+| 🔎 | **Buscar un pedido** (todas las pantallas). Escribe el número del pedido, el nombre o el email de la clienta y pulsa Buscar. Busca en todos los pedidos de Shopify, también los ya enviados, y enseña: en qué punto está (en producción, sin stock, listo para empaquetar, preparado, enviado y cuándo, recogido, cancelado…), las prendas con su talla, personalización y estado, la dirección y el teléfono, el número de seguimiento y si la clienta es de **primer pedido** o **cuántos pedidos lleva** y cuánto ha gastado. |
 | Salir | Cierra la sesión en este ordenador y vuelve a la pantalla de entrada. No afecta a los demás ordenadores ni móviles donde esté abierto el mismo usuario. |
 
 **Avisos de colores en la franja superior**

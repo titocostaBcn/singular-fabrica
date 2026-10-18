@@ -1,7 +1,7 @@
 // fab v11 — Gestión de producción Singular Wardrobe
 // Estados por prenda: (pendiente) → cortar (vinilo) → estampar → empaquetar, y sin_stock; el pedido (trigger en BD) toma el de su prenda más atrasada.
 // Importación diaria 8:00 Madrid (cron fab_importar_0800). Acciones: importar · actualizar · revisar_cambios · lineas · producido · impresa · reimprimir ·
-// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · ventas · enviados · meta · diag · prueba_gls
+// shopify_otros · shopify_personas · soy_admin · usuarios · usuario_guardar · usuario_quitar · ventas · enviados · buscar · meta · diag · prueba_gls
 // v7: recoge los cambios hechos en Shopify en pedidos ya importados (talla/prenda, cantidad, dirección, nota, envío).
 // v8 (ola 1): Sin stock marcado a mano manda sobre el stock de Shopify; prendas quitadas con vinilo asignado lo devuelven al almacén;
 //     Shopify (apagado hasta tener permiso de escritura): enviado en Otros envíos y metacampos estampado_por / empaquetado_por.
@@ -910,6 +910,35 @@ Deno.serve(async (req) => {
       await sb.from("fab_pedidos").update({ etiqueta_impresa: true, etiqueta_impresa_at: new Date().toISOString() }).eq("order_id", order_id);
       await evento(order_id, "etiqueta_impresa", null, usuario);
       return json({ ok: true });
+    }
+    if (accion === "buscar") {
+      // Buscador de pedidos para todas las pantallas (18-oct, pedido de Tito): por nº de pedido, nombre o email.
+      // Shopify (solo lectura) da el pedido, la clienta y cuántos pedidos lleva; el taller añade en qué punto está.
+      const q = String(body.q ?? "").trim().slice(0, 80);
+      if (q.length < 2) return json({ ok: false, error: "Escribe al menos 2 letras o el número del pedido" }, 400);
+      const num = q.replace(/^#/, "");
+      const busq = /^\d{3,7}$/.test(num) ? `name:#${num} OR name:${num}` : q.replace(/["\\]/g, " ");
+      const d: any = await gqlReintento(`query Buscar($q: String!) { orders(first: 15, query: $q, sortKey: CREATED_AT, reverse: true) { nodes {
+        id name createdAt cancelledAt closedAt displayFinancialStatus displayFulfillmentStatus note tags test
+        totalPriceSet { shopMoney { amount } } shippingLine { title }
+        shippingAddress { name address1 address2 zip city province country phone }
+        customer { displayName email phone numberOfOrders amountSpent { amount } }
+        lineItems(first: 30) { nodes { title variantTitle quantity customAttributes { key value } } }
+        fulfillments(first: 5) { createdAt status trackingInfo { company number url } } } } }`, { q: busq });
+      const nodos = (d.orders?.nodes ?? []).filter((o: any) => !o.test);
+      const ids = nodos.map((o: any) => Number(String(o.id).split("/").pop()));
+      const { data: taller } = ids.length ? await sb.from("fab_pedidos").select("order_id, estado, estado_at, asignado_a, gls_codbarras, gls_modo, envio_tipo, envio_info, entregado_at, enviado_fuera, direccion1, cancelado, empaquetado_por, empaquetado_at, fab_lineas(titulo, variante, cantidad, estado, personalizacion)").in("order_id", ids) : { data: [] };
+      const porId = new Map((taller ?? []).map((t: any) => [Number(t.order_id), t]));
+      const pedidos = nodos.map((o: any) => {
+        const id = Number(String(o.id).split("/").pop());
+        return { id, nombre: o.name, fecha: o.createdAt, cancelado: o.cancelledAt, archivado: o.closedAt, pago: o.displayFinancialStatus, envio: o.displayFulfillmentStatus,
+          nota: o.note, etiquetas: o.tags, total: Number(o.totalPriceSet?.shopMoney?.amount ?? 0), metodo: o.shippingLine?.title ?? null,
+          direccion: o.shippingAddress, clienta: o.customer ? { nombre: o.customer.displayName, email: o.customer.email, telefono: o.customer.phone, pedidos: Number(o.customer.numberOfOrders ?? 0), gastado: Number(o.customer.amountSpent?.amount ?? 0) } : null,
+          prendas: o.lineItems.nodes.map((l: any) => ({ titulo: l.title, variante: l.variantTitle, cantidad: l.quantity, extra: (l.customAttributes ?? []).filter((a: any) => a.value && !a.key.startsWith("_")) })),
+          envios: (o.fulfillments ?? []).filter((f: any) => f.status !== "CANCELLED").map((f: any) => ({ fecha: f.createdAt, seguimiento: (f.trackingInfo ?? []).map((t: any) => ({ empresa: t.company, numero: t.number, url: t.url })) })),
+          taller: porId.get(id) ?? null };
+      });
+      return json({ ok: true, q, pedidos });
     }
     if (accion === "reimprimir") {
       const { data: p } = await sb.from("fab_pedidos").select().eq("order_id", order_id).single();

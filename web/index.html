@@ -40,6 +40,28 @@
   #login button.olvido{background:none;color:var(--muted);padding:2px;font-weight:500;text-decoration:underline;font-size:14px;justify-self:center}
   #claveM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
   #claveM.hidden{display:none}
+  #buscaM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;z-index:65;padding:16px;overflow:auto}
+  #buscaM .caja{background:var(--panel);border-radius:16px;padding:18px;max-width:760px;width:100%;display:grid;gap:12px;margin-top:4vh;box-sizing:border-box;min-width:0}
+  #buscaM .caja *{box-sizing:border-box;min-width:0;overflow-wrap:anywhere}
+  @media (max-width:640px){ #buscaM{padding:8px} #buscaM .caja{padding:12px;margin-top:0} #buscaM .bp-grid{grid-template-columns:1fr} #buscaM .bp-pr{flex-wrap:wrap} }
+  #buscaM .cab{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  #buscaM form{display:flex;gap:8px}
+  #buscaM input{flex:1;font:inherit;font-size:18px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;min-width:0}
+  #buscaM form button{border:0;background:var(--ink);color:#fff;border-radius:12px;padding:12px 18px;font-weight:700;font-size:16px}
+  #buscaM .bp{border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px;background:#fff}
+  #buscaM .bp-cab{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
+  #buscaM .bp-num{font-size:24px;font-weight:900}
+  #buscaM .bp-est{border-radius:999px;padding:4px 12px;font-weight:800;font-size:14px;background:#eee}
+  #buscaM .bp-est.verde{background:#e5f4ec;color:#1b7f4b} #buscaM .bp-est.rojo{background:#fde8e8;color:#b42318} #buscaM .bp-est.naranja{background:#fff1dc;color:#a35f00} #buscaM .bp-est.azul{background:#e6eefc;color:#2453a6}
+  #buscaM .bp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  #buscaM .bp-box{background:var(--bg,#f6f4f0);border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.45}
+  #buscaM .bp-box b.t{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
+  #buscaM .bp-pr{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}
+  #buscaM .bp-pr:first-of-type{border-top:0}
+  #buscaM .bp-pr small{display:block;color:var(--muted)}
+  #buscaM .bp-pr .e{white-space:nowrap;font-weight:700;font-size:13px}
+  #buscaM .bp-nota{font-size:14px;background:#fffbea;border:1px dashed #e0c870;border-radius:10px;padding:8px 10px}
+  #buscaM .vacio{padding:20px 0}
   #impM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
   #impM .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:440px;width:100%;display:grid;gap:10px}
   #impM .op{display:grid;gap:2px;text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:700}
@@ -590,6 +612,7 @@
       <div class="vistas"><button data-vista="gerencia">Gerencia</button><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
       <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
       <button class="btn-sec hidden" id="bUsuarios" title="Usuarios: dar de alta y poner contraseñas" aria-label="Usuarios">👥</button>
+      <button class="btn-sec" id="bBusca" title="Buscar un pedido por número, nombre o email" aria-label="Buscar pedido">🔎</button>
       <button class="btn-sec" id="bImp" title="Dónde se imprimen las etiquetas en este dispositivo" aria-label="Impresión">🖨</button>
       <button class="btn-sec" id="bClave" title="Cambiar la contraseña" aria-label="Cambiar la contraseña">🔑</button>
       <button class="btn-sec" id="bSalir">Salir</button>
@@ -649,6 +672,11 @@
   <div id="claveErr"></div>
   <div class="bots"><button type="submit" class="go">Guardar</button><button type="button" class="btn-sec" id="claveCerrar">Cancelar</button></div>
 </form></div>
+<div id="buscaM" class="hidden"><div class="caja">
+  <div class="cab"><h3 style="margin:0">🔎 Buscar un pedido</h3><button type="button" class="btn-sec" id="buscaCerrar">Cerrar</button></div>
+  <form id="buscaForm" autocomplete="off"><input id="buscaIn" type="search" enterkeyhint="search" placeholder="Nº de pedido, nombre o email de la clienta"><button type="submit">Buscar</button></form>
+  <div id="buscaRes"><p class="gmini">Busca en todos los pedidos de Shopify (también los ya enviados) y te dice en qué punto está cada uno.</p></div>
+</div></div>
 <div id="impM" class="hidden"><div class="caja">
   <h3 style="margin:0">¿Dónde se imprimen las etiquetas desde aquí?</h3>
   <p class="estado" id="impEstado"></p>
@@ -1564,6 +1592,64 @@ async function imprimirHojas(lista, { copia = false } = {}){
   toast(`${lista.length} hoja${lista.length > 1 ? "s" : ""} de pedido${copia ? " (copia)" : ""}`);
   await cargar();
 }
+
+// ───── Buscador de pedidos (todas las pantallas): Shopify + estado en el taller (acción «buscar» de la función) ─────
+const fCorta = (t) => t ? new Date(t).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "";
+const ETQ_LINEA = { pendiente: "Pendiente", cortar: "En producción", estampar: "En producción", sin_stock: "Sin stock: esperando la prenda", empaquetar: "Hecha · para empaquetar", producido: "Salida" };
+function estadoBuscado(p){
+  const t = p.taller;
+  if (p.cancelado) return ["Cancelado", "rojo"];
+  if (p.envio === "FULFILLED") return [`Enviado el ${fCorta(p.envios[0]?.fecha)}`, "verde"];
+  if (p.envio === "PARTIALLY_FULFILLED") return ["Enviado en parte", "naranja"];
+  if (t){
+    if (t.cancelado) return ["Cancelado", "rojo"];
+    if (t.estado === "producido"){
+      if (t.envio_tipo === "otros") return [`Ha salido por otros envíos${t.envio_info ? ` (${t.envio_info})` : ""}`, "verde"];
+      if (!t.direccion1) return t.entregado_at ? [`Recogido en tienda el ${fCorta(t.entregado_at)}`, "verde"] : ["Listo para recoger en tienda", "azul"];
+      return [`Preparado el ${fCorta(t.empaquetado_at)}${t.gls_codbarras ? " · etiqueta GLS hecha" : ""}`, "verde"];
+    }
+    if (t.estado === "empaquetar") return [`Listo para empaquetar${t.asignado_a ? " · lo tiene " + t.asignado_a : ""}`, "azul"];
+    if (t.estado === "sin_stock") return ["Parado: falta alguna prenda (sin stock)", "naranja"];
+    if (t.estado === "pendiente") return ["Pendiente", "naranja"];
+    return ["En producción", "azul"];
+  }
+  if (p.archivado) return ["Archivado en Shopify", ""];
+  return ["Recibido · aún no ha entrado en el taller", ""];
+}
+function pedidoBuscadoHTML(p){
+  const [txt, cls] = estadoBuscado(p), d = p.direccion, c = p.clienta, t = p.taller;
+  const lineasT = t?.fab_lineas ?? [];
+  const prendas = p.prendas.map((l) => {
+    const lt = lineasT.find((x) => x.titulo === l.titulo && (x.variante ?? "") === (l.variante ?? "")) ?? lineasT.find((x) => x.titulo === l.titulo);
+    const extra = l.extra.map((a) => `${esc(a.key)}: <b>${esc(a.value)}</b>`).join(" · ");
+    return `<div class="bp-pr"><div>${l.cantidad > 1 ? `<b>${l.cantidad}×</b> ` : ""}${esc(l.titulo)}<small>${esc(l.variante ?? "")}${extra ? " · " + extra : ""}</small></div>${lt && p.envio !== "FULFILLED" && !p.cancelado ? `<span class="e">${esc(ETQ_LINEA[lt.estado] ?? lt.estado)}</span>` : ""}</div>`;
+  }).join("");
+  const seg = p.envios.flatMap((e) => e.seguimiento).filter((x) => x.numero).map((x) => x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.empresa ?? "")} ${esc(x.numero)}</a>` : `${esc(x.empresa ?? "")} ${esc(x.numero)}`).join("<br>");
+  return `<div class="bp">
+    <div class="bp-cab"><span class="bp-num">${esc(p.nombre)}</span><span class="bp-est ${cls}">${esc(txt)}</span><span class="gmini">${fCorta(p.fecha)} · ${eur(p.total, 2)}${p.metodo ? " · " + esc(p.metodo) : ""}</span></div>
+    <div class="bp-grid">
+      <div class="bp-box"><b class="t">Clienta</b>${esc(c?.nombre ?? d?.name ?? "—")}<br>${c ? (c.pedidos <= 1 ? "<b>Primer pedido</b>" : `<b>Lleva ${c.pedidos} pedidos</b> · ${eur(c.gastado)} en total`) : ""}${c?.email ? `<br><small>${esc(c.email)}</small>` : ""}</div>
+      <div class="bp-box"><b class="t">${d ? "Dirección de envío" : "Entrega"}</b>${d ? `${esc(d.name ?? "")}<br>${esc(d.address1 ?? "")}${d.address2 ? ", " + esc(d.address2) : ""}<br>${esc([d.zip, d.city].filter(Boolean).join(" "))}${d.province ? " (" + esc(d.province) + ")" : ""}<br>${esc(d.country ?? "")}${d.phone ? `<br>☎ ${esc(d.phone)}` : ""}` : "Recogida en tienda"}</div>
+      ${seg || t?.gls_codbarras ? `<div class="bp-box"><b class="t">Envío</b>${seg || `GLS ${esc(t.gls_codbarras)}${t.gls_modo === "pruebas" ? " (prueba)" : ""}`}</div>` : ""}
+    </div>
+    <div>${prendas}</div>
+    ${p.nota ? `<div class="bp-nota">📝 ${esc(p.nota)}</div>` : ""}
+  </div>`;
+}
+async function buscarPedido(q){
+  q = q.trim(); if (q.length < 2){ $("#buscaRes").innerHTML = `<p class="vacio">Escribe al menos 2 letras o el número del pedido.</p>`; return; }
+  $("#buscaRes").innerHTML = `<p class="vacio">Buscando «${esc(q)}» en Shopify…</p>`;
+  let j;
+  if (DEMO){
+    const n = q.replace(/\D/g, ""), ql = q.toLowerCase();
+    const l = pedidos.filter((p) => (n && p.order_name.includes(n)) || (p.cliente_nombre ?? "").toLowerCase().includes(ql)).slice(0, 10);
+    j = { ok: true, pedidos: l.map((p) => ({ id: p.order_id, nombre: p.order_name, fecha: p.creado_shopify, total: 59.9, metodo: p.metodo_envio, envio: p.estado === "producido" ? "FULFILLED" : "UNFULFILLED", envios: p.estado === "producido" ? [{ fecha: new Date().toISOString(), seguimiento: [] }] : [], direccion: p.direccion1 ? { name: p.cliente_nombre, address1: p.direccion1, zip: p.cp, city: p.ciudad, country: p.pais } : null, clienta: { nombre: p.cliente_nombre, pedidos: 1 + (p.order_id % 4), gastado: 59.9 * (1 + (p.order_id % 4)) }, prendas: (p.fab_lineas ?? []).map((x) => ({ titulo: x.titulo, variante: x.variante, cantidad: x.cantidad, extra: (x.personalizacion ?? []).map((a) => ({ key: a.key ?? "Personalización", value: a.value ?? a })) })), taller: { ...p, estado: p._estado, fab_lineas: p.fab_lineas } })) };
+  } else j = await fn({ accion: "buscar", q });
+  if (!j.ok){ $("#buscaRes").innerHTML = `<p class="vacio">${esc(j.error || "No se ha podido buscar")}</p>`; return; }
+  $("#buscaRes").innerHTML = j.pedidos.length ? `<div style="display:grid;gap:12px">${j.pedidos.map(pedidoBuscadoHTML).join("")}</div>` + (j.pedidos.length >= 15 ? `<p class="gmini">Salen los 15 más recientes. Escribe más para afinar.</p>` : "")
+    : `<p class="vacio">No hay ningún pedido con «${esc(q)}».</p>`;
+}
+function abrirBusca(){ $("#buscaM").classList.remove("hidden"); setTimeout(() => $("#buscaIn").focus(), 50); }
 
 // ───── Dónde se imprimen las etiquetas (por dispositivo; localStorage fab_impresion) ─────
 // aqui = diálogo de este dispositivo · remoto = se manda a la cola y la imprime el ordenador de Expedición · servidor = este ordenador imprime la cola
@@ -2954,6 +3040,10 @@ function cerrarClave(){
   if (recuperar){ history.replaceState(null, "", location.pathname + location.search); iniciar(); }
 }
 $("#bClave").onclick = () => abrirClave(false);
+$("#bBusca").onclick = abrirBusca;
+$("#buscaCerrar").onclick = () => $("#buscaM").classList.add("hidden");
+$("#buscaM").addEventListener("click", (e) => { if (e.target.id === "buscaM") $("#buscaM").classList.add("hidden"); });
+$("#buscaForm").onsubmit = (e) => { e.preventDefault(); $("#buscaIn").blur(); buscarPedido($("#buscaIn").value); };
 $("#bImp").onclick = abrirImp; $("#bImp").title = TXT_IMP[MODO_IMP];
 $("#impCerrar").onclick = () => $("#impM").classList.add("hidden");
 for (const b of document.querySelectorAll("[data-impmodo]")) b.onclick = () => ponerModoImp(b.dataset.impmodo);
