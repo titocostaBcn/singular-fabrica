@@ -437,7 +437,7 @@ Cada tarjeta es una tarea, con un número grande. Arriba salen las que necesitan
 
 Arriba eliges el periodo: Hoy, Ayer, 7 días, 30 días, Este mes o Este año. Todo se compara con las mismas fechas del año anterior (▲ verde = mejor, ▼ rojo = peor).
 
-- **Taller ahora mismo**: pedidos por salir (y cuántos días de trabajo son al ritmo actual), salidos hoy, prendas por hacer, listos para empaquetar, prendas sin stock, urgentes y retrasados, con los pedidos entrados y salidos de los últimos 14 días.
+- **Taller ahora mismo**: pedidos por salir (y cuántos días de trabajo son al ritmo actual), salidos hoy, prendas por hacer, listos para empaquetar, prendas sin stock, urgentes y retrasados, con los pedidos entrados y salidos de los últimos 14 días. **Salidos** = pedidos enviados en Shopify ese día (también los que se envían directamente desde Shopify sin marcarlos en el programa); el de hoy se pone al día con ↻ Actualizar datos.
 - **Ventas**: facturación (IVA y envío incluidos, menos devoluciones), pedidos, **pedidos enviados** (los que se han preparado y marcado como enviados en Shopify ese día o periodo, sacado de Shopify), ticket medio y prendas vendidas. Con Meta Ads: la inversión, el **ROAS** (euros vendidos por cada euro en Meta, contando todas las ventas de la tienda) y el coste por clienta nueva. El gráfico enseña las ventas de cada día (barras) y la inversión en Meta (línea); pasa el ratón por encima para ver el detalle del día.
 - **Clientas nuevas y recurrentes**: cuántos pedidos son de clientas que compran por primera vez y cuántos de clientas que repiten, con el ticket medio de cada grupo y su parte de la facturación.
 - **Evolución**: las ventas de cada mes de este año (barra llena) frente al año anterior (barra vacía).

@@ -2037,7 +2037,10 @@ function equipoDia(dia){
   for (const p of todosPedidos()) if (p.empaquetado_at && !p.cancelado && diaISO(p.empaquetado_at) === dia) reg(p.empaquetado_por || "Sin indicar", "empaq", 1, p.empaquetado_at);
   return m;
 }
-const salidosDia = (dia) => todosPedidos().filter((p) => p._estado === "producido" && !p.cancelado && diaISO(p.empaquetado_at ?? p.estado_at) === dia).length;
+// Salidos = pedidos ENVIADOS en Shopify ese día (fab_ventas_dia.enviados, 19-oct: el taller envía también desde Shopify y
+// esos pedidos no pasan a «producido» en el programa). Si un día aún no tiene dato de Shopify, se cuentan los marcados aquí.
+const salidosPrograma = (dia) => todosPedidos().filter((p) => p._estado === "producido" && !p.cancelado && diaISO(p.empaquetado_at ?? p.estado_at) === dia).length;
+const salidosDia = (dia) => { const v = G.ventas.find((x) => x.dia === dia); return v && v.enviados != null ? Math.max(Number(v.enviados), salidosPrograma(dia)) : salidosPrograma(dia); };
 function estadoImportacion(){
   const hoy = hoyISO(), del = G.ev.filter((e) => diaISO(e.created_at) === hoy);
   const ok = del.find((e) => e.tipo === "importacion"), mal = del.find((e) => e.tipo === "importacion_error");
