@@ -44,7 +44,8 @@ En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. 
 | Resumen producción | Lo que hay que producir (cortar y estampar), por color de vinilo y de la A a la Z. |
 | Histórico | Los pedidos ya producidos o enviados, con quién lo hizo. |
 | Ayuda | Este manual, con buscador por palabras y botón para imprimirlo en PDF. |
-| ↻ Importar | Trae ahora los pedidos nuevos de la tienda y los cambios de los que ya están, sin esperar a mañana. |
+| ↓ Pedidos nuevos | Trae ahora los pedidos nuevos de la tienda y los cambios de los que ya están, sin esperar a mañana. |
+| ↻ Actualizar | Refresca la pantalla con lo que lleva hecho el taller y las ventas y Meta de ayer y hoy, **sin traer pedidos nuevos**. |
 | 👥 | Solo le sale al administrador: dar de alta a las personas, ponerles contraseña o quitarles el acceso (ver arriba). |
 | 🔑 | Cambia la contraseña con la que se entra: escribe la nueva dos veces (mínimo 8 caracteres) y pulsa Guardar. Si ese usuario lo usáis varias, avisa a las demás. |
 | 🔎 | **Buscar un pedido** (todas las pantallas). Escribe el número del pedido, el nombre o el email de la clienta y pulsa Buscar. Busca en todos los pedidos de Shopify, también los ya enviados, y enseña: en qué punto está (en producción, sin stock, listo para empaquetar, preparado, enviado y cuándo, recogido, cancelado…), las prendas con su talla, personalización y estado, la dirección y el teléfono, el número de seguimiento y si la clienta es de **primer pedido** o **cuántos pedidos lleva** y cuánto ha gastado. |
@@ -52,7 +53,7 @@ En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. 
 
 **Avisos de colores en la franja superior**
 
-- **Franja roja «ERROR: no actualizado hoy»**: la actualización de las 8:00 ha fallado. El programa lo vuelve a intentar solo a las 9:00 y a las 10:00. Si tienes prisa, pulsa ↻ Importar **una vez**: el botón pone «Importando…» y tarda unos segundos; cuando acaba, sale «✔ Importado» y la franja desaparece. Si vuelve a salir, avisa a Tito.
+- **Franja roja «ERROR: no actualizado hoy»**: la actualización de las 8:00 ha fallado. El programa lo vuelve a intentar solo a las 9:00 y a las 10:00. Si tienes prisa, pulsa ↓ Pedidos nuevos **una vez**: el botón pone «Trayendo pedidos…» y tarda unos segundos; cuando acaba, sale «✔ Importado» y la franja desaparece. Si vuelve a salir, avisa a Tito.
 - **Franja roja «La hora de este ordenador está mal»**: el reloj del ordenador va adelantado o atrasado y por eso salen todos los pedidos a 0. En Windows: Configuración → Hora e idioma → activa «Establecer la hora automáticamente» y pulsa «Sincronizar ahora». Después recarga la página.
 - **Franja amarilla «MODO PRUEBAS»**: las etiquetas de GLS todavía son de prueba y no sirven para enviar. Desaparecerá cuando el programa funcione de verdad.
 
@@ -312,7 +313,7 @@ Si una clienta se equivoca y pide un cambio, **la talla, las prendas y la direcc
 
 **Cuándo lo ve el taller**
 
-- Cada mañana a las 8:00 el programa revisa los pedidos abiertos y recoge los cambios. También al pulsar ↻ Importar.
+- Cada mañana a las 8:00 el programa revisa los pedidos abiertos y recoge los cambios. También al pulsar ↓ Pedidos nuevos.
 - Para verlo al momento, en la tarjeta del pedido pulsa **🔄 Actualizar desde Shopify**.
 
 **Qué hace el programa con un cambio**
@@ -374,9 +375,9 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 
 | Qué pasa | Qué hacer |
 | --- | --- |
-| Franja roja «ERROR: no actualizado hoy» | Pulsa ↻ Importar. Si sigue saliendo, avisa a Tito. |
+| Franja roja «ERROR: no actualizado hoy» | Pulsa ↓ Pedidos nuevos. Si sigue saliendo, avisa a Tito. |
 | No recuerdo la contraseña | Pídele a Tito que te ponga una nueva desde 👥 (apartado 1). También puedes pulsar «¿Has olvidado la contraseña?» en la pantalla de entrada. |
-| Falta un pedido que sí está en Shopify | Pulsa ↻ Importar y búscalo por número en el buscador. |
+| Falta un pedido que sí está en Shopify | Pulsa ↓ Pedidos nuevos y búscalo por número en el buscador. |
 | No veo lo que ha hecho una compañera | Recarga la página con Cmd + Shift + R (Mac) o Ctrl + F5 (Windows). |
 | Un pedido ha pasado solo a Empaquetar | Es normal: el programa le ha dado sus prendas hechas o preparadas. Apartados 7 y 11. |
 | Un pedido ha llegado a Empaquetar sin estar hecho | En su tarjeta pulsa ↶ y vuelve a Producción. |
@@ -412,7 +413,10 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 
 Es la pantalla con la que entra Administración (Carlota). Tiene dos botones arriba: **📊 Dashboard**, para ver cómo va la empresa, y **✅ Mi día**, con lo que hay que hacer hoy. **Ver todo el programa →** abre el programa entero, y el botón **Gerencia** de arriba vuelve aquí.
 
-La franja verde de arriba confirma que los pedidos de Shopify se han importado hoy. Su botón **↻ Sincronizar ahora** trae en ese momento de Shopify los pedidos nuevos, los cambios y las ventas, sin esperar a la importación de la mañana: pulsa una vez y espera a que ponga «✔ Importado». Si la franja sale en rojo, el botón pone **↻ Importar ahora**; si sigue en rojo después de pulsarlo, avisa a Tito.
+La franja verde de arriba confirma que los pedidos de Shopify se han importado hoy. Tiene dos botones:
+
+- **↓ Traer pedidos nuevos**: trae en ese momento de Shopify los pedidos nuevos y los cambios de los pedidos (y también las ventas), sin esperar a la importación de la mañana. Pulsa una vez y espera a que ponga «✔ Sincronizado». Si la franja sale en rojo, el botón pone **↓ Importar pedidos ahora**; si sigue en rojo después de pulsarlo, avisa a Tito.
+- **↻ Actualizar datos**: actualiza las ventas y Meta de ayer y hoy y lo que lleva hecho el taller (salidos, por hacer, quién ha hecho qué), **sin traer pedidos nuevos**. Sirve para mirar cómo va el día sin que entren pedidos nuevos en el taller.
 
 **Mi día: lo que hay que hacer hoy**
 

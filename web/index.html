@@ -100,7 +100,7 @@
   .usu-nuevo .clave input{flex:1}
   #usuErr{color:var(--err);min-height:1.2em;font-size:14px}
   /* ── pantallas de puesto (Producción, Expedición): una tarea, botones grandes, nada más ── */
-  body.puesto .vistas, body.puesto #bImportar, body.puesto header > .fila + .fila, body.puesto #subbar, body.puesto #barra{display:none!important}
+  body.puesto .vistas, body.puesto #bImportar, body.puesto #bActualizar, body.puesto header > .fila + .fila, body.puesto #subbar, body.puesto #barra{display:none!important}
   body.puesto #resumen .ghead > input, body.puesto #resumen .rrow > input{visibility:hidden}
   body.puesto #bExcel{display:none}
   body.puesto #resumen{max-width:900px;margin:0 auto;padding-top:4px}
@@ -398,7 +398,7 @@
   .rhacer .nohay{background:#fff;color:var(--err);border:2px solid var(--err);padding:9px 12px}
   /* Gerencia */
   #gerencia{padding:16px 16px 60px;display:grid;gap:14px;max-width:1180px;margin:0 auto}
-  body.ger .vistas,body.ger #bImportar,body.ger header > .fila + .fila{display:none!important}
+  body.ger .vistas,body.ger #bImportar,body.ger #bActualizar,body.ger header > .fila + .fila{display:none!important}
   .gtop{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .gtop h2{margin:0 auto 0 0;font-size:26px;display:grid} .gtop h2 small{font-size:14px;color:var(--muted);font-weight:600}
   .gmodos{display:flex;gap:6px}
@@ -409,6 +409,7 @@
   .gimp.ok{background:var(--producido-bg);color:var(--producido)} .gimp.mal{background:var(--err-bg);color:var(--err)}
   .gimp button{border:0;background:var(--err);color:#fff;border-radius:8px;padding:6px 10px;font-weight:700;margin-left:6px}
   .gimp.ok button{background:#1b7f4b}
+  .gimp button.gact{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
   .gsec{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;min-width:0}
   .gsec h3{margin:0;font-size:19px} .gsec h3 small{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px}
   .gh4{margin:6px 0 0;font-size:15px}
@@ -611,7 +612,8 @@
     <div class="fila">
       <div class="marca"><img src="logo.png" alt="Singular Wardrobe"><span>Taller</span></div>
       <div class="vistas"><button data-vista="gerencia">Gerencia</button><button data-vista="plan">Plan del día</button><button data-vista="pedidos" class="on">Pedidos</button><button data-vista="resumen">Resumen producción</button><button data-vista="historico">Histórico</button><button data-vista="ayuda">Ayuda</button></div>
-      <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↻ Importar</button>
+      <button class="btn-sec" id="bImportar" title="Traer ahora los pedidos nuevos de Shopify">↓ Pedidos nuevos</button>
+      <button class="btn-sec" id="bActualizar" title="Actualiza ventas, Meta y lo hecho en el taller, sin traer pedidos nuevos">↻ Actualizar</button>
       <button class="btn-sec hidden" id="bUsuarios" title="Usuarios: dar de alta y poner contraseñas" aria-label="Usuarios">👥</button>
       <button class="btn-sec" id="bBusca" title="Buscar un pedido por número, nombre o email" aria-label="Buscar pedido">🔎</button>
       <button class="btn-sec" id="bImp" title="Dónde se imprimen las etiquetas en este dispositivo" aria-label="Impresión">🖨</button>
@@ -1204,9 +1206,10 @@ async function comprobarReloj(){
   } catch {}
   return desfaseReloj;
 }
-let importando = false;
+let importando = false, refrescandoDatos = false;
 function pintarBotonesImportar(){
-  for (const b of document.querySelectorAll("#bImportar, [data-gimportar]")){ b.disabled = importando; b.textContent = importando ? (b.id === "bImportar" ? "Importando…" : "Sincronizando…") : (b.id === "bImportar" ? "↻ Importar" : (b.dataset.label || "↻ Importar ahora")); }
+  for (const b of document.querySelectorAll("#bImportar, [data-gimportar]")){ b.disabled = importando; b.textContent = importando ? "Trayendo pedidos…" : (b.id === "bImportar" ? "↓ Pedidos nuevos" : (b.dataset.label || "↓ Traer pedidos nuevos")); }
+  for (const b of document.querySelectorAll("#bActualizar, [data-gactualizar]")){ b.disabled = refrescandoDatos; b.textContent = refrescandoDatos ? "Actualizando…" : (b.id === "bActualizar" ? "↻ Actualizar" : "↻ Actualizar datos"); }
 }
 async function comprobarImportacion(){
   const el = $("#avisoError");
@@ -2088,7 +2091,7 @@ function pintarGerencia(){
     <div class="gtop"><h2>${saludo}${yo ? ", " + esc(yo) : ""}<small>${new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}</small></h2>
       <div class="gmodos"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}">📊 Dashboard</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}">✅ Mi día</button></div>
       <button class="gtodo" data-vista="plan" title="Abre el programa completo: Plan del día, Pedidos, Resumen, Histórico">Ver todo el programa →</button></div>
-    <div class="gimp ${imp.ok ? "ok" : "mal"}">${imp.ok ? "✔" : "⚠"} ${esc(imp.txt)} · <button data-gimportar data-label="${imp.ok ? "↻ Sincronizar ahora" : "↻ Importar ahora"}" title="Trae ahora de Shopify los pedidos nuevos, los cambios y las ventas" ${importando ? "disabled" : ""}>${importando ? "Sincronizando…" : imp.ok ? "↻ Sincronizar ahora" : "↻ Importar ahora"}</button></div>
+    <div class="gimp ${imp.ok ? "ok" : "mal"}">${imp.ok ? "✔" : "⚠"} ${esc(imp.txt)} · <button data-gimportar data-label="${imp.ok ? "↓ Traer pedidos nuevos" : "↓ Importar pedidos ahora"}" title="Trae de Shopify los pedidos nuevos y los cambios de los pedidos (y también ventas y Meta)" ${importando ? "disabled" : ""}>${importando ? "Trayendo pedidos…" : imp.ok ? "↓ Traer pedidos nuevos" : "↓ Importar pedidos ahora"}</button><button class="gact" data-gactualizar title="Actualiza ventas, Meta y lo que lleva hecho el taller, sin traer pedidos nuevos" ${refrescandoDatos ? "disabled" : ""}>${refrescandoDatos ? "Actualizando…" : "↻ Actualizar datos"}</button></div>
     ${G.error ? `<div class="err">No se han podido leer los datos del panel: ${esc(G.error)}</div>` : ""}
     ${G.cargando && !G.leido ? `<div class="vacio">Cargando el panel…</div>` : G.modo === "panel" ? panelHTML() : miDiaHTML()}
     <nav class="gtab"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}"><span>📊</span>Dashboard</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}"><span>✅</span>Mi día</button><button data-vista="plan"><span>☰</span>Todo</button></nav>`;
@@ -2910,6 +2913,7 @@ document.addEventListener("click", (e) => {
   if (b.dataset.gdia){ const k = Number(b.dataset.gdia), h = hoyISO(); G.dia = k === 0 ? null : masDias(G.dia ?? h, k); if (G.dia && G.dia >= h) G.dia = null; pintar(); return; }
   if (b.dataset.gir){ const [v, t] = b.dataset.gir.split(":"); vista = v; if (v === "pedidos") tab = t; else etapaR = t; sel.clear(); pintar(); window.scrollTo(0, 0); irALista(); return; }
   if (b.dataset.gimportar !== undefined){ $("#bImportar").click(); return; }
+  if (b.dataset.gactualizar !== undefined){ $("#bActualizar").click(); return; }
   if (b.dataset.gimprcompra !== undefined){ imprimir("imp-compra"); return; }
   if (b.dataset.hay){ hayFila(b.dataset.hay); return; }
   if (b.dataset.llegfila){ llegadoFila(b.dataset.llegfila, b.dataset.todas === "1"); return; }
@@ -3006,6 +3010,25 @@ $("#bImportar").onclick = async () => {
   await cargar();
   if (vista === "gerencia") await cargarGerencia(true); // el aviso del panel se basa en sus datos: se releen
   pintarBotonesImportar();
+};
+// Actualizar sin traer pedidos nuevos: ventas y Meta de ayer y hoy + relee lo hecho en el taller (19-oct, pedido de Tito)
+$("#bActualizar").onclick = async () => {
+  if (refrescandoDatos) return;
+  refrescandoDatos = true; pintarBotonesImportar();
+  toast("Actualizando ventas, Meta y el taller…");
+  let aviso = "✔ Actualizado (sin traer pedidos nuevos)";
+  if (!DEMO){
+    try {
+      const j = await Promise.race([fn({ accion: "ventas", desde: masDias(hoyISO(), -1), hasta: hoyISO() }), new Promise((r) => setTimeout(() => r({ ok: false, tarde: true }), 60000))]);
+      if (j.ok) G.refrescado = Date.now();
+      else if (j.tarde) aviso = "Taller actualizado. Las ventas siguen actualizándose en el servidor: vuelve a pulsar en un minuto.";
+      else if (!/Administración/.test(j.error || "")) aviso = "Taller actualizado, pero las ventas no: " + (j.error || "error");
+    } catch (e){ aviso = "Taller actualizado. Se ha cortado la conexión al pedir las ventas: vuelve a pulsar en un minuto."; }
+  }
+  await cargar();
+  if (vista === "gerencia") await cargarGerencia(true);
+  refrescandoDatos = false; pintarBotonesImportar();
+  toast(aviso);
 };
 $("#quienForm").onsubmit = (e) => { e.preventDefault(); elegirNombre($("#quienOtro").value); };
 $("#colorForm").onsubmit = (e) => { e.preventDefault(); guardarColor($("#colorIn").value.trim()); };
