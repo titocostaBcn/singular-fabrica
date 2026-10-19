@@ -654,7 +654,12 @@ async function sincronizarVentas(desde: string, hasta: string) {
 // hasta 120 días antes del rango (un pedido no tarda más en salir). Solo lectura.
 async function contarEnviados(desde: string, hasta: string) {
   const ini = sumarDia(desde, -120), fin = sumarDia(hasta, 1);
-  const q = `(fulfillment_status:shipped OR fulfillment_status:partial) created_at:>='${ini}T00:00:00${desfaseMadrid(ini)}' created_at:<'${fin}T00:00:00${desfaseMadrid(fin)}'`;
+  // Rango reciente (lo normal: sincronización diaria o del panel): basta con los pedidos tocados desde «desde»
+  // (enviar un pedido lo modifica), que son pocos. Para el histórico, por fecha de creación (hasta 120 días antes).
+  const reciente = desde >= sumarDia(diaMadrid(new Date().toISOString()), -10);
+  const q = reciente
+    ? `(fulfillment_status:shipped OR fulfillment_status:partial) updated_at:>='${desde}T00:00:00${desfaseMadrid(desde)}'`
+    : `(fulfillment_status:shipped OR fulfillment_status:partial) created_at:>='${ini}T00:00:00${desfaseMadrid(ini)}' created_at:<'${fin}T00:00:00${desfaseMadrid(fin)}'`;
   const cuenta = new Map<string, number>();
   let after: string | null = null;
   do {
@@ -763,10 +768,12 @@ Deno.serve(async (req) => {
       try {
         const res = await importar(usuario);
         let ventas: unknown = null;
-        try { const hoy = diaMadrid(new Date().toISOString()); ventas = await sincronizarVentas(sumarDia(hoy, -7), hoy); }
+        // La tarea de la mañana rehace 7 días; el botón de la pantalla, solo ayer y hoy (rápido: el móvil no espera minutos)
+        const diasAtras = usuario === "cron" ? 7 : 1;
+        try { const hoy = diaMadrid(new Date().toISOString()); ventas = await sincronizarVentas(sumarDia(hoy, -diasAtras), hoy); }
         catch (e) { ventas = { error: String((e as Error).message ?? e) }; await evento(null, "ventas_error", ventas, usuario); }
         let meta: unknown = null;
-        try { const hoy = diaMadrid(new Date().toISOString()); meta = await sincronizarMeta(sumarDia(hoy, -7), hoy); }
+        try { const hoy = diaMadrid(new Date().toISOString()); meta = await sincronizarMeta(sumarDia(hoy, -diasAtras), hoy); }
         catch (e) { meta = { error: String((e as Error).message ?? e) }; await evento(null, "meta_error", meta, usuario); }
         return json({ ok: true, ...res, ventas, meta });
       } catch (e) {

@@ -2993,9 +2993,15 @@ $("#bImportar").onclick = async () => {
   importando = true; pintarBotonesImportar();
   toast("Importando de Shopify… espera unos segundos");
   try {
-    const j = await fn({ accion: "importar" });
-    j.ok ? toast(`✔ Importado: ${j.nuevos} pedidos nuevos`) : toast(j.error || "No se ha podido importar", true);
-  } catch (e){ toast(String(e.message || e), true); }
+    // Si el móvil corta la conexión (Safari: «Load failed») o tarda demasiado, el servidor sigue trabajando: se avisa y se relee luego
+    const j = await Promise.race([fn({ accion: "importar" }), new Promise((r) => setTimeout(() => r({ ok: false, tarde: true }), 90000))]);
+    if (j.ok) toast(`✔ Sincronizado: ${j.nuevos} pedidos nuevos`);
+    else if (j.tarde){ toast("Sigue sincronizando en el servidor. En un minuto se actualiza la pantalla sola."); setTimeout(async () => { await cargar(); if (vista === "gerencia") await cargarGerencia(true); }, 60000); }
+    else toast(j.error || "No se ha podido sincronizar", true);
+  } catch (e){
+    toast("Se ha cortado la conexión, pero la sincronización sigue en el servidor. En un minuto se actualiza la pantalla sola.");
+    setTimeout(async () => { await cargar(); if (vista === "gerencia") await cargarGerencia(true); }, 60000);
+  }
   importando = false;
   await cargar();
   if (vista === "gerencia") await cargarGerencia(true); // el aviso del panel se basa en sus datos: se releen
