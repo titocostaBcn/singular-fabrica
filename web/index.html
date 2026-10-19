@@ -408,6 +408,7 @@
   .gimp{border-radius:12px;padding:10px 14px;font-weight:700;font-size:14px}
   .gimp.ok{background:var(--producido-bg);color:var(--producido)} .gimp.mal{background:var(--err-bg);color:var(--err)}
   .gimp button{border:0;background:var(--err);color:#fff;border-radius:8px;padding:6px 10px;font-weight:700;margin-left:6px}
+  .gimp.ok button{background:#1b7f4b}
   .gsec{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;min-width:0}
   .gsec h3{margin:0;font-size:19px} .gsec h3 small{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px}
   .gh4{margin:6px 0 0;font-size:15px}
@@ -1205,7 +1206,7 @@ async function comprobarReloj(){
 }
 let importando = false;
 function pintarBotonesImportar(){
-  for (const b of document.querySelectorAll("#bImportar, [data-gimportar]")){ b.disabled = importando; b.textContent = importando ? "Importando…" : (b.id === "bImportar" ? "↻ Importar" : "↻ Importar ahora"); }
+  for (const b of document.querySelectorAll("#bImportar, [data-gimportar]")){ b.disabled = importando; b.textContent = importando ? (b.id === "bImportar" ? "Importando…" : "Sincronizando…") : (b.id === "bImportar" ? "↻ Importar" : (b.dataset.label || "↻ Importar ahora")); }
 }
 async function comprobarImportacion(){
   const el = $("#avisoError");
@@ -2087,7 +2088,7 @@ function pintarGerencia(){
     <div class="gtop"><h2>${saludo}${yo ? ", " + esc(yo) : ""}<small>${new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}</small></h2>
       <div class="gmodos"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}">📊 Dashboard</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}">✅ Mi día</button></div>
       <button class="gtodo" data-vista="plan" title="Abre el programa completo: Plan del día, Pedidos, Resumen, Histórico">Ver todo el programa →</button></div>
-    <div class="gimp ${imp.ok ? "ok" : "mal"}">${imp.ok ? "✔" : "⚠"} ${esc(imp.txt)}${imp.ok ? "" : ` · <button data-gimportar ${importando ? "disabled" : ""}>${importando ? "Importando…" : "↻ Importar ahora"}</button>`}</div>
+    <div class="gimp ${imp.ok ? "ok" : "mal"}">${imp.ok ? "✔" : "⚠"} ${esc(imp.txt)} · <button data-gimportar data-label="${imp.ok ? "↻ Sincronizar ahora" : "↻ Importar ahora"}" title="Trae ahora de Shopify los pedidos nuevos, los cambios y las ventas" ${importando ? "disabled" : ""}>${importando ? "Sincronizando…" : imp.ok ? "↻ Sincronizar ahora" : "↻ Importar ahora"}</button></div>
     ${G.error ? `<div class="err">No se han podido leer los datos del panel: ${esc(G.error)}</div>` : ""}
     ${G.cargando && !G.leido ? `<div class="vacio">Cargando el panel…</div>` : G.modo === "panel" ? panelHTML() : miDiaHTML()}
     <nav class="gtab"><button data-gmodo="panel" class="${G.modo === "panel" ? "on" : ""}"><span>📊</span>Dashboard</button><button data-gmodo="dia" class="${G.modo === "dia" ? "on" : ""}"><span>✅</span>Mi día</button><button data-vista="plan"><span>☰</span>Todo</button></nav>`;

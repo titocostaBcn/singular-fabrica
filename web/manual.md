@@ -412,7 +412,7 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 
 Es la pantalla con la que entra Administración (Carlota). Tiene dos botones arriba: **📊 Dashboard**, para ver cómo va la empresa, y **✅ Mi día**, con lo que hay que hacer hoy. **Ver todo el programa →** abre el programa entero, y el botón **Gerencia** de arriba vuelve aquí.
 
-La franja verde de arriba confirma que los pedidos de Shopify se han importado hoy. Si sale en rojo, pulsa **↻ Importar ahora**; si sigue en rojo, avisa a Tito.
+La franja verde de arriba confirma que los pedidos de Shopify se han importado hoy. Su botón **↻ Sincronizar ahora** trae en ese momento de Shopify los pedidos nuevos, los cambios y las ventas, sin esperar a la importación de la mañana: pulsa una vez y espera a que ponga «✔ Importado». Si la franja sale en rojo, el botón pone **↻ Importar ahora**; si sigue en rojo después de pulsarlo, avisa a Tito.
 
 **Mi día: lo que hay que hacer hoy**
 
