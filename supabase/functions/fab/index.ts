@@ -769,7 +769,8 @@ Deno.serve(async (req) => {
         const res = await importar(usuario);
         let ventas: unknown = null;
         // La tarea de la mañana rehace 7 días; el botón de la pantalla, solo ayer y hoy (rápido: el móvil no espera minutos)
-        const diasAtras = usuario === "cron" ? 7 : 1;
+        // ?rapido=1 = importación de cada hora (21-oct, para que los exprés del día salgan sin esperar a mañana): también solo ayer y hoy
+        const diasAtras = usuario === "cron" && url.searchParams.get("rapido") !== "1" ? 7 : 1;
         try { const hoy = diaMadrid(new Date().toISOString()); ventas = await sincronizarVentas(sumarDia(hoy, -diasAtras), hoy); }
         catch (e) { ventas = { error: String((e as Error).message ?? e) }; await evento(null, "ventas_error", ventas, usuario); }
         let meta: unknown = null;
