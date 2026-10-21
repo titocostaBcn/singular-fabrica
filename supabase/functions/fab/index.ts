@@ -191,21 +191,27 @@ async function importar(usuario: string) {
   const sinVinilo = await repartirSinVinilo(usuario);
 
   // Revisar pedidos abiertos en la BD: cancelados o enviados por fuera del sistema
-  const { data: abiertos } = await sb.from("fab_pedidos").select("order_id")
+  const { data: abiertos } = await sb.from("fab_pedidos").select("order_id, estado")
     .is("gls_codbarras", null).eq("cancelado", false).eq("enviado_fuera", false);
-  let cancelados = 0, fuera = 0;
+  let cancelados = 0, fuera = 0, archivados = 0;
+  const producidos = new Set((abiertos ?? []).filter((r) => r.estado === "producido").map((r) => Number(r.order_id)));
   const lista = (abiertos ?? []).map((r) => Number(r.order_id));
   for (let i = 0; i < lista.length; i += 100) {
-    const d = await gql(`query Estado($ids: [ID!]!) { nodes(ids: $ids) { ... on Order { id cancelledAt displayFulfillmentStatus } } }`,
+    const d = await gql(`query Estado($ids: [ID!]!) { nodes(ids: $ids) { ... on Order { id cancelledAt closed displayFulfillmentStatus } } }`,
       { ids: lista.slice(i, i + 100).map(gidOrder) });
     for (const n of d.nodes ?? []) {
       if (!n) continue;
       if (n.cancelledAt) { await sb.from("fab_pedidos").update({ cancelado: true }).eq("order_id", idNum(n.id)); cancelados++; }
       else if (n.displayFulfillmentStatus === "FULFILLED") { await sb.from("fab_pedidos").update({ enviado_fuera: true }).eq("order_id", idNum(n.id)); fuera++; }
+      // 21-oct (Tito): ARCHIVADO en Shopify sin marcar como preparado = se dio por terminado → sale del taller (queda constancia)
+      else if (n.closed && !producidos.has(idNum(n.id))) {
+        await sb.from("fab_pedidos").update({ enviado_fuera: true }).eq("order_id", idNum(n.id));
+        await evento(idNum(n.id), "archivado_shopify", { fulfillment: n.displayFulfillmentStatus }, usuario); archivados++;
+      }
     }
   }
 
-  const res = { revisados: pedidos.length, nuevos, cancelados, enviados_fuera: fuera, sin_vinilo: sinVinilo, ...(sincro ? { modificados } : {}) };
+  const res = { revisados: pedidos.length, nuevos, cancelados, enviados_fuera: fuera, archivados, sin_vinilo: sinVinilo, ...(sincro ? { modificados } : {}) };
   await evento(null, "importacion", res, usuario);
   return res;
 }
