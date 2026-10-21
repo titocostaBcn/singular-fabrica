@@ -670,11 +670,15 @@ async function contarEnviados(desde: string, hasta: string) {
   let after: string | null = null;
   do {
     const r: any = await gqlReintento(`query Env($q: String!, $after: String) { orders(first: 100, after: $after, query: $q) {
-      pageInfo { hasNextPage endCursor } nodes { test fulfillments(first: 10) { createdAt status } } } }`, { q, after });
+      pageInfo { hasNextPage endCursor } nodes { test createdAt closedAt fulfillments(first: 10) { createdAt status } } } }`, { q, after });
     for (const o of r.orders.nodes) {
       if (o.test) continue;
       const fs = (o.fulfillments ?? []).filter((f: any) => f.status !== "CANCELLED" && f.status !== "ERROR" && f.status !== "FAILURE").map((f: any) => f.createdAt).sort();
       if (!fs.length) continue;
+      // 21-oct: regularizaciones (pedido ARCHIVADO antes de marcarlo preparado, p. ej. los 1.178 antiguos marcados de golpe)
+      // o pedidos de hace más de 120 días no son envíos de ese día
+      if (o.closedAt && o.closedAt < fs[0]) continue;
+      if (o.createdAt && new Date(fs[0]).getTime() - new Date(o.createdAt).getTime() > 120 * 864e5) continue;
       const d = diaMadrid(fs[0]);
       if (d >= desde && d <= hasta) cuenta.set(d, (cuenta.get(d) ?? 0) + 1);
     }
