@@ -207,7 +207,7 @@ Quien corta el vinilo también estampa, a la vez y sin papeles. Todo se apunta e
 **Hoja de producción (tablet).** Es la pantalla de Producción hecha como la lista en papel que se va tachando. Una sola lista, de la A a la Z:
 
 - Arriba, en amarillo rayado, **Faltan · pedir**: lo que no hay, por modelo y talla. Cuando llegue, toca la línea y elige cuántas han llegado (o Todas): vuelven a Por hacer, urgentes y más antiguos primero.
-- **Por hacer**: una línea por modelo y talla con cuántas faltan. Las personalizadas salen una por línea con el texto en grande a la derecha (por ejemplo LISA o EP). El punto rojo y la raya roja a la izquierda = urgente.
+- **Por hacer**: una línea por modelo y talla con cuántas faltan. Las personalizadas salen una por línea con el texto en grande a la derecha (por ejemplo LISA o EP). El punto rojo y la raya roja a la izquierda = urgente. Al lado del nombre, en pequeño, la fecha del pedido; si la línea es de varios pedidos, «más antiguo» y la fecha del pedido pendiente más antiguo. Si tiene más de 7 días sale en rojo.
 - **Toca la línea cuando la hayas hecho.** Si pone 3, cada toque es una: 3 → 2 → 1 y se tacha. Las estándar y las sin vinilo van a la estantería de hechas y el programa las reparte solo; las personalizadas pasan a Empaquetar. Si una línea queda tachada con «esperan al resto del pedido», está hecha pero su pedido aún espera otra prenda.
 - **↶** resta una hecha si te has equivocado. **✖** = falta la prenda: elige cuántas faltan (o Todas) y pasan a Faltan.
 - **Hechas hoy**, abajo y tachadas, con la hora. Una personalizada se puede deshacer tocándola (vuelve a Por hacer).
