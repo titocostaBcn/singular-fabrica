@@ -146,6 +146,13 @@
   .hq{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;line-height:1}
   .hq b{font-size:34px;min-width:1.4em;text-align:right}
   .hq small{font-size:13px;color:var(--producido);font-weight:600;margin-top:3px}
+  .hcant{flex:0 0 auto;min-width:96px;border:0;border-left:1px solid var(--line);background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 10px;line-height:1;color:var(--ink)}
+  .hcant b{font-size:34px}
+  .hcant small{font-size:12px;color:var(--producido);font-weight:600;margin-top:3px;white-space:nowrap}
+  .hcant small.hcq{color:var(--cortar);text-decoration:underline}
+  .hcant:active{background:var(--cortar-bg)}
+  body.imp-hoja .hcant small.hcq{display:none}
+  body.imp-hoja .hcant b{font-size:20px}
   .hh{font-size:14px;color:var(--muted);margin-left:8px}
   .hside{flex:0 0 64px;border:0;border-left:1px solid var(--line);background:none;font-size:24px;color:var(--muted)}
   .hside.hno{color:var(--urg)}
@@ -1117,19 +1124,24 @@ function hojaHTML(){
   const nombre = (f) => `<span class="hn">${f.urg ? `<i class="hurg" title="Urgente"></i>` : ""}${esc(f.titulo)}</span><span class="ht">${f.talla ? esc(f.talla) : "—"}</span>${f.resto ? `<span class="hr">${esc(f.resto)}</span>` : ""}${f.sinv ? `<span class="hsv">sin vinilo</span>` : ""}${f.k.startsWith("h:") ? "" : fechaH(f)}`;
   const elegir = (f, tipo) => {
     const max = tipo === "falta" ? f.quedan : f.uds;
+    if (tipo === "hecha"){
+      const q = f.quedan, ns = [...Array.from({ length: Math.min(q - 1, 10) }, (_, i) => i + 1), ...[15, 20, 25, 30, 40, 50].filter((x) => x > 10 && x < q)];
+      return `<div class="helige"><span>¿Cuántas has hecho?</span>${ns.map((n) => `<button data-hok="${esc(f.k)}" data-modo="hecha" data-n="${n}">${n}</button>`).join("")}<button class="si" data-hok="${esc(f.k)}" data-modo="hecha" data-n="${q}">Todas (${q})</button><button data-hcancel>Cancelar</button></div>`;
+    }
     if (tipo === "deshacer") return `<div class="helige"><span>¿Deshacer? Vuelve a «Por hacer».</span><button class="si" data-hok="${esc(f.k)}" data-n="0">↶ Sí, deshacer</button><button data-hcancel>Cancelar</button></div>`;
     const nums = max > 1 ? Array.from({ length: Math.min(max - 1, 9) }, (_, i) => i + 1).map((n) => `<button data-hok="${esc(f.k)}" data-n="${n}">${n}</button>`).join("") : "";
     return `<div class="helige"><span>${tipo === "falta" ? (max > 1 ? "¿Cuántas faltan?" : "¿Falta esta prenda?") : (max > 1 ? "¿Cuántas han llegado?" : "¿Ha llegado?")}</span>${nums}<button class="si" data-hok="${esc(f.k)}" data-n="0">${max > 1 ? `Todas (${max})` : tipo === "falta" ? "✖ Sí, falta" : "✔ Sí, ha llegado"}</button><button data-hcancel>Cancelar</button></div>`;
   };
   const filaHacer = (f) => {
-    const hecha = f.quedan <= 0, abierta = hojaAbierta === f.k;
-    return `<div class="hl ${hecha ? "tachada" : ""} ${f.urg ? "urg" : ""} ${abierta ? "abierta" : ""}">
+    const hecha = f.quedan <= 0, abierta = hojaAbierta === f.k, abiertaC = hojaAbierta === "c:" + f.k;
+    return `<div class="hl ${hecha ? "tachada" : ""} ${f.urg ? "urg" : ""} ${abierta || abiertaC ? "abierta" : ""}">
       <button class="hmain" data-hhecha="${esc(f.k)}" ${hecha ? "disabled" : ""}>${nombre(f)}
-        ${f.pers ? `<span class="hp">${esc(f.pers)}</span>` : `<span class="hq"><b>${hecha ? f.uds : f.quedan}</b>${f.hechas && !hecha ? `<small>✔ ${f.hechas} hecha${f.hechas > 1 ? "s" : ""} de ${f.uds}</small>` : ""}${hecha ? `<small>✔ hechas · esperan al resto del pedido</small>` : ""}</span>`}</button>
+        ${f.pers ? `<span class="hp">${esc(f.pers)}</span>` : hecha ? `<span class="hq"><b>${f.uds}</b><small>✔ hechas · esperan al resto del pedido</small></span>` : ""}</button>
+      ${!f.pers && !hecha ? `<button class="hcant" data-hcant="${esc(f.k)}" title="Elegir cuántas has hecho"><b>${f.quedan}</b>${f.hechas ? `<small>✔ ${f.hechas} hecha${f.hechas > 1 ? "s" : ""} de ${f.uds}</small>` : ""}${f.quedan > 1 ? `<small class="hcq">¿cuántas?</small>` : ""}</button>` : ""}
       ${!f.pers && f.hechas ? `<button class="hside" data-hdes="${esc(f.k)}" title="Me he equivocado: una hecha menos">↶</button>` : ""}
       ${hecha ? "" : `<button class="hside hno" data-hno="${esc(f.k)}" title="Falta la prenda">✖</button>`}
       ${f.pers && f.nota ? `<div class="hnota">📝 ${esc(f.nota)}</div>` : ""}
-      ${abierta ? elegir(f, "falta") : ""}</div>`;
+      ${abierta ? elegir(f, "falta") : ""}${abiertaC ? elegir(f, "hecha") : ""}</div>`;
   };
   const filaFalta = (f) => `<div class="hl falta ${hojaAbierta === f.k ? "abierta" : ""}"><button class="hmain" data-hlleg="${esc(f.k)}">${nombre(f)}${f.pers ? `<span class="hp">${esc(f.pers)}</span>` : ""}<span class="hq"><b>${f.uds}</b></span></button>${hojaAbierta === f.k ? elegir(f, "llega") : ""}</div>`;
   const hh = (t) => new Date(t).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
@@ -1140,7 +1152,7 @@ function hojaHTML(){
     <div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
     <div class="hoja-top"><div class="hfil">${chip("todo", "Todo")}${chip("pers", "Personalizadas")}${chip("sinv", "Sin vinilo")}</div><button class="himpr" data-himpr>🖨 Imprimir hoja</button></div>
     <h2 class="himp-tit">Hoja de producción · ${new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}</h2>
-    <p class="hayuda">Toca la línea cuando la hayas hecho y se tacha (si hay 3, cada toque es una). <b>✖</b> si falta la prenda. <b>↶</b> para corregir.</p>
+    <p class="hayuda">Toca la línea cuando la hayas hecho y se tacha (si hay 3, cada toque es una). Para apuntar varias de golpe, toca el <b>número</b>. <b>✖</b> si falta la prenda. <b>↶</b> para corregir.</p>
     ${nf ? `<section class="hsec hfaltan"><h3>Faltan · pedir <b>${nf}</b><small>Toca cuando llegue</small></h3>${H.faltan.map(filaFalta).join("")}</section>` : ""}
     <section class="hsec hhacer"><h3>Por hacer <b>${nh}</b></h3>${H.hacer.length ? H.hacer.map(filaHacer).join("") : `<div class="vacio">Nada por hacer${hojaFiltro !== "todo" ? " en este filtro" : ""}. 🎉</div>`}</section>
     ${nd ? `<section class="hsec hhechas"><h3>Hechas hoy <b>${nd}</b></h3>${H.hechas.map(filaHecha).join("")}</section>` : ""}
@@ -3118,8 +3130,9 @@ document.addEventListener("click", (e) => {
   if (b.dataset.hhecha){ hojaHecha(b.dataset.hhecha); return; }
   if (b.dataset.hdes){ const f = filasH.get(b.dataset.hdes); if (f && f.hechas > 0) hojaSumar(f, -1); return; }
   if (b.dataset.hno || b.dataset.hlleg || b.dataset.hundo){ const k = b.dataset.hno || b.dataset.hlleg || b.dataset.hundo; hojaAbierta = hojaAbierta === k ? null : k; pintar(); return; }
+  if (b.dataset.hcant){ const k = "c:" + b.dataset.hcant; hojaAbierta = hojaAbierta === k ? null : k; pintar(); return; }
   if (b.dataset.hcancel !== undefined){ hojaAbierta = null; pintar(); return; }
-  if (b.dataset.hok){ hojaOk(b.dataset.hok, Number(b.dataset.n) || 0); return; }
+  if (b.dataset.hok){ if (b.dataset.modo === "hecha"){ const f = filasH.get(b.dataset.hok); hojaAbierta = null; if (f) hojaSumar(f, Math.min(Number(b.dataset.n) || f.quedan, f.quedan)); } else hojaOk(b.dataset.hok, Number(b.dataset.n) || 0); return; }
   if (b.dataset.hfiltro){ hojaFiltro = b.dataset.hfiltro; hojaAbierta = null; pintar(); return; }
   if (b.dataset.himpr !== undefined){ imprimir("imp-hoja"); return; }
   if (b.dataset.gmodo){ G.modo = b.dataset.gmodo; pintar(); window.scrollTo(0, 0); return; }
