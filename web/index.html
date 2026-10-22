@@ -138,7 +138,11 @@
   .hn{font-weight:700;display:inline-flex;align-items:center;gap:8px}
   .hurg{width:14px;height:14px;border-radius:50%;background:var(--urg);display:inline-block;flex:none}
   .ht{font-weight:800;font-size:20px;border:2px solid currentColor;border-radius:8px;padding:0 8px;min-width:2.2em;text-align:center}
-  .hr{color:var(--muted);font-size:16px}
+  .hr{font-size:16px;font-weight:700;border:1.5px solid var(--line);border-radius:8px;padding:1px 8px;background:var(--bg)}
+  .hvc{font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
+  .hvc i{width:14px;height:14px;border-radius:50%;border:1px solid #0003;display:inline-block}
+  .hpc{font-size:17px;font-weight:800;border:2px solid var(--estampar);color:var(--estampar);border-radius:8px;padding:1px 10px;display:inline-flex;align-items:center;gap:6px}
+  .hpc i{width:16px;height:16px;border-radius:50%;border:1px solid #0003;display:inline-block}
   .hf{font-size:13px;color:var(--muted);white-space:nowrap}
   .hf.vieja{color:var(--urg);font-weight:700}
   .hsv{font-size:13px;font-weight:700;color:var(--sin_vinilo);background:var(--sin_vinilo-bg);border-radius:6px;padding:2px 8px}
@@ -1081,8 +1085,13 @@ function construirHoja(){
   for (const p of pedidos){
     if (p.cancelado || p.enviado_fuera) continue;
     for (const l of p.fab_lineas ?? []){
-      const v = partes(l.variante), pers = textoPers(l), clave = l.titulo + "|" + (l.variante ?? "");
-      const base = { titulo: l.titulo, variante: l.variante ?? null, talla: v.talla, resto: v.resto, clave, sinv: !!l.sin_vinilo };
+      const v = partes(l.variante), clave = l.titulo + "|" + (l.variante ?? "");
+      // El color que elige la clienta (propiedad «Elige el color…») va aparte del texto, para que se vea
+      const px = (l.personalizacion ?? []).filter((x) => x.value && String(x.value).trim());
+      let pers = px.filter((x) => !/color/i.test(x.key)).map((x) => x.value).join(" · ");
+      let persColor = px.filter((x) => /color/i.test(x.key)).map((x) => x.value).join(" · ");
+      if (!pers && persColor){ pers = persColor; persColor = ""; }
+      const base = { titulo: l.titulo, variante: l.variante ?? null, talla: v.talla, resto: v.resto, clave, sinv: !!l.sin_vinilo, persColor, vinilo: l.sin_vinilo || persColor ? "" : colorDe(l.titulo) }; // si la clienta elige color, manda el suyo
       if (l.estado === "cortar" && p._estado !== "producido"){
         if (pers){
           for (let u = 1; u <= l.cantidad; u++){ const k = `p:${l.line_id}:${u}`; hacer.set(k, { ...base, k, pers, ids: [l.line_id], uds: 1, quedan: 1, hechas: 0, urg: p._urg, p, pedidos: [p], nota: p.nota }); }
@@ -1121,7 +1130,7 @@ function hojaHTML(){
     const d = new Date(t).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" }), dias = diasDesde(t);
     return `<span class="hf ${dias > 7 ? "vieja" : ""}">${ps.length > 1 ? "más antiguo " : ""}${d}</span>`;
   };
-  const nombre = (f) => `<span class="hn">${f.urg ? `<i class="hurg" title="Urgente"></i>` : ""}${esc(f.titulo)}</span><span class="ht">${f.talla ? esc(f.talla) : "—"}</span>${f.resto ? `<span class="hr">${esc(f.resto)}</span>` : ""}${f.sinv ? `<span class="hsv">sin vinilo</span>` : ""}${f.k.startsWith("h:") ? "" : fechaH(f)}`;
+  const nombre = (f) => `<span class="hn">${f.urg ? `<i class="hurg" title="Urgente"></i>` : ""}${esc(f.titulo)}</span><span class="ht">${f.talla ? esc(f.talla) : "—"}</span>${f.resto ? `<span class="hr">${esc(f.resto)}</span>` : ""}${f.vinilo ? `<span class="hvc"><i style="background:${esc(colorCss(f.vinilo))}"></i>vinilo ${esc(f.vinilo)}</span>` : ""}${f.persColor ? `<span class="hpc"><i style="background:${esc(colorCss(f.persColor))}"></i>color ${esc(f.persColor)}</span>` : ""}${f.sinv ? `<span class="hsv">sin vinilo</span>` : ""}${f.k.startsWith("h:") ? "" : fechaH(f)}`;
   const elegir = (f, tipo) => {
     const max = tipo === "falta" ? f.quedan : f.uds;
     if (tipo === "hecha"){
@@ -1259,6 +1268,7 @@ const Demo = (() => {
       const pers = pk && (pk === "Personalización" ? k % 2 === 0 || i % 3 === 0 : rnd(2)) ? [{ key: pk, value: pk === "Personalización" ? ["STAR","ROCK","1973","MSN","Singular","RT","LOVE"][rnd(7)] : pk.startsWith("Inicial ") ? "ABCDEFGHLMNPS"[rnd(13)] : "ABCDEFGHLMNPS"[rnd(13)] + "ABCDEFGHLMNPS"[rnd(13)] }] : [];
       const sinVinilo = /cupido|volume/.test(titulo);
       const est = i < 8 ? ["empaquetar","cortar","cortar","empaquetar","cortar","empaquetar","cortar","sin_stock"][i] : "cortar";
+      if (pers.length && pk === "Personalización" && i % 4 === 0) pers.push({ key: "Elige el color de tu personalización", value: ["Granate", "Azul marino", "Dorado"][i % 3] });
       lineas.push({ line_id: lid++, titulo, variante: tallas[rnd(tallas.length)], cantidad: rnd(6) === 0 ? 2 : 1, personalizacion: sinVinilo ? [] : pers, imagen_url: null, sin_vinilo: sinVinilo,
         estado: est, estado_por: null });
     }
