@@ -55,7 +55,7 @@ En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. 
 
 - **Franja roja «ERROR: no actualizado hoy»**: la actualización de las 8:00 ha fallado. El programa lo vuelve a intentar solo a las 9:00 y a las 10:00. Si tienes prisa, pulsa ↓ Pedidos nuevos **una vez**: el botón pone «Trayendo pedidos…» y tarda unos segundos; cuando acaba, sale «✔ Importado» y la franja desaparece. Si vuelve a salir, avisa a Tito.
 - **Franja roja «La hora de este ordenador está mal»**: el reloj del ordenador va adelantado o atrasado y por eso salen todos los pedidos a 0. En Windows: Configuración → Hora e idioma → activa «Establecer la hora automáticamente» y pulsa «Sincronizar ahora». Después recarga la página.
-- **Franja amarilla «MODO PRUEBAS»**: las etiquetas de GLS todavía son de prueba y no sirven para enviar. Desaparecerá cuando el programa funcione de verdad.
+- **Franja amarilla «MODO PRUEBAS»**: no debería salir. Desde el 23 de octubre el programa funciona de verdad: las etiquetas de GLS son reales y los pedidos se marcan como enviados en Shopify. Si la ves, no envíes nada y avisa a Tito.
 
 Todas las pantallas, los listados impresos, los PDF y los Excel llevan el logo de Singular Wardrobe.
 
@@ -269,9 +269,12 @@ En los tres casos, al pulsar sale **«¿Quién lo ha empaquetado?»**: toca tu n
 2. Pulsa **✔ Etiqueta GLS** y toca tu nombre.
 3. Espera unos segundos: la etiqueta se pide a GLS y se imprime sola. Pégala en el paquete.
 4. La tarjeta pasa a Producidos hoy con «✔ Etiqueta impresa» y el número de envío de GLS.
+   El programa marca el pedido como enviado en Shopify con el número de seguimiento, y la clienta recibe el correo de Shopify con el enlace de GLS. No hay que hacer nada en Shopify.
 5. Si la etiqueta sale mal o se pierde, en esa tarjeta pulsa **Reimprimir**.
 
 Si aparece un error de GLS, el pedido queda en la pestaña Sin etiqueta. No lo envíes sin etiqueta: avisa a Tito.
+
+**Importante: todos los envíos salen desde este programa.** No imprimas etiquetas desde la app de GLS de Shopify ni marques los pedidos a mano como preparados en Shopify. Si se hace por los dos sitios, salen dos etiquetas para el mismo pedido y GLS cobra las dos.
 
 **Impresora de etiquetas (Honeywell PC42E-T).** El programa manda la etiqueta en una hoja de 10 × 15 cm sin márgenes: sale una sola etiqueta, del tamaño del rollo, sin copias en blanco ni la dirección de la web. Si el rollo es de otra medida, Tito la cambia en el ajuste `etiqueta_tamano` (por ejemplo 100x100). Para que imprima sola, sin elegir impresora ni pulsar Imprimir, el ordenador de Expedición abre el programa con un acceso directo de Chrome preparado para imprimir directo en la Honeywell (lo deja montado Tito). Con ese acceso directo, todo lo que se imprima desde ese ordenador sale por la Honeywell. El driver de Windows tiene que ser el de **203 dpi**: con el de 300 dpi la etiqueta sale más grande y cortada.
 
@@ -290,7 +293,7 @@ Si el ordenador de Expedición está apagado, el móvil avisa. Lo que se manda e
 2. Se abre una casilla: escribe cómo sale (transportista, número de seguimiento, entregado en mano…).
 3. Pulsa **✔ Confirmar otros envíos** y toca tu nombre.
 4. Queda en la pestaña Otros envíos. Si luego tienes el número de seguimiento, escríbelo allí y pulsa **Guardar**.
-5. De momento estos pedidos hay que marcarlos también a mano como enviados en Shopify.
+5. Al confirmar, el programa marca el pedido como enviado en Shopify (sin número de seguimiento) y la clienta recibe el aviso. No hay que marcarlo a mano.
 
 **Recogida en tienda**
 
@@ -403,6 +406,7 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 | Mandé una etiqueta desde el iPhone y no sale | El ordenador de Expedición tiene que estar encendido, con el programa abierto y marcado en 🖨 como «Este ordenador ES la impresora de Expedición». Luego pulsa Reimprimir. |
 | La etiqueta sale enorme, en varias etiquetas, o salen etiquetas en blanco | Recarga la página (Ctrl + F5). Si sigue, en la impresora: tamaño de etiqueta 10 × 15 cm y calibrar el rollo (apartado 10, Impresora de etiquetas). |
 | Error de GLS al pedir la etiqueta | No envíes el paquete. Avisa a Tito con el número de pedido. |
+| Sale «⚠ Shopify: …» al dar la salida o en la tarjeta | La etiqueta y la salida están bien, pero Shopify no se ha actualizado. No lo marques a mano: avisa a Tito con el número de pedido. |
 | He elegido mal quién lo ha hecho | Avisa a Tito para corregirlo en el Histórico. |
 | La talla pone «Sin talla» | Revisa el pedido en Shopify antes de hacerlo. |
 | La clienta ha cambiado la talla y aquí sigue la antigua | Cámbiala en Shopify y en la tarjeta pulsa 🔄 Actualizar desde Shopify (apartado 12). |
@@ -420,6 +424,7 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 7. **Ningún paquete sale sin etiqueta impresa** o sin anotar cómo sale en Otros envíos.
 8. **Si algo no cuadra, para y avisa** antes de enviar.
 9. **Las personalizadas, aparte y con el texto a la vista**, para que Expedición las encuentre.
+10. **Todos los envíos, desde este programa.** Nada de etiquetas desde la app de GLS de Shopify ni de marcar a mano como preparado en Shopify.
 
 ## 17. Gerencia: Dashboard y Mi día
 
@@ -442,7 +447,7 @@ Cada tarjeta es una tarea, con un número grande. Arriba salen las que necesitan
 | ⚡ Urgentes | Los pedidos Exprés que aún no han salido y en qué etapa están. |
 | ✏️ Cambios de clientas | Pedidos que la clienta cambió en Shopify: comprueba que el taller lo ha visto y pulsa ✔ Visto. |
 | 🏷 Etiquetas GLS con problema | Pedidos sin etiqueta o con error de GLS. No se envían así: avisa a Tito. |
-| ✈️ Otros envíos de hoy | Los que han salido sin GLS (Canarias, Reino Unido…). De momento hay que marcarlos a mano como enviados en Shopify. |
+| ✈️ Otros envíos de hoy | Los que han salido sin GLS (Canarias, Reino Unido…). Ya se marcan solos como enviados en Shopify (sin número de seguimiento). |
 | 🏬 Recogidas en tienda | Paquetes esperando a que la clienta pase a buscarlos. |
 
 **Dashboard: cómo va la empresa**
