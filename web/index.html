@@ -113,6 +113,60 @@
   .pasos .ayuda-b{flex:0 0 auto;font-size:15px;font-weight:600;color:var(--muted)}
   @media (max-width:560px){ .pasos{flex-wrap:nowrap;overflow-x:auto;padding:8px 0} .pasos button{flex:0 0 auto;font-size:15px;padding:10px 12px} .pasos button b{font-size:22px} .busca-p input{font-size:17px;padding:12px} .pc .num{font-size:28px} }
   .busca-p{display:flex;gap:8px;margin:2px 0 14px}
+  /* Hoja de producción (Producción, tablet): como la lista en papel */
+  .pasos button.sec{flex:0 0 auto;font-size:14px;font-weight:600;color:var(--muted);padding:8px 12px}
+  .pasos button.sec b{font-size:18px}
+  .hoja{padding-bottom:40px}
+  .hoja .logo-imp,.hoja .himp-tit{display:none}
+  .hoja-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:4px 0 8px}
+  .hfil{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+  .hfil button,.himpr{border:2px solid var(--line);background:var(--panel);border-radius:999px;padding:10px 18px;font-size:17px;font-weight:600;color:var(--ink);min-height:48px}
+  .hfil button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .hfil button b{margin-left:4px}
+  .hayuda{margin:2px 0 14px;color:var(--muted);font-size:15px}
+  .hsec{margin:0 0 22px;border:2px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+  .hsec h3{margin:0;padding:12px 16px;font-size:19px;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:baseline;gap:10px;background:var(--bg);border-bottom:2px solid var(--line)}
+  .hsec h3 b{font-size:24px}.hsec h3 small{margin-left:auto;font-size:13px;text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500}
+  .hfaltan{border-color:#c9a227;background:repeating-linear-gradient(135deg,#fff8dc 0 14px,#fdf1c4 14px 28px)}
+  .hfaltan h3{background:#f6df8a;border-color:#c9a227;color:#5b4700}
+  .hhechas h3{color:var(--producido)}
+  .hl{display:flex;flex-wrap:wrap;align-items:stretch;border-bottom:1px solid var(--line)}
+  .hl:last-child{border-bottom:0}
+  .hmain{flex:1;min-width:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:none;border:0;text-align:left;padding:14px 16px;min-height:68px;color:var(--ink);font-size:20px;-webkit-tap-highlight-color:transparent;transition:background .12s}
+  .hmain:active:not(:disabled){background:var(--cortar-bg)}
+  .hmain:disabled{cursor:default;color:inherit}
+  .hn{font-weight:700;display:inline-flex;align-items:center;gap:8px}
+  .hurg{width:14px;height:14px;border-radius:50%;background:var(--urg);display:inline-block;flex:none}
+  .ht{font-weight:800;font-size:20px;border:2px solid currentColor;border-radius:8px;padding:0 8px;min-width:2.2em;text-align:center}
+  .hr{color:var(--muted);font-size:16px}
+  .hsv{font-size:13px;font-weight:700;color:var(--sin_vinilo);background:var(--sin_vinilo-bg);border-radius:6px;padding:2px 8px}
+  .hp{margin-left:auto;font-size:28px;font-weight:800;letter-spacing:.02em;border:2px solid var(--ink);border-radius:10px;padding:2px 14px;max-width:100%;overflow-wrap:anywhere}
+  .hq{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+  .hq b{font-size:34px;min-width:1.4em;text-align:right}
+  .hq small{font-size:13px;color:var(--producido);font-weight:600;margin-top:3px}
+  .hh{font-size:14px;color:var(--muted);margin-left:8px}
+  .hside{flex:0 0 64px;border:0;border-left:1px solid var(--line);background:none;font-size:24px;color:var(--muted)}
+  .hside.hno{color:var(--urg)}
+  .hside:active{background:var(--urg-bg)}
+  .hl.urg .hmain{box-shadow:inset 6px 0 0 var(--urg)}
+  .hl.tachada .hmain,.hl.hecha .hmain{color:var(--muted)}
+  .hl.tachada .hn,.hl.tachada .ht,.hl.tachada .hp,.hl.hecha .hn,.hl.hecha .ht,.hl.hecha .hp,.hl.hecha .hq b{text-decoration:line-through;text-decoration-thickness:3px}
+  .hl.hecha .hp,.hl.hecha .ht,.hl.tachada .ht,.hl.tachada .hp{border-color:var(--line)}
+  .hl.abierta{background:var(--bg)}
+  .hnota{flex-basis:100%;padding:0 16px 12px;font-size:15px;color:var(--sin_vinilo)}
+  .helige{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:4px 16px 14px}
+  .helige span{font-weight:700;margin-right:6px;font-size:17px}
+  .helige button{min-width:52px;min-height:52px;font-size:20px;font-weight:700;border:2px solid var(--line);border-radius:12px;background:var(--panel)}
+  .helige button.si{background:var(--ink);color:#fff;border-color:var(--ink);padding:0 16px;font-size:17px}
+  .hfaltan .hl{border-color:#e7cf75}
+  .hfaltan .hmain:active{background:#f6df8a}
+  body.imp-hoja header,body.imp-hoja #pasos,body.imp-hoja #buscaP,body.imp-hoja #toast,body.imp-hoja #bArriba,body.imp-hoja .hoja-top,body.imp-hoja .hayuda,body.imp-hoja .hside,body.imp-hoja .helige,body.imp-hoja #aviso,body.imp-hoja #avisoError{display:none!important}
+  body.imp-hoja,html:has(body.imp-hoja){background:#fff!important}
+  body.imp-hoja .hoja .logo-imp,body.imp-hoja .himp-tit{display:block}
+  body.imp-hoja .hmain{min-height:0;padding:5px 10px;font-size:14px}
+  body.imp-hoja .hp{font-size:18px}body.imp-hoja .hq b{font-size:20px}body.imp-hoja .ht{font-size:14px}
+  body.imp-hoja .hsec h3{font-size:14px;padding:6px 10px}
+  body.imp-hoja .hl{break-inside:avoid}
   .busca-p input{flex:1;min-width:0;font:inherit;font-size:20px;padding:14px 16px;border:2px solid var(--line);border-radius:14px;background:var(--panel)}
   .busca-p input:focus{outline:3px solid var(--c, #1d1b18);outline-offset:1px}
   .pc{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;display:grid;gap:12px}
@@ -866,9 +920,15 @@ const recogidasListas = () => pedidos.filter((p) => p.recogida && !p.cancelado &
 const sinEtiqueta = () => pedidos.filter((p) => p._estado === "producido" && !p.recogida && p.envio_tipo !== "otros" && !p.etiqueta_impresa && !p.cancelado);
 const PASOS = {
   produccion: () => [
-    { id: "cortar", label: "Por hacer", n: construirResumen("cortar").quedan, c: "cortar", vacio: "" },
-    { id: "sin_vinilo", label: "Prendas sin vinilo", n: construirResumen("sin_vinilo").quedan, c: "sin_vinilo", vacio: "" },
-    { id: "sin_stock", label: "Sin stock", n: lineasEnEtapa("sin_stock").reduce((s, l) => s + l.cantidad, 0), c: "sin_stock", vacio: "" },
+    ...(usaHoja() ? [
+      { id: "hoja", label: "Hoja de producción", n: hojaPendientes(), c: "cortar", vacio: "" },
+      { id: "sin_stock", label: "Sin stock", n: lineasEnEtapa("sin_stock").reduce((s, l) => s + l.cantidad, 0), c: "sin_stock", vacio: "" },
+      { id: "cortar", label: "Lista detallada", n: construirResumen("cortar").quedan, c: "cortar", vacio: "", sec: true },
+    ] : [
+      { id: "cortar", label: "Por hacer", n: construirResumen("cortar").quedan, c: "cortar", vacio: "" },
+      { id: "sin_vinilo", label: "Prendas sin vinilo", n: construirResumen("sin_vinilo").quedan, c: "sin_vinilo", vacio: "" },
+      { id: "sin_stock", label: "Sin stock", n: lineasEnEtapa("sin_stock").reduce((s, l) => s + l.cantidad, 0), c: "sin_stock", vacio: "" },
+    ]),
     ...(pedidosEn("estampar").length ? [{ id: "estampar", label: "Estampar (antiguos)", n: pedidosEn("estampar").length, c: "estampar", vacio: "" }] : []),
   ],
   expedicion: () => [
@@ -885,12 +945,13 @@ function pintarPuesto(){
   const pasos = PASOS[YO.puesto]();
   if (!paso || (paso !== "ayuda" && !pasos.some((x) => x.id === paso))) paso = pasos[0].id;
   const P = pasos.find((x) => x.id === paso);
-  $("#pasos").innerHTML = pasos.map((x) => `<button data-paso="${x.id}" class="${x.id === paso ? "on" : ""}" style="${colorVars(x.c)}"><span>${x.label}</span><b>${x.n}</b></button>`).join("")
+  $("#pasos").innerHTML = pasos.map((x) => `<button data-paso="${x.id}" class="${x.id === paso ? "on" : ""} ${x.sec ? "sec" : ""}" style="${colorVars(x.c)}"><span>${x.label}</span><b>${x.n}</b></button>`).join("")
     + `<button data-paso="ayuda" class="ayuda-b ${paso === "ayuda" ? "on" : ""}" style="${colorVars("producido")}">Ayuda</button>`;
-  const conLista = !["ayuda", "cortar", "sin_vinilo", "sin_stock", "stock"].includes(paso);
+  const conLista = !["ayuda", "cortar", "sin_vinilo", "sin_stock", "stock", "hoja"].includes(paso);
   $("#buscaP").classList.toggle("hidden", !conLista);
   $("#puesto").style.cssText = P ? colorVars(P.c) : "";
   if (paso === "ayuda"){ $("#puestoLista").innerHTML = ""; $("#ayuda").classList.remove("hidden"); pintarAyuda(); return; }
+  if (paso === "hoja"){ $("#puestoLista").innerHTML = hojaHTML(); return; }
   if (paso === "cortar" || paso === "sin_vinilo" || paso === "sin_stock" || paso === "stock"){ $("#puestoLista").innerHTML = ""; etapaR = paso; $("#resumen").classList.remove("hidden"); pintarResumen(); return; }
   const deQuien = (p) => !p.asignado_a || p.asignado_a === YO.nombre ? (p.asignado_a ? 0 : 1) : 2;
   const lista = paso === "estampar" ? pedidosEn("estampar") : paso === "empaquetar" ? pedidosEn("empaquetar").sort((a, b) => deQuien(a) - deQuien(b) || ordenPuesto(a, b)) : paso === "hechos" ? hechosHoy() : paso === "recogidas" ? recogidasListas() : sinEtiqueta();
@@ -996,6 +1057,123 @@ function tarjetaPuesto(p){
     <div class="bts">${bts}</div>
   </article>`;
 }
+// ───── Hoja de producción (pantalla de Producción, pensada para tablet): como la lista en papel que van tachando ─────
+// Arriba lo que FALTA (pedir), luego POR HACER (una línea por modelo+talla con cantidad; personalizadas una por unidad con el texto)
+// y abajo HECHAS HOY, tachadas. Tocar una línea = una hecha (estándar: suma a la estantería de hechas; personalizada: → Empaquetar).
+let hojaFiltro = "todo", hojaAbierta = null;
+// Se enciende para todas con fab_config.produccion_hoja = si; antes se puede probar con ?hoja (y en la demo sale siempre)
+const usaHoja = () => DEMO || cfg.produccion_hoja === "si" || new URLSearchParams(location.search).has("hoja");
+const filasH = new Map(), pendH = new Map();
+const abcH = new Intl.Collator("es", { sensitivity: "base", ignorePunctuation: true });
+const ordenHoja = (a, b) => abcH.compare(a.titulo, b.titulo) || rangoTalla(a.talla) - rangoTalla(b.talla) || String(a.resto).localeCompare(String(b.resto), "es") || (a.pers ? 1 : 0) - (b.pers ? 1 : 0) || (a.p && b.p ? porPrioridad(a.p, b.p) : 0) || String(a.pers).localeCompare(String(b.pers), "es");
+function construirHoja(){
+  filasH.clear();
+  const hacer = new Map(), faltan = new Map(), hechas = new Map();
+  for (const p of pedidos){
+    if (p.cancelado || p.enviado_fuera) continue;
+    for (const l of p.fab_lineas ?? []){
+      const v = partes(l.variante), pers = textoPers(l), clave = l.titulo + "|" + (l.variante ?? "");
+      const base = { titulo: l.titulo, variante: l.variante ?? null, talla: v.talla, resto: v.resto, clave, sinv: !!l.sin_vinilo };
+      if (l.estado === "cortar" && p._estado !== "producido"){
+        if (pers){
+          for (let u = 1; u <= l.cantidad; u++){ const k = `p:${l.line_id}:${u}`; hacer.set(k, { ...base, k, pers, ids: [l.line_id], uds: 1, quedan: 1, hechas: 0, urg: p._urg, p, pedidos: [p], nota: p.nota }); }
+        } else {
+          const k = "s:" + clave;
+          if (!hacer.has(k)) hacer.set(k, { ...base, k, pers: "", ids: [], uds: 0, urg: false, pedidos: [] });
+          const f = hacer.get(k); f.ids.push(l.line_id); f.uds += l.cantidad; f.urg ||= p._urg; f.pedidos.push(p);
+        }
+      } else if (l.estado === "sin_stock" && p._estado !== "producido"){
+        const k = "f:" + clave + (pers ? "|" + l.line_id : "");
+        if (!faltan.has(k)) faltan.set(k, { ...base, k, pers, ids: [], uds: 0, urg: false, pedidos: [] });
+        const f = faltan.get(k); f.ids.push(l.line_id); f.uds += l.cantidad; f.urg ||= p._urg; f.pedidos.push(p);
+      } else if ((l.estado === "empaquetar" || l.estado === "producido") && esHoy(l.estado_at)){
+        const k = "h:" + (pers ? l.line_id : clave);
+        if (!hechas.has(k)) hechas.set(k, { ...base, k, pers, ids: [], uds: 0, t: l.estado_at, p, deshacer: !!pers && l.estado === "empaquetar" && p._estado !== "producido" });
+        const f = hechas.get(k); f.ids.push(l.line_id); f.uds += l.cantidad; if (l.estado_at > f.t) f.t = l.estado_at;
+      }
+    }
+  }
+  for (const f of hacer.values()) if (!f.pers){ f.hechas = Math.min(cortados.get(f.clave) ?? 0, f.uds); f.quedan = f.uds - f.hechas; }
+  const filtra = (f) => hojaFiltro === "todo" || (hojaFiltro === "pers" ? !!f.pers : f.sinv);
+  const lista = (m) => [...m.values()].filter(filtra).sort(ordenHoja);
+  const H = { hacer: lista(hacer), faltan: lista(faltan), hechas: [...hechas.values()].filter(filtra).sort((a, b) => String(b.t).localeCompare(String(a.t))) };
+  for (const f of [...H.hacer, ...H.faltan, ...H.hechas]) filasH.set(f.k, f);
+  const todas = [...hacer.values()];
+  H.n = { todo: todas.reduce((s, f) => s + f.quedan, 0), pers: todas.filter((f) => f.pers).reduce((s, f) => s + f.quedan, 0), sinv: todas.filter((f) => f.sinv).reduce((s, f) => s + f.quedan, 0) };
+  return H;
+}
+const hojaPendientes = () => { const h = hojaFiltro; hojaFiltro = "todo"; const n = construirHoja().n.todo; hojaFiltro = h; return n; };
+function hojaHTML(){
+  const H = construirHoja();
+  const nombre = (f) => `<span class="hn">${f.urg ? `<i class="hurg" title="Urgente"></i>` : ""}${esc(f.titulo)}</span><span class="ht">${f.talla ? esc(f.talla) : "—"}</span>${f.resto ? `<span class="hr">${esc(f.resto)}</span>` : ""}${f.sinv ? `<span class="hsv">sin vinilo</span>` : ""}`;
+  const elegir = (f, tipo) => {
+    const max = tipo === "falta" ? f.quedan : f.uds;
+    if (tipo === "deshacer") return `<div class="helige"><span>¿Deshacer? Vuelve a «Por hacer».</span><button class="si" data-hok="${esc(f.k)}" data-n="0">↶ Sí, deshacer</button><button data-hcancel>Cancelar</button></div>`;
+    const nums = max > 1 ? Array.from({ length: Math.min(max - 1, 9) }, (_, i) => i + 1).map((n) => `<button data-hok="${esc(f.k)}" data-n="${n}">${n}</button>`).join("") : "";
+    return `<div class="helige"><span>${tipo === "falta" ? (max > 1 ? "¿Cuántas faltan?" : "¿Falta esta prenda?") : (max > 1 ? "¿Cuántas han llegado?" : "¿Ha llegado?")}</span>${nums}<button class="si" data-hok="${esc(f.k)}" data-n="0">${max > 1 ? `Todas (${max})` : tipo === "falta" ? "✖ Sí, falta" : "✔ Sí, ha llegado"}</button><button data-hcancel>Cancelar</button></div>`;
+  };
+  const filaHacer = (f) => {
+    const hecha = f.quedan <= 0, abierta = hojaAbierta === f.k;
+    return `<div class="hl ${hecha ? "tachada" : ""} ${f.urg ? "urg" : ""} ${abierta ? "abierta" : ""}">
+      <button class="hmain" data-hhecha="${esc(f.k)}" ${hecha ? "disabled" : ""}>${nombre(f)}
+        ${f.pers ? `<span class="hp">${esc(f.pers)}</span>` : `<span class="hq"><b>${hecha ? f.uds : f.quedan}</b>${f.hechas && !hecha ? `<small>✔ ${f.hechas} hecha${f.hechas > 1 ? "s" : ""} de ${f.uds}</small>` : ""}${hecha ? `<small>✔ hechas · esperan al resto del pedido</small>` : ""}</span>`}</button>
+      ${!f.pers && f.hechas ? `<button class="hside" data-hdes="${esc(f.k)}" title="Me he equivocado: una hecha menos">↶</button>` : ""}
+      ${hecha ? "" : `<button class="hside hno" data-hno="${esc(f.k)}" title="Falta la prenda">✖</button>`}
+      ${f.pers && f.nota ? `<div class="hnota">📝 ${esc(f.nota)}</div>` : ""}
+      ${abierta ? elegir(f, "falta") : ""}</div>`;
+  };
+  const filaFalta = (f) => `<div class="hl falta ${hojaAbierta === f.k ? "abierta" : ""}"><button class="hmain" data-hlleg="${esc(f.k)}">${nombre(f)}${f.pers ? `<span class="hp">${esc(f.pers)}</span>` : ""}<span class="hq"><b>${f.uds}</b></span></button>${hojaAbierta === f.k ? elegir(f, "llega") : ""}</div>`;
+  const hh = (t) => new Date(t).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  const filaHecha = (f) => `<div class="hl hecha ${hojaAbierta === f.k ? "abierta" : ""}"><button class="hmain" ${f.deshacer ? `data-hundo="${esc(f.k)}"` : "disabled"}>${nombre(f)}${f.pers ? `<span class="hp">${esc(f.pers)}</span>` : `<span class="hq"><b>${f.uds}</b></span>`}<span class="hh">${hh(f.t)}</span></button>${hojaAbierta === f.k ? elegir(f, "deshacer") : ""}</div>`;
+  const nf = H.faltan.reduce((s, f) => s + f.uds, 0), nh = H.hacer.reduce((s, f) => s + f.quedan, 0), nd = H.hechas.reduce((s, f) => s + f.uds, 0);
+  const chip = (id, t) => `<button class="${hojaFiltro === id ? "on" : ""}" data-hfiltro="${id}">${t} <b>${H.n[id]}</b></button>`;
+  return `<div class="hoja">
+    <div class="logo-imp"><img src="logo.png" alt="Singular Wardrobe"></div>
+    <div class="hoja-top"><div class="hfil">${chip("todo", "Todo")}${chip("pers", "Personalizadas")}${chip("sinv", "Sin vinilo")}</div><button class="himpr" data-himpr>🖨 Imprimir hoja</button></div>
+    <h2 class="himp-tit">Hoja de producción · ${new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}</h2>
+    <p class="hayuda">Toca la línea cuando la hayas hecho y se tacha (si hay 3, cada toque es una). <b>✖</b> si falta la prenda. <b>↶</b> para corregir.</p>
+    ${nf ? `<section class="hsec hfaltan"><h3>Faltan · pedir <b>${nf}</b><small>Toca cuando llegue</small></h3>${H.faltan.map(filaFalta).join("")}</section>` : ""}
+    <section class="hsec hhacer"><h3>Por hacer <b>${nh}</b></h3>${H.hacer.length ? H.hacer.map(filaHacer).join("") : `<div class="vacio">Nada por hacer${hojaFiltro !== "todo" ? " en este filtro" : ""}. 🎉</div>`}</section>
+    ${nd ? `<section class="hsec hhechas"><h3>Hechas hoy <b>${nd}</b></h3>${H.hechas.map(filaHecha).join("")}</section>` : ""}
+  </div>`;
+}
+// Toques rápidos en estándar: se apuntan al momento en pantalla y se mandan juntos al cabo de un momento
+function hojaSumar(f, n){
+  const pe = pendH.get(f.clave) ?? { f, n: 0 };
+  pe.n += n; pendH.set(f.clave, pe);
+  cortados.set(f.clave, Math.max((cortados.get(f.clave) ?? 0) + n, 0));
+  pintar();
+  clearTimeout(pe.t);
+  pe.t = setTimeout(async () => {
+    pendH.delete(f.clave); if (!pe.n) return;
+    const nombreF = `${f.titulo}${f.talla ? " T." + f.talla : ""}`;
+    await sumarCortados(pe.f, pe.n, pe.n > 0 ? `✔ ${pe.n} hecha${pe.n > 1 ? "s" : ""} · ${nombreF}` : `↶ Corregido: ${pe.n} · ${nombreF}`);
+  }, 900);
+}
+async function hojaHecha(k){
+  const f = filasH.get(k); if (!f || f.quedan <= 0) return;
+  hojaAbierta = null;
+  if (!f.pers){ hojaSumar(f, 1); return; }
+  // personalizada: se tacha ya y pasa a Empaquetar
+  const l = pedidos.flatMap((p) => p.fab_lineas ?? []).find((x) => x.line_id === f.ids[0]);
+  if (l){ l.estado = "empaquetar"; l.estado_at = new Date().toISOString(); pintar(); }
+  await moverLineas(f.ids, "empaquetar", `✔ «${f.pers}» · ${f.titulo}${f.talla ? " T." + f.talla : ""} (${f.p?.order_name ?? ""})`);
+}
+async function hojaOk(k, n){
+  const f = filasH.get(k); if (!f) return;
+  hojaAbierta = null;
+  const nombreF = `${f.titulo}${f.talla ? " T." + f.talla : ""}`;
+  if (k.startsWith("h:")){ pintar(); await moverLineas(f.ids, "cortar", `↶ «${f.pers}» vuelve a Por hacer`); return; }
+  const est = k.startsWith("f:") ? "sin_stock" : "cortar";
+  if (est === "cortar" && !n) n = f.quedan;
+  // Faltan: las de los pedidos más nuevos. Han llegado: urgentes y más antiguos primero.
+  const ls = pedidos.flatMap((p) => (p.fab_lineas ?? []).filter((l) => f.ids.includes(l.line_id) && l.estado === est).map((l) => ({ l, p })))
+    .sort((a, b) => est === "cortar" ? porPrioridad(b.p, a.p) : porPrioridad(a.p, b.p));
+  const ids = []; let uds = 0;
+  for (const { l } of ls){ if (n && uds >= n) break; ids.push(l.line_id); uds += l.cantidad; }
+  if (est === "cortar") await picking(ids, false, `✖ Faltan ${uds} · ${nombreF} → Faltan`);
+  else await picking(ids, true, `✔ Han llegado ${uds} · ${nombreF} → Por hacer`);
+}
 // Botón «↑ Arriba» en táctil cuando la lista es larga
 addEventListener("scroll", () => { if (TACTIL) $("#bArriba").classList.toggle("ver", scrollY > 700); }, { passive: true });
 $("#buscaPIn").addEventListener("input", (e) => { buscaPuesto = e.target.value; pintarPuesto(); });
@@ -1092,8 +1270,8 @@ const Demo = (() => {
   function picking(ids, hay, per){
     for (const [p, l] of lineasDe(ids)){
       if (p.estado === "producido") continue;
-      if (hay){ l.prenda_ok_at = new Date().toISOString(); l.prenda_ok_por = per || "demo"; if (l.estado === "sin_stock") l.estado = "cortar"; }
-      else { if (l.estado === "estampar") devolver(l); l.estado = "sin_stock"; l.prenda_ok_at = null; l.estado_por = per || "demo"; }
+      if (hay){ l.prenda_ok_at = new Date().toISOString(); l.prenda_ok_por = per || "demo"; if (l.estado === "sin_stock"){ l.estado = "cortar"; l.estado_at = new Date().toISOString(); } }
+      else { if (l.estado === "estampar") devolver(l); l.estado = "sin_stock"; l.estado_at = new Date().toISOString(); l.prenda_ok_at = null; l.estado_por = per || "demo"; }
     }
   }
   function viniloMal(ids){ for (const [, l] of lineasDe(ids)) if (l.estado === "estampar") l.estado = "cortar"; }
@@ -1126,7 +1304,7 @@ const Demo = (() => {
         if (l.estado === "cortar" && ["estampar", "empaquetar"].includes(b.estado) && !(l.personalizacion ?? []).length){
           const k = l.titulo + "|" + (l.variante ?? ""); if (cortados[k]) cortados[k] = Math.max(cortados[k] - l.cantidad, 0);
         }
-        l.estado = b.estado;
+        l.estado = b.estado; l.estado_at = new Date().toISOString();
       }
       return { ok: true, n: b.line_ids.length };
     }
@@ -1197,7 +1375,7 @@ const Demo = (() => {
       const need = {}; for (const l of ls.filter((l) => l.estado === "cortar" && est(l))){ const k = l.titulo + "|" + (l.variante ?? ""); need[k] = (need[k] ?? 0) + l.cantidad; }
       if (!Object.keys(need).length || Object.entries(need).some(([k, v]) => (cortados[k] ?? 0) < v)) continue;
       for (const [k, v] of Object.entries(need)) cortados[k] -= v;
-      for (const l of ls) if (l.estado === "cortar" && est(l)) l.estado = "empaquetar";
+      for (const l of ls) if (l.estado === "cortar" && est(l)){ l.estado = "empaquetar"; l.estado_at = new Date().toISOString(); }
     }
   }
   return { pedidos, cfg, fn, cortados, sumarCortados, modelos, picking, viniloMal, hojas, repartir };
@@ -2927,6 +3105,14 @@ window.addEventListener("resize", () => { if (esMovil() !== movilAntes){ movilAn
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.nohay){ noHayFila(b.dataset.nohay); return; }
+  // Hoja de producción
+  if (b.dataset.hhecha){ hojaHecha(b.dataset.hhecha); return; }
+  if (b.dataset.hdes){ const f = filasH.get(b.dataset.hdes); if (f && f.hechas > 0) hojaSumar(f, -1); return; }
+  if (b.dataset.hno || b.dataset.hlleg || b.dataset.hundo){ const k = b.dataset.hno || b.dataset.hlleg || b.dataset.hundo; hojaAbierta = hojaAbierta === k ? null : k; pintar(); return; }
+  if (b.dataset.hcancel !== undefined){ hojaAbierta = null; pintar(); return; }
+  if (b.dataset.hok){ hojaOk(b.dataset.hok, Number(b.dataset.n) || 0); return; }
+  if (b.dataset.hfiltro){ hojaFiltro = b.dataset.hfiltro; hojaAbierta = null; pintar(); return; }
+  if (b.dataset.himpr !== undefined){ imprimir("imp-hoja"); return; }
   if (b.dataset.gmodo){ G.modo = b.dataset.gmodo; pintar(); window.scrollTo(0, 0); return; }
   if (b.dataset.gper){ G.periodo = b.dataset.gper; cargarProductos().then(pintar); return; }
   if (b.dataset.gdia){ const k = Number(b.dataset.gdia), h = hoyISO(); G.dia = k === 0 ? null : masDias(G.dia ?? h, k); if (G.dia && G.dia >= h) G.dia = null; pintar(); return; }

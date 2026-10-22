@@ -30,7 +30,7 @@ Si alguien olvida la contraseña, en su fila pulsa **🔑 Poner contraseña**. P
 | Puesto | Qué ve |
 | --- | --- |
 | Administración | Al entrar, la pantalla de **Gerencia** (Dashboard y Mi día, apartado 17). Con el botón **Ver todo el programa** pasa al programa entero: Plan del día, Pedidos, Resumen producción, Histórico y Ayuda. El botón **Gerencia** de arriba vuelve al dashboard. |
-| Producción | **Por hacer**: las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. **Prendas sin vinilo**: los productos que no se cortan (como «cupido»), con ✔ Preparadas, Todas y ✖ No hay. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas, ✔ Han llegado todas (el modelo entero) y ✔ Ha llegado todo. |
+| Producción | **Hoja de producción**: la lista para tachar en la tablet, con Faltan arriba, Por hacer y Hechas hoy (apartado 7). **Lista detallada**: la de antes, con las prendas que hay que cortar y estampar, por color de vinilo y de la A a la Z, con ✔ Hechas, Todas y ✖ No hay. Los productos que no se cortan (como «cupido») salen en la hoja con la marca «sin vinilo» y su filtro. **Sin stock**: las prendas que faltan, con ✔ Han llegado, Todas, ✔ Han llegado todas (el modelo entero) y ✔ Ha llegado todo. |
 | Expedición | **Revisar stock**: lo primero de la mañana, las prendas del día por modelo y talla, con ✔ Hay y ✖ No hay (las de estampar) y ✔ Preparadas (las sin vinilo). **Empaquetar**: un botón por pedido según cómo sale (etiqueta GLS, Otros envíos o recogida). **Hechos hoy**: lo que ha salido, para reimprimir una etiqueta. **Recogidas en tienda**: ✔ Entregado al cliente. |
 
 En Producción y Expedición todo lo que haces queda a tu nombre sin preguntar. En Expedición, los pedidos de Empaquetar se reparten solos por turnos entre las personas de Expedición que están (Dania, Irene y las que se den de alta), y Dania (Responsable de Expedición) puede recuperar los de cualquiera de ellas (apartado 6). En Expedición, el buscador de arriba encuentra un pedido por su número. Los pedidos van ordenados: urgentes (Exprés) primero y después del más antiguo al más nuevo. Si un pedido lo está haciendo otra compañera, sale en gris.
@@ -204,7 +204,18 @@ El nombre del pedido cogido sale en grande en la tarjeta. Si ves uno con el nomb
 
 Quien corta el vinilo también estampa, a la vez y sin papeles. Todo se apunta en **Por hacer** (en la pantalla de Producción) o en **Resumen producción → Producción**.
 
-**Cómo está ordenado.** Por **color de vinilo**, para cortar cada color de una vez, y dentro de cada color los modelos de la A a la Z. Cada línea es un modelo y talla, con cuántas faltan y los pedidos que las llevan (⚡ = urgente).
+**Hoja de producción (tablet).** Es la pantalla de Producción hecha como la lista en papel que se va tachando. Una sola lista, de la A a la Z:
+
+- Arriba, en amarillo rayado, **Faltan · pedir**: lo que no hay, por modelo y talla. Cuando llegue, toca la línea y elige cuántas han llegado (o Todas): vuelven a Por hacer, urgentes y más antiguos primero.
+- **Por hacer**: una línea por modelo y talla con cuántas faltan. Las personalizadas salen una por línea con el texto en grande a la derecha (por ejemplo LISA o EP). El punto rojo y la raya roja a la izquierda = urgente.
+- **Toca la línea cuando la hayas hecho.** Si pone 3, cada toque es una: 3 → 2 → 1 y se tacha. Las estándar y las sin vinilo van a la estantería de hechas y el programa las reparte solo; las personalizadas pasan a Empaquetar. Si una línea queda tachada con «esperan al resto del pedido», está hecha pero su pedido aún espera otra prenda.
+- **↶** resta una hecha si te has equivocado. **✖** = falta la prenda: elige cuántas faltan (o Todas) y pasan a Faltan.
+- **Hechas hoy**, abajo y tachadas, con la hora. Una personalizada se puede deshacer tocándola (vuelve a Por hacer).
+- Filtros arriba: **Todo**, **Personalizadas** y **Sin vinilo**. **🖨 Imprimir hoja** saca la misma lista en papel.
+
+La **Lista detallada** (la pantalla de antes, por color de vinilo, con los números de pedido y 🎨 color) sigue disponible en su botón.
+
+**Lista detallada y Resumen producción.** Ordenados por **color de vinilo**, para cortar cada color de una vez, y dentro de cada color los modelos de la A a la Z. Cada línea es un modelo y talla, con cuántas faltan y los pedidos que las llevan (⚡ = urgente).
 
 **Prendas sin personalizar (estándar)**
 
