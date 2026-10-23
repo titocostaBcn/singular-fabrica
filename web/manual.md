@@ -272,7 +272,12 @@ En los tres casos, al pulsar sale **«¿Quién lo ha empaquetado?»**: toca tu n
    El programa marca el pedido como enviado en Shopify con el número de seguimiento, y la clienta recibe el correo de Shopify con el enlace de GLS. No hay que hacer nada en Shopify.
 5. Si la etiqueta sale mal o se pierde, en esa tarjeta pulsa **Reimprimir**.
 
-Si aparece un error de GLS, el pedido queda en la pestaña Sin etiqueta. No lo envíes sin etiqueta: avisa a Tito.
+Si GLS da un error, el pedido **se queda en Empaquetar** con el aviso en rojo y no se envía sin etiqueta. El más habitual es **«GLS no reconoce la dirección»**: el código postal no corresponde a la población (por ejemplo, Foios con 46034, cuando el de Foios es 46134). Para arreglarlo:
+1. Corrige la dirección del pedido en Shopify.
+2. En la tarjeta, pulsa **🔄 Actualizar desde Shopify**.
+3. Pulsa **↻ Volver a pedir la etiqueta**.
+
+Si el error es otro o vuelve a salir, avisa a Tito.
 
 **Importante: todos los envíos salen desde este programa.** No imprimas etiquetas desde la app de GLS de Shopify ni marques los pedidos a mano como preparados en Shopify. Si el pedido ya se había enviado desde la app de GLS de Shopify, al pulsar ✔ Etiqueta GLS el programa no hace otra etiqueta: apunta el número de GLS que ya tiene y avisa con «Este pedido ya estaba enviado desde Shopify (GLS …): no se ha hecho otra etiqueta». El paquete sale con la etiqueta de la app.
 
@@ -405,7 +410,7 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 | La etiqueta no se ha impreso | En la tarjeta pulsa Reimprimir. Si no aparece, mira la pestaña Sin etiqueta y avisa a Tito. |
 | Mandé una etiqueta desde el iPhone y no sale | El ordenador de Expedición tiene que estar encendido, con el programa abierto y marcado en 🖨 como «Este ordenador ES la impresora de Expedición». Luego pulsa Reimprimir. |
 | La etiqueta sale enorme, en varias etiquetas, o salen etiquetas en blanco | Recarga la página (Ctrl + F5). Si sigue, en la impresora: tamaño de etiqueta 10 × 15 cm y calibrar el rollo (apartado 10, Impresora de etiquetas). |
-| Error de GLS al pedir la etiqueta | No envíes el paquete. Avisa a Tito con el número de pedido. |
+| Error de GLS al pedir la etiqueta | No envíes el paquete. Si dice «GLS no reconoce la dirección», corrige el código postal o la población en Shopify, pulsa 🔄 Actualizar desde Shopify y luego ↻ Volver a pedir la etiqueta (apartado 10). Si es otro error, avisa a Tito con el número de pedido. |
 | Sale «Este pedido ya estaba enviado desde Shopify» | Ya tenía etiqueta de la app de GLS de Shopify. Usa esa etiqueta; el programa ya lo ha apuntado. |
 | Sale «⚠ Shopify: …» al dar la salida o en la tarjeta | La etiqueta y la salida están bien, pero Shopify no se ha actualizado. No lo marques a mano: avisa a Tito con el número de pedido. |
 | He elegido mal quién lo ha hecho | Avisa a Tito para corregirlo en el Histórico. |
