@@ -236,7 +236,9 @@ La **Lista detallada** (la pantalla de antes, por color de vinilo, con los núme
 
 Las prendas que faltan están en **Sin stock** (pantalla de Producción, Resumen producción o la pestaña Sin stock de Pedidos). El pedido espera ahí entero.
 
-Cuando llegue la prenda, escribe cuántas han llegado y pulsa **✔ Han llegado**: si faltan 50 y llegan 20, escribe 20 y quedan 30 pendientes. **Todas** marca la talla entera y **✔ Han llegado todas**, junto al nombre del modelo, marca todas las tallas de ese modelo. Lo que llega se asigna primero a los pedidos urgentes (Exprés) y más antiguos, y vuelve a Producción. Si has repuesto de todo, **✔ Ha llegado todo** (arriba) lo devuelve todo de golpe; pide pulsar dos veces para no hacerlo sin querer.
+Cuando llegue la prenda, escribe cuántas han llegado y pulsa **✔ Han llegado**: si faltan 50 y llegan 20, escribe 20 y quedan 30 pendientes. **Todas** marca la talla entera y **✔ Han llegado todas**, junto al nombre del modelo, marca todas las tallas de ese modelo. Lo que llega se asigna primero a los pedidos urgentes (Exprés) y más antiguos, y vuelve a Producción.
+
+**Elegir a qué pedidos van.** Si quieres que lo que ha llegado vaya a pedidos concretos y no en automático, toca sus números en la fila: se marcan en negro. Después pulsa **✔ Han llegado · N elegidos**; si un pedido lleva 2 de esa prenda, se le asignan las 2. **Quitar** borra la elección y vuelve al modo automático. Si has repuesto de todo, **✔ Ha llegado todo** (arriba) lo devuelve todo de golpe; pide pulsar dos veces para no hacerlo sin querer.
 
 **Pedidos que se mueven solos.** No te asustes si un pedido cambia de pestaña sin que nadie lo toque:
 

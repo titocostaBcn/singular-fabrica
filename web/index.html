@@ -129,6 +129,10 @@
   .himpr.hverh.on{background:#eef6f0;border-color:#9cc9ab}
   .hechas-ocultas{display:block;width:100%;margin:10px 0 0;border:2px dashed var(--line);background:var(--panel);border-radius:14px;padding:14px 18px;font:inherit;font-size:17px;color:var(--muted);text-align:left;min-height:52px}
   .hechas-ocultas b{color:var(--ink)}
+  .llegsel-ayuda{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .llegsel{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 10px;margin:2px 3px 2px 0;font:inherit;font-size:14px;min-height:36px}
+  body.tactil .llegsel{min-height:44px;padding:8px 12px;font-size:15px}
+  .llegsel.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .donde-et{margin:14px 2px 4px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
   body.imp-hoja .hechas-ocultas{display:none!important}
   .hfil button b{margin-left:4px}
@@ -2742,7 +2746,7 @@ function pintarResumen(){
       <span style="margin-left:auto;display:flex;gap:8px"><button class="btn-sec" id="bExcel">⬇ Excel</button><button class="btn-sec" id="bImprLista">🖨 Imprimir listado</button></span></div>
     ${etapaR === "stock" ? `<div class="ayudacorte">Lo primero de la mañana. <b>Para estampar</b>: busca cada prenda y déjala a Producción; pulsa <b>✔ Hay</b> o <b>✖ No hay</b> (con un número, solo las que faltan). <b>Sin vinilo</b>: si hay, déjalas en la estantería de hechas y pulsa <b>✔ Preparadas</b>; pasan solas a Empaquetar. Lo que marques ✖ No hay sale a Carlota en <b>Sin stock</b> para comprarlo.</div>`
       : etapaR === "sin_vinilo" ? `<div class="ayudacorte">Productos que no llevan vinilo (como «cupido»). Mira si hay, déjalos en la estantería de hechas y pulsa <b>✔ Preparadas</b> (o <b>Todas</b>): el programa los reparte a los pedidos, urgentes y más antiguos primero. Si no hay, pulsa <b>✖ No hay</b>.</div>`
-      : contador ? `<div class="ayudacorte">Por color de vinilo y de la A a la Z. Coge las prendas, corta y estampa, y apunta las <b>hechas</b>: el programa las reparte solo a los pedidos (urgentes y más antiguos primero) y los que quedan completos pasan a <b>Empaquetar</b>. Si falta la prenda, pulsa <b>✖ No hay</b>.</div>` : etapaR === "sin_stock" ? `<div class="ayudacorte">Prendas que faltan. Cuando lleguen, escribe cuántas y pulsa <b>✔ Han llegado</b> (si faltan 50 y llegan 20, escribe 20 y quedan 30 pendientes), o <b>Todas</b> para la talla entera y <b>✔ Han llegado todas</b> para el modelo entero. Se asignan primero a los pedidos urgentes (Exprés) y más antiguos.${ls.length ? ` <button class="llegtodo" data-llegtodo="1">${llegTodoConfirmar ? "¿Seguro? Pulsa otra vez" : `✔ Ha llegado todo (${ls.reduce((s, l) => s + l.cantidad, 0)})`}</button>` : ""}</div>` : ""}
+      : contador ? `<div class="ayudacorte">Por color de vinilo y de la A a la Z. Coge las prendas, corta y estampa, y apunta las <b>hechas</b>: el programa las reparte solo a los pedidos (urgentes y más antiguos primero) y los que quedan completos pasan a <b>Empaquetar</b>. Si falta la prenda, pulsa <b>✖ No hay</b>.</div>` : etapaR === "sin_stock" ? `<div class="ayudacorte">Prendas que faltan. Cuando lleguen, escribe cuántas y pulsa <b>✔ Han llegado</b> (si faltan 50 y llegan 20, escribe 20 y quedan 30 pendientes), o <b>Todas</b> para la talla entera y <b>✔ Han llegado todas</b> para el modelo entero. Se asignan primero a los pedidos urgentes (Exprés) y más antiguos. Si quieres que vayan a pedidos concretos, toca sus números (se marcan) y pulsa <b>✔ Han llegado</b>.${ls.length ? ` <button class="llegtodo" data-llegtodo="1">${llegTodoConfirmar ? "¿Seguro? Pulsa otra vez" : `✔ Ha llegado todo (${ls.reduce((s, l) => s + l.cantidad, 0)})`}</button>` : ""}</div>` : ""}
     ${lista.length ? lista.map((g, gi) => {
       const ids = g.filas.flatMap((f) => f.ids);
       const todos = ids.length && ids.every((i) => sel.has(i));
@@ -2759,7 +2763,9 @@ function pintarResumen(){
           ${etapaR === "todos" || !f.ids.length ? `<span></span>` : `<input type="checkbox" data-self="${f.ids.join(",")}" ${f.ids.every((i) => sel.has(i)) ? "checked" : ""}>`}
           <div><div class="rv">${f.talla ? `<span class="talla">Talla ${esc(f.talla)}</span>` : `<span class="talla sin">Sin talla</span>`}</div>${f.resto ? `<div class="resto" style="margin:4px 0 0">${esc(f.resto)}</div>` : ""}</div>
           <div>${f.pers ? `<div class="rpers"><small>${esc(f.persKey || "Personalización")}${f.unidad ? " · " + f.unidad : ""}</small>${esc(f.pers)}</div>` : (g.conPers ? `<div class="rpers vacia">Sin personalización</div>` : "")}
-            <div class="rp">${f.pedidosOrd.map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}${f.sinPrenda ? `<span class="sinp">${f.pedidosOrd.length ? " · " : ""}sin prenda (${f.sinPrenda}): ${f.pedidosSinOrd.map((p) => esc(p.order_name)).join(", ")}</span>` : ""}</div>
+            <div class="rp">${etapaR === "sin_stock" && !f.pers && f.pedidosOrd.length > 1
+              ? `<span class="llegsel-ayuda">Toca para elegir a qué pedidos van:</span>` + f.pedidosOrd.map((p) => `<button class="llegsel ${llegSel.get(k)?.has(p.order_id) ? "on" : ""}" data-llegsel="${k}" data-ord="${p.order_id}">${p._urg ? "⚡" : ""}${esc(p.order_name)}</button>`).join("")
+              : f.pedidosOrd.map((p) => (p._urg ? "⚡" : "") + esc(p.order_name)).join(", ")}${f.sinPrenda ? `<span class="sinp">${f.pedidosOrd.length ? " · " : ""}sin prenda (${f.sinPrenda}): ${f.pedidosSinOrd.map((p) => esc(p.order_name)).join(", ")}</span>` : ""}</div>
             ${f.pers && f.nota ? `<div class="nota" style="margin-top:6px;font-size:14px"><b>📝 Nota del cliente:</b> ${esc(f.nota)}</div>` : ""}</div>
           ${etapaR === "todos"
             ? `<div class="retapas">${ORDEN_LINEA.filter((e) => f.porEtapa?.[e]).map((e) => `<span class="chip" style="${colorVars(e)}">${ETAPA[e].label} ${f.porEtapa[e]}</span>`).join(" ")}</div><div class="rq">${f.uds}</div>`
@@ -2775,7 +2781,7 @@ function pintarResumen(){
               : etapaR === "estampar"
                 ? `<div class="rhacer" style="${colorVars("empaquetar")}"><button data-hacer="${k}" title="Pasar estas ${f.uds} a Empaquetar">✔ Estampadas</button></div><div class="rq">${f.uds}</div>`
                 : etapaR === "sin_stock"
-                  ? `<div class="rhacer" style="${colorVars("cortar")}"><input type="number" inputmode="numeric" min="1" max="${f.uds}" placeholder="0" data-llegn="${k}" aria-label="Cuántas han llegado"><button data-llegfila="${k}" title="Escribe cuántas han llegado (urgentes y más antiguos primero)">✔ Han llegado</button><button class="todos" data-llegfila="${k}" data-todas="1" title="Han llegado las ${f.uds}">Todas</button></div><div class="rq">${f.uds}</div>`
+                  ? `<div class="rhacer" style="${colorVars("cortar")}">${llegSel.get(k)?.size ? `<button data-llegfila="${k}" title="Las que han llegado van a los pedidos elegidos">✔ Han llegado · ${llegSel.get(k).size} elegido${llegSel.get(k).size > 1 ? "s" : ""}</button><button class="todos" data-llegquitar="${k}">Quitar</button>` : `<input type="number" inputmode="numeric" min="1" max="${f.uds}" placeholder="0" data-llegn="${k}" aria-label="Cuántas han llegado"><button data-llegfila="${k}" title="Escribe cuántas han llegado (urgentes y más antiguos primero)">✔ Han llegado</button>`}${llegSel.get(k)?.size ? "" : `<button class="todos" data-llegfila="${k}" data-todas="1" title="Han llegado las ${f.uds}">Todas</button>`}</div><div class="rq">${f.uds}</div>`
                   : `<div></div><div class="rq">${f.uds}</div>`}
           </div>`; }).join("")}
       </section>`;
@@ -2861,9 +2867,19 @@ async function hayFila(k){
   const ids = pedidos.flatMap((p) => (p.fab_lineas ?? []).filter((l) => f.ids.includes(l.line_id) && l.estado === "cortar" && !l.prenda_ok_at).map((l) => l.line_id));
   await picking(ids, true, `✔ Hay ${f.uds} · ${tituloFila(f)}${f.talla ? " T." + f.talla : ""} → para Producción`);
 }
-// ✔ Han llegado en Sin stock: con número, esas (urgentes y más antiguos primero); «Todas», la fila entera
+// Pedidos elegidos a mano en Sin stock (clave de fila → order_ids): lo que llega va a esos y no al orden automático
+const llegSel = new Map();
+// ✔ Han llegado en Sin stock: con pedidos elegidos, a esos; con número, esas (urgentes y más antiguos primero); «Todas», la fila entera
 async function llegadoFila(k, todas){
   const f = filasR.get(k); if (!f) return;
+  const elegidos = llegSel.get(k);
+  if (elegidos?.size){
+    const ids = pedidos.filter((p) => elegidos.has(p.order_id)).flatMap((p) => (p.fab_lineas ?? []).filter((l) => f.ids.includes(l.line_id) && l.estado === "sin_stock").map((l) => l.line_id));
+    const nums = pedidos.filter((p) => elegidos.has(p.order_id)).map((p) => p.order_name).join(", ");
+    llegSel.delete(k);
+    await picking(ids, true, `✔ Han llegado · ${tituloFila(f)}${f.talla ? " T." + f.talla : ""} → ${nums} (Producción)`);
+    return;
+  }
   const n = todas ? 0 : Math.floor(Number(document.querySelector(`input[data-llegn="${k}"]`)?.value)) || 0;
   if (!todas && !n){ toast("Escribe cuántas han llegado o pulsa Todas", true); return; }
   const ls = pedidos.flatMap((p) => (p.fab_lineas ?? []).filter((l) => f.ids.includes(l.line_id) && l.estado === "sin_stock").map((l) => ({ l, p }))).sort((a, b) => porPrioridad(a.p, b.p));
@@ -3233,6 +3249,8 @@ document.addEventListener("click", (e) => {
   if (b.dataset.gimprcompra !== undefined){ imprimir("imp-compra"); return; }
   if (b.dataset.hay){ hayFila(b.dataset.hay); return; }
   if (b.dataset.llegfila){ llegadoFila(b.dataset.llegfila, b.dataset.todas === "1"); return; }
+  if (b.dataset.llegsel){ const k = b.dataset.llegsel, o = Number(b.dataset.ord), s = llegSel.get(k) ?? new Set(); s.has(o) ? s.delete(o) : s.add(o); s.size ? llegSel.set(k, s) : llegSel.delete(k); pintar(); return; }
+  if (b.dataset.llegquitar){ llegSel.delete(b.dataset.llegquitar); pintar(); return; }
   if (b.dataset.llegtodo){ llegadoTodo(); return; }
   if (b.dataset.llegids){ const ids = b.dataset.llegids.split(",").map(Number); picking(ids, true, `✔ Han llegado todas · ${b.dataset.llegtit} → Producción`); return; }
   if (b.dataset.pm){ const inp = [...document.querySelectorAll("input[data-hecho]")].find((x) => x.dataset.hecho === b.dataset.pmk); if (inp){ const max = Number(inp.dataset.max) || 999; const v = Math.min(max, Math.max(0, (Number(inp.value) || 0) + Number(b.dataset.pm))); inp.value = v ? String(v) : ""; } return; }
