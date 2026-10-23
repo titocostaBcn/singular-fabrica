@@ -366,8 +366,10 @@ async function glsGrabar(p: any, cfg: Record<string, string>, metodo: "GrabaServ
   const uid = modo === "real" ? await secret("gls_uid_cliente") : GLS_UID_PRUEBAS;
   if (!uid) throw new Error("Falta el UID de cliente GLS en el vault (gls_uid_cliente)");
   const nac = NACIONAL.has((p.pais ?? "ES").toUpperCase());
-  const servicio = nac ? cfg.gls_servicio_nacional : cfg.gls_servicio_internacional;
-  const horario = nac ? cfg.gls_horario_nacional : cfg.gls_horario_internacional;
+  // Baleares (CP 07…): EconomyParcel 37/18, según GLS (23-oct). Península: BusinessParcel 96/18. Portugal y resto UE: EuroBusinessParcel 74/3.
+  const baleares = nac && (/^07/.test(String(p.cp ?? "").trim()) || /balear|illes/i.test(String(p.provincia ?? "")));
+  const servicio = baleares ? (cfg.gls_servicio_baleares ?? "37") : nac ? cfg.gls_servicio_nacional : cfg.gls_servicio_internacional;
+  const horario = baleares ? (cfg.gls_horario_baleares ?? "18") : nac ? cfg.gls_horario_nacional : cfg.gls_horario_internacional;
   const ref = String(p.order_name).replace(/[^0-9A-Za-z-]/g, "").slice(0, 15);
   const { tel, movilIntl } = telefonos(p.telefono, p.pais ?? "ES");
   const movil = nac ? tel : movilIntl;
