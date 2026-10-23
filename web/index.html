@@ -1052,7 +1052,8 @@ function tarjetaPuesto(p){
     if (otrosAbierto === id) bts = `<div class="otros-f" style="flex:1">${chipsOtros(id)}<input data-otrosinfo="${id}" placeholder="¿Cómo sale? Transportista, nº de seguimiento, entregado en mano…" ${TACTIL ? "" : "autofocus"}>
         <button class="go" style="${colorVars("producido")}" data-otrosok="${id}">✔ Confirmar</button><button class="sec" data-otroscancel>Cancelar</button></div>`;
     else if (zona) bts = `<button class="go" style="${colorVars("producido")}" data-otros="${id}">✔ Empaquetado · anotar cómo sale</button>`;
-    else bts = `<button class="go" style="${colorVars("producido")}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Pidiendo la etiqueta a GLS…" : p.recogida ? "✔ Empaquetado · listo para recoger" : "✔ Empaquetado · imprimir etiqueta"}</button>`;
+    else bts = `<button class="go" style="${colorVars("producido")}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Pidiendo la etiqueta a GLS…" : p.recogida ? "✔ Empaquetado · listo para recoger" : p.gls_error ? "↻ Volver a pedir la etiqueta" : "✔ Empaquetado · imprimir etiqueta"}</button>`
+      + (p.gls_error && !busy ? `<button class="sec" data-actualizar="${id}">🔄 Actualizar desde Shopify</button>` : "");
   } else if (e === "producido" && p.recogida){
     bts = p.entregado_at ? `<div class="estado"><span class="ok">✔ Entregado al cliente</span><span>${fecha(p.entregado_at)}</span></div>`
       : `<button class="go" style="${colorVars("producido")}" data-entregar="${id}" data-valor="1">✔ Entregado al cliente</button>`;

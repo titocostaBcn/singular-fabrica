@@ -516,9 +516,20 @@ async function marcarYaEnviado(order_id: number, ya: { fid: string; numero: stri
   return { ok: true, ya_enviado: true, codbarras: ya.numero, aviso: `Este pedido ya estaba enviado desde Shopify${n}: no se ha hecho otra etiqueta.` };
 }
 
+// Error de GLS explicado para el taller (lo que sale en la tarjeta y en el aviso)
+function glsConsejo(msg: string, p: any): string {
+  if (/return=-69|canalizar/i.test(msg)) return `GLS no reconoce la dirección: revisa que el código postal ${p.cp ?? ""} corresponde a ${p.ciudad ?? "la población"}. Corrígelo en Shopify, pulsa «🔄 Actualizar desde Shopify» y vuelve a pulsar la salida. (${msg})`;
+  return msg;
+}
+// Si GLS falla, el pedido VUELVE a Empaquetar (con el error a la vista) para corregir y reintentar; antes se quedaba atascado en producido sin etiqueta.
+async function volverAEmpaquetar(order_id: number, msg: string, asignado: string | null) {
+  await sb.from("fab_pedidos").update({ estado: "empaquetar", estado_at: new Date().toISOString(), gls_uid: null, gls_error: msg, asignado_a: asignado })
+    .eq("order_id", order_id).is("gls_codbarras", null);
+}
+
 async function producido(order_id: number, usuario: string) {
   const cfg = await config();
-  const { data: dest } = await sb.from("fab_pedidos").select("direccion1, pais, cp, provincia").eq("order_id", order_id).maybeSingle();
+  const { data: dest } = await sb.from("fab_pedidos").select("direccion1, pais, cp, provincia, asignado_a").eq("order_id", order_id).maybeSingle();
   const zona = dest && destinoOtros(dest);
   if (zona) return { ok: false, error: `${zona}: este pedido va por Otros envíos, no por GLS` };
   // Bloqueo para que dos toques seguidos no generen dos envíos en GLS
@@ -558,13 +569,14 @@ async function producido(order_id: number, usuario: string) {
       if (/ya existe el albar/i.test(String((e as Error).message))) {
         const ya2 = await shopifyYaEnviado(order_id);
         if (ya2) return await marcarYaEnviado(order_id, ya2, usuario);
-        await sb.from("fab_pedidos").update({ gls_uid: null, gls_error: String((e as Error).message) }).eq("order_id", order_id);
+        await volverAEmpaquetar(order_id, String((e as Error).message), dest?.asignado_a ?? null);
         await evento(order_id, "gls_error", { error: String((e as Error).message), raw: (e as any).raw ?? null }, usuario);
         return { ok: false, error: "GLS dice que ya hay un envío con este número de pedido (¿se hizo la etiqueta desde la app de GLS?). No hagas otra: avisa a Tito." };
       }
-      await sb.from("fab_pedidos").update({ gls_uid: null, gls_error: String((e as Error).message) }).eq("order_id", order_id);
+      const msg = glsConsejo(String((e as Error).message), lock);
+      await volverAEmpaquetar(order_id, msg, dest?.asignado_a ?? null);
       await evento(order_id, "gls_error", { error: String((e as Error).message), raw: (e as any).raw ?? null }, usuario);
-      return { ok: false, error: `GLS: ${(e as Error).message}` };
+      return { ok: false, error: `GLS: ${msg}` };
     }
   } else {
     const { data } = await sb.from("fab_pedidos").select().eq("order_id", order_id).maybeSingle();
