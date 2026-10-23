@@ -129,6 +129,7 @@
   .himpr.hverh.on{background:#eef6f0;border-color:#9cc9ab}
   .hechas-ocultas{display:block;width:100%;margin:10px 0 0;border:2px dashed var(--line);background:var(--panel);border-radius:14px;padding:14px 18px;font:inherit;font-size:17px;color:var(--muted);text-align:left;min-height:52px}
   .hechas-ocultas b{color:var(--ink)}
+  .donde-et{margin:14px 2px 4px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
   body.imp-hoja .hechas-ocultas{display:none!important}
   .hfil button b{margin-left:4px}
   .hayuda{margin:2px 0 14px;color:var(--muted);font-size:15px}
@@ -968,10 +969,13 @@ function pintarPuesto(){
   const P = pasos.find((x) => x.id === paso);
   $("#pasos").innerHTML = pasos.map((x) => `<button data-paso="${x.id}" class="${x.id === paso ? "on" : ""} ${x.sec ? "sec" : ""}" style="${colorVars(x.c)}"><span>${x.label}</span><b>${x.n}</b></button>`).join("")
     + `<button data-paso="ayuda" class="ayuda-b ${paso === "ayuda" ? "on" : ""}" style="${colorVars("producido")}">Ayuda</button>`;
-  const conLista = !["ayuda", "cortar", "sin_vinilo", "sin_stock", "stock", "hoja"].includes(paso);
+  // Expedición: el buscador sale en todas las pestañas y busca en todas partes
+  const busTodo = YO.puesto === "expedicion";
+  const conLista = busTodo ? paso !== "ayuda" : !["ayuda", "cortar", "sin_vinilo", "sin_stock", "stock", "hoja"].includes(paso);
   $("#buscaP").classList.toggle("hidden", !conLista);
   $("#puesto").style.cssText = P ? colorVars(P.c) : "";
   if (paso === "ayuda"){ $("#puestoLista").innerHTML = ""; $("#ayuda").classList.remove("hidden"); pintarAyuda(); return; }
+  if (busTodo && buscaPuesto.trim()){ $("#puestoLista").innerHTML = resultadosBusca(); return; }
   if (paso === "hoja"){ $("#puestoLista").innerHTML = hojaHTML(); return; }
   if (paso === "cortar" || paso === "sin_vinilo" || paso === "sin_stock" || paso === "stock"){ $("#puestoLista").innerHTML = ""; etapaR = paso; $("#resumen").classList.remove("hidden"); pintarResumen(); return; }
   const deQuien = (p) => !p.asignado_a || p.asignado_a === YO.nombre ? (p.asignado_a ? 0 : 1) : 2;
@@ -981,9 +985,31 @@ function pintarPuesto(){
   // Lo que se esté escribiendo en «Otros envíos» no se pierde cuando la pantalla se actualiza sola
   const otrosIn = document.querySelector(`#puestoLista input[data-otrosinfo="${otrosAbierto}"]`), otrosVal = otrosIn?.value, otrosFoco = otrosIn && document.activeElement === otrosIn;
   $("#puestoLista").innerHTML = (paso === "empaquetar" ? barraRecuperar() : "") + (vis.length ? vis.map(tarjetaPuesto).join("")
-    : `<div class="vacio">${q ? `Ningún pedido de aquí coincide con «${esc(buscaPuesto)}».` : esc(P?.vacio ?? "")}</div>`);
+    : `<div class="vacio">${esc(P?.vacio ?? "")}</div>`);
   const nuevo = document.querySelector(`#puestoLista input[data-otrosinfo="${otrosAbierto}"]`);
   if (nuevo && otrosVal != null){ nuevo.value = otrosVal; if (otrosFoco) nuevo.focus(); }
+}
+// Buscador de Expedición en todas partes: tarjetas de lo que se puede trabajar aquí (con la pestaña) y una línea para lo demás
+const ETQ_PASO = { empaquetar: "Empaquetar", hechos: "Hechos hoy", recogidas: "Recogidas en tienda", sin_etiqueta: "⚠ Sin etiqueta", estampar: "Estampar" };
+function resultadosBusca(){
+  const q = buscaPuesto.trim().toLowerCase(), dig = q.replace(/\D/g, "");
+  const l = pedidos.filter((p) => dig ? numPedido(p).includes(dig) : (p.cliente_nombre ?? "").toLowerCase().includes(q)).sort(porPrioridad);
+  if (!l.length) return `<div class="vacio">Ningún pedido coincide con «${esc(buscaPuesto)}» en el taller. Para buscar en todos los de Shopify, usa 🔎 arriba.</div>`;
+  const aqui = l.filter((p) => irBuscado({ taller: p }).ok).slice(0, 15), fuera = l.filter((p) => !irBuscado({ taller: p }).ok);
+  return aqui.map((p) => `<div class="donde-et">En <b>${esc(ETQ_PASO[irBuscado({ taller: p }).paso] ?? "")}</b></div>` + tarjetaPuesto(p)).join("")
+    + (fuera.length ? `<div class="vacio">${dondeEsta(fuera)}</div>` : "");
+}
+// Dónde está cada pedido que no se puede trabajar en esta pantalla
+function dondeEsta(l){
+  return l.slice(0, 8).map((p) => {
+    const ir = irBuscado({ taller: p });
+    const faltan = (p.fab_lineas ?? []).filter((x) => x.estado === "sin_stock").map((x) => x.titulo + (x.variante ? " · " + x.variante : ""));
+    const donde = p.cancelado ? "está cancelado" : p.enviado_fuera ? "ya salió desde Shopify" : p._estado === "sin_stock" ? `está parado en <b>Sin stock</b>: falta ${esc(faltan.join(", ") || "alguna prenda")}. Cuando llegue, lo marca Producción (Faltan · pedir)`
+      : p._estado === "cortar" || p._estado === "pendiente" ? "está en <b>Producción</b>: aún no se puede empaquetar"
+      : p._estado === "empaquetar" ? `está en <b>Empaquetar</b>${p.asignado_a && p.asignado_a !== YO.nombre ? " · lo tiene " + esc(p.asignado_a) : ""}`
+      : p._estado === "producido" ? "ya ha salido" : esc(p._estado);
+    return `<p style="margin:6px 0"><b>${esc(p.order_name)}</b> ${esc(p.cliente_nombre ?? "")} ${donde}. ${ir.ok && ir.paso !== paso ? `<button class="sec" data-irbusca-p="${p.order_id}">Ir al pedido →</button>` : ""}</p>`;
+  }).join("");
 }
 // La responsable de Expedición recupera pedidos de otra: todos de golpe o los que marque (rpc fab_recuperar)
 const marcRec = new Set(); let recTodosPend = null;
@@ -3195,6 +3221,7 @@ document.addEventListener("click", (e) => {
   if (b.dataset.hok){ if (b.dataset.modo === "hecha"){ const f = filasH.get(b.dataset.hok); hojaAbierta = null; if (f) hojaSumar(f, Math.min(Number(b.dataset.n) || f.quedan, f.quedan)); } else hojaOk(b.dataset.hok, Number(b.dataset.n) || 0); return; }
   if (b.dataset.hfiltro){ hojaFiltro = b.dataset.hfiltro; hojaAbierta = null; pintar(); return; }
   if (b.dataset.himpr !== undefined){ imprimir("imp-hoja"); return; }
+  if (b.dataset.irbuscaP){ irAPedidoBuscado(Number(b.dataset.irbuscaP)); return; }
   if (b.dataset.hverh !== undefined){ hojaVerHechas = !hojaVerHechas; hojaAbierta = null; try { localStorage.setItem("fab_hoja_hechas", hojaVerHechas ? "1" : "0"); } catch {} pintar(); return; }
   if (b.dataset.gmodo){ G.modo = b.dataset.gmodo; pintar(); window.scrollTo(0, 0); return; }
   if (b.dataset.gper){ G.periodo = b.dataset.gper; cargarProductos().then(pintar); return; }
