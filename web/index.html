@@ -1534,6 +1534,7 @@ async function empaquetado(id){
     const j = await fn({ accion: "producido", order_id: id });
     if (!j.ok){ toast(j.error || "Error", true); return; }
     if (j.recogida){ toast("Listo para recoger en taller"); return; }
+    if (j.ya_enviado){ toast(j.aviso || "Ya estaba enviado desde Shopify"); return; }
     if (MODO_IMP === "remoto"){ await mandarCola(id); return; }
     if (!j.pdf){ toast("Etiqueta creada en GLS pero sin PDF. Usa Reimprimir.", true); return; }
     await imprimirPdf(j.pdf);

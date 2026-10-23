@@ -492,6 +492,30 @@ function destinoOtros(p: any): string | null {
 }
 
 // ───────── PRODUCIDO ─────────
+// ¿Ya salió desde otro sitio (app de GLS de Shopify, a mano)? Devuelve el envío de Shopify si lo hay.
+// Si Shopify no responde, devuelve null y se sigue con GLS como siempre.
+async function shopifyYaEnviado(order_id: number) {
+  try {
+    const d = await gql(`query YaEnv($id: ID!) { order(id: $id) { fulfillments { id status createdAt trackingInfo { company number } } } }`, { id: gidOrder(order_id) });
+    const f = (d.order?.fulfillments ?? []).filter((x: any) => x.status === "SUCCESS").sort((a: any, b: any) => a.createdAt.localeCompare(b.createdAt))[0];
+    if (!f) return null;
+    const tr = (f.trackingInfo ?? []).find((x: any) => x.number) ?? null;
+    return { fid: f.id as string, numero: (tr?.number ?? null) as string | null, empresa: (tr?.company ?? "") as string };
+  } catch { return null; }
+}
+// El pedido ya tiene envío en Shopify: se apunta su seguimiento y NO se pide otra etiqueta a GLS (evita duplicados).
+async function marcarYaEnviado(order_id: number, ya: { fid: string; numero: string | null; empresa: string }, usuario: string) {
+  const esGls = !!ya.numero && /gls/i.test(ya.empresa || "GLS");
+  await sb.from("fab_pedidos").update({
+    gls_uid: null, gls_error: null, shopify_error: null, shopify_fulfillment_id: ya.fid,
+    ...(esGls ? { gls_codbarras: ya.numero, gls_modo: "real" } : { envio_tipo: "otros", envio_info: [ya.empresa, ya.numero].filter(Boolean).join(" ") || "Enviado desde Shopify" }),
+    etiqueta_impresa: true, etiqueta_impresa_at: new Date().toISOString(),
+  }).eq("order_id", order_id);
+  await evento(order_id, "gls_app_shopify", { codbarras: ya.numero, empresa: ya.empresa, fulfillment: ya.fid }, usuario);
+  const n = ya.numero ? ` (${ya.empresa ? ya.empresa.replace(/,? ?S\.A\.?$/i, "") + " " : ""}${ya.numero})` : "";
+  return { ok: true, ya_enviado: true, codbarras: ya.numero, aviso: `Este pedido ya estaba enviado desde Shopify${n}: no se ha hecho otra etiqueta.` };
+}
+
 async function producido(order_id: number, usuario: string) {
   const cfg = await config();
   const { data: dest } = await sb.from("fab_pedidos").select("direccion1, pais, cp, provincia").eq("order_id", order_id).maybeSingle();
@@ -514,6 +538,9 @@ async function producido(order_id: number, usuario: string) {
   }
 
   if (lock) {
+    // Antes de pedir etiqueta: si ya salió desde la app de GLS de Shopify, no se duplica
+    const ya = await shopifyYaEnviado(order_id);
+    if (ya) return await marcarYaEnviado(order_id, ya, usuario);
     try {
       const g = await glsGrabar(lock, cfg);
       let path: string | null = null;
@@ -527,6 +554,14 @@ async function producido(order_id: number, usuario: string) {
       p = data;
       await evento(order_id, "gls_ok", { modo: g.modo, codbarras: g.codbarras, sin_pdf_raw: g.raw }, usuario);
     } catch (e) {
+      // «Ya existe el albarán»: GLS ya tiene un envío con este nº de pedido (normalmente de la app de GLS de Shopify)
+      if (/ya existe el albar/i.test(String((e as Error).message))) {
+        const ya2 = await shopifyYaEnviado(order_id);
+        if (ya2) return await marcarYaEnviado(order_id, ya2, usuario);
+        await sb.from("fab_pedidos").update({ gls_uid: null, gls_error: String((e as Error).message) }).eq("order_id", order_id);
+        await evento(order_id, "gls_error", { error: String((e as Error).message), raw: (e as any).raw ?? null }, usuario);
+        return { ok: false, error: "GLS dice que ya hay un envío con este número de pedido (¿se hizo la etiqueta desde la app de GLS?). No hagas otra: avisa a Tito." };
+      }
       await sb.from("fab_pedidos").update({ gls_uid: null, gls_error: String((e as Error).message) }).eq("order_id", order_id);
       await evento(order_id, "gls_error", { error: String((e as Error).message), raw: (e as any).raw ?? null }, usuario);
       return { ok: false, error: `GLS: ${(e as Error).message}` };
@@ -1060,6 +1095,7 @@ Deno.serve(async (req) => {
       const destinos: Record<string, any> = {
         ES: { cliente_nombre: "Prueba Singular", direccion1: "Calle Mayor 1", ciudad: "Madrid", provincia: "Madrid", cp: "28013", pais: "ES", telefono: "600000000" },
         FR: { cliente_nombre: "Test Singular", direccion1: "10 Rue de Rivoli", ciudad: "Paris", provincia: "Paris", cp: "75001", pais: "FR", telefono: "+33 6 12 34 56 78" },
+        BAL: { cliente_nombre: "Prueba Singular", direccion1: "Carrer Major 1", ciudad: "Llucmajor", provincia: "Balears", cp: "07620", pais: "ES", telefono: "600000000" },
         PT: { cliente_nombre: "Teste Singular", direccion1: "Rua Augusta 100", ciudad: "Lisboa", provincia: "Lisboa", cp: "1100-053", pais: "PT", telefono: "+351 912 345 678" },
       };
       const dest = destinos[String(body.pais ?? "ES").toUpperCase()] ?? destinos.ES;
