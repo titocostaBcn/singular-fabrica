@@ -274,7 +274,7 @@ En los tres casos, al pulsar sale **«¿Quién lo ha empaquetado?»**: toca tu n
 
 Si aparece un error de GLS, el pedido queda en la pestaña Sin etiqueta. No lo envíes sin etiqueta: avisa a Tito.
 
-**Importante: todos los envíos salen desde este programa.** No imprimas etiquetas desde la app de GLS de Shopify ni marques los pedidos a mano como preparados en Shopify. Si se hace por los dos sitios, salen dos etiquetas para el mismo pedido y GLS cobra las dos.
+**Importante: todos los envíos salen desde este programa.** No imprimas etiquetas desde la app de GLS de Shopify ni marques los pedidos a mano como preparados en Shopify. Si el pedido ya se había enviado desde la app de GLS de Shopify, al pulsar ✔ Etiqueta GLS el programa no hace otra etiqueta: apunta el número de GLS que ya tiene y avisa con «Este pedido ya estaba enviado desde Shopify (GLS …): no se ha hecho otra etiqueta». El paquete sale con la etiqueta de la app.
 
 **Impresora de etiquetas (Honeywell PC42E-T).** El programa manda la etiqueta en una hoja de 10 × 15 cm sin márgenes: sale una sola etiqueta, del tamaño del rollo, sin copias en blanco ni la dirección de la web. Si el rollo es de otra medida, Tito la cambia en el ajuste `etiqueta_tamano` (por ejemplo 100x100). Para que imprima sola, sin elegir impresora ni pulsar Imprimir, el ordenador de Expedición abre el programa con un acceso directo de Chrome preparado para imprimir directo en la Honeywell (lo deja montado Tito). Con ese acceso directo, todo lo que se imprima desde ese ordenador sale por la Honeywell. El driver de Windows tiene que ser el de **203 dpi**: con el de 300 dpi la etiqueta sale más grande y cortada.
 
@@ -406,6 +406,7 @@ Cada vez que el programa cambia, este manual se actualiza con el cambio.
 | Mandé una etiqueta desde el iPhone y no sale | El ordenador de Expedición tiene que estar encendido, con el programa abierto y marcado en 🖨 como «Este ordenador ES la impresora de Expedición». Luego pulsa Reimprimir. |
 | La etiqueta sale enorme, en varias etiquetas, o salen etiquetas en blanco | Recarga la página (Ctrl + F5). Si sigue, en la impresora: tamaño de etiqueta 10 × 15 cm y calibrar el rollo (apartado 10, Impresora de etiquetas). |
 | Error de GLS al pedir la etiqueta | No envíes el paquete. Avisa a Tito con el número de pedido. |
+| Sale «Este pedido ya estaba enviado desde Shopify» | Ya tenía etiqueta de la app de GLS de Shopify. Usa esa etiqueta; el programa ya lo ha apuntado. |
 | Sale «⚠ Shopify: …» al dar la salida o en la tarjeta | La etiqueta y la salida están bien, pero Shopify no se ha actualizado. No lo marques a mano: avisa a Tito con el número de pedido. |
 | He elegido mal quién lo ha hecho | Avisa a Tito para corregirlo en el Histórico. |
 | La talla pone «Sin talla» | Revisa el pedido en Shopify antes de hacerlo. |
