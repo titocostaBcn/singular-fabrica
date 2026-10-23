@@ -1056,8 +1056,7 @@ function tarjetaPuesto(p){
     if (otrosAbierto === id) bts = `<div class="otros-f" style="flex:1">${chipsOtros(id)}<input data-otrosinfo="${id}" placeholder="¿Cómo sale? Transportista, nº de seguimiento, entregado en mano…" ${TACTIL ? "" : "autofocus"}>
         <button class="go" style="${colorVars("producido")}" data-otrosok="${id}">✔ Confirmar</button><button class="sec" data-otroscancel>Cancelar</button></div>`;
     else if (zona) bts = `<button class="go" style="${colorVars("producido")}" data-otros="${id}">✔ Empaquetado · anotar cómo sale</button>`;
-    else bts = `<button class="go" style="${colorVars("producido")}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Pidiendo la etiqueta a GLS…" : p.recogida ? "✔ Empaquetado · listo para recoger" : p.gls_error ? "↻ Volver a pedir la etiqueta" : "✔ Empaquetado · imprimir etiqueta"}</button>`
-      + (p.gls_error && !busy ? `<button class="sec" data-actualizar="${id}">🔄 Actualizar desde Shopify</button>` : "");
+    else bts = `<button class="go" style="${colorVars("producido")}" data-empaq="${id}" ${busy ? "disabled" : ""}>${busy ? "Pidiendo la etiqueta a GLS…" : p.recogida ? "✔ Empaquetado · listo para recoger" : p.gls_error ? "↻ Volver a pedir la etiqueta" : "✔ Empaquetado · imprimir etiqueta"}</button>`;
   } else if (e === "producido" && p.recogida){
     bts = p.entregado_at ? `<div class="estado"><span class="ok">✔ Entregado al cliente</span><span>${fecha(p.entregado_at)}</span></div>`
       : `<button class="go" style="${colorVars("producido")}" data-entregar="${id}" data-valor="1">✔ Entregado al cliente</button>`;
@@ -1067,6 +1066,8 @@ function tarjetaPuesto(p){
     bts = `<div class="estado">${p.etiqueta_impresa ? `<span class="ok">✔ Etiqueta impresa</span>` : `<span class="no">✖ Etiqueta sin imprimir</span>`}<span>GLS ${esc(p.gls_codbarras ?? "—")}</span></div>
       ${p.gls_codbarras ? `<button class="sec" data-reimp="${id}">🖨 Reimprimir etiqueta</button>` : `<span class="no">Avisa a administración</span>`}`;
   }
+  // Si la clienta cambia talla o dirección en Shopify, Expedición lo trae al momento antes de dar la salida
+  if (e === "empaquetar" && !busy && otrosAbierto !== id) bts += `<button class="sec" data-actualizar="${id}" ${actualizando.has(id) ? "disabled" : ""}>${actualizando.has(id) ? "Mirando Shopify…" : "🔄 Actualizar desde Shopify"}</button>`;
   const mods = modificado(p) ? `<div class="mod"><b>✏️ Ha cambiado el pedido</b><ul>${(p.modificado ?? []).map((m) => `<li>${esc(m)}</li>`).join("")}</ul><button data-visto="${id}">✔ Visto</button></div>` : "";
   const err = [p.gls_error && `GLS: ${esc(p.gls_error)}`].filter(Boolean);
   return `<article class="pc ${p._urg ? "urgente" : ""} ${otra ? "ajeno" : ""} ${rec ? "recup" : ""} ${marc ? "marcado" : ""}" style="${colorVars(e === "producido" ? "producido" : e)}">

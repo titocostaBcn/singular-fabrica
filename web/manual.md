@@ -334,7 +334,7 @@ Si una clienta se equivoca y pide un cambio, **la talla, las prendas y la direcc
 
 - Cada mañana a las 8:00 el programa revisa los pedidos abiertos y recoge los cambios. También al pulsar ↓ Pedidos nuevos.
 - Si en Shopify se **archiva** un pedido sin marcarlo como preparado, el programa lo da por terminado y lo saca del taller. Para enviar desde Shopify usad siempre «Marcar como preparado» (con el seguimiento si lo hay), así la clienta recibe el aviso de envío.
-- Para verlo al momento, en la tarjeta del pedido pulsa **🔄 Actualizar desde Shopify**.
+- Para verlo al momento, en la tarjeta del pedido pulsa **🔄 Actualizar desde Shopify**. En la pantalla de Expedición, este botón está en todas las tarjetas de Empaquetar: si alguien avisa de que una clienta ha cambiado la dirección o la talla en Shopify, púlsalo **antes** de dar la salida para que la etiqueta salga con la dirección nueva.
 
 **Qué hace el programa con un cambio**
 
