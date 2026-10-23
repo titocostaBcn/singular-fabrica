@@ -62,6 +62,10 @@
   #buscaM .bp-pr .e{white-space:nowrap;font-weight:700;font-size:13px}
   #buscaM .bp-nota{font-size:14px;background:#fffbea;border:1px dashed #e0c870;border-radius:10px;padding:8px 10px}
   #buscaM .vacio{padding:20px 0}
+  #buscaM .bp.ir{cursor:pointer}
+  #buscaM .bp.ir:active{background:#f3f7ff}
+  #buscaM .bp-ir{justify-self:start;border:0;background:var(--ink);color:#fff;border-radius:12px;padding:12px 20px;font:inherit;font-weight:800;font-size:17px;min-height:52px}
+  #buscaM .bp-noir{font-size:13px;color:var(--muted)}
   #impM{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
   #impM .caja{background:var(--panel);border-radius:16px;padding:20px;max-width:440px;width:100%;display:grid;gap:10px}
   #impM .op{display:grid;gap:2px;text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:700}
@@ -1849,7 +1853,8 @@ function pedidoBuscadoHTML(p){
     return `<div class="bp-pr"><div>${l.cantidad > 1 ? `<b>${l.cantidad}×</b> ` : ""}${esc(l.titulo)}<small>${esc(l.variante ?? "")}${extra ? " · " + extra : ""}</small></div>${lt && p.envio !== "FULFILLED" && !p.cancelado ? `<span class="e">${esc(ETQ_LINEA[lt.estado] ?? lt.estado)}</span>` : ""}</div>`;
   }).join("");
   const seg = p.envios.flatMap((e) => e.seguimiento).filter((x) => x.numero).map((x) => x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.empresa ?? "")} ${esc(x.numero)}</a>` : `${esc(x.empresa ?? "")} ${esc(x.numero)}`).join("<br>");
-  return `<div class="bp">
+  const ir = irBuscado(p);
+  return `<div class="bp ${ir.ok ? "ir" : ""}" ${ir.ok ? `data-irbusca="${p.taller.order_id}"` : ""}>
     <div class="bp-cab"><span class="bp-num">${esc(p.nombre)}</span><span class="bp-est ${cls}">${esc(txt)}</span><span class="gmini">${fCorta(p.fecha)} · ${eur(p.total, 2)}${p.metodo ? " · " + esc(p.metodo) : ""}</span></div>
     <div class="bp-grid">
       <div class="bp-box"><b class="t">Clienta</b>${esc(c?.nombre ?? d?.name ?? "—")}<br>${c ? (c.pedidos <= 1 ? "<b>Primer pedido</b>" : `<b>Lleva ${c.pedidos} pedidos</b> · ${eur(c.gastado)} en total`) : ""}${c?.email ? `<br><small>${esc(c.email)}</small>` : ""}</div>
@@ -1858,7 +1863,42 @@ function pedidoBuscadoHTML(p){
     </div>
     <div>${prendas}</div>
     ${p.nota ? `<div class="bp-nota">📝 ${esc(p.nota)}</div>` : ""}
+    ${ir.ok ? `<button type="button" class="bp-ir" data-irbusca="${p.taller.order_id}">${esc(ir.txt)} →</button>` : ir.txt ? `<span class="bp-noir">${esc(ir.txt)}</span>` : ""}
   </div>`;
+}
+// Desde el buscador: ¿se puede ir a la tarjeta del pedido en esta pantalla? (y a qué paso del puesto)
+function irBuscado(p){
+  const t = p.taller;
+  if (!t || p.cancelado || t.cancelado) return { ok: false, txt: "" };
+  const q = pedidos.find((x) => x.order_id === t.order_id);
+  if (!q) return { ok: false, txt: p.envio === "FULFILLED" ? "" : "Este pedido ya no está en la lista del taller." };
+  if (!modoPuesto()) return { ok: true, txt: "Ir al pedido", paso: null };
+  const pasos = PASOS[YO.puesto]().map((x) => x.id);
+  let ps = null;
+  if (YO.puesto === "expedicion"){
+    if (q._estado === "empaquetar") ps = "empaquetar";
+    else if (q._estado === "producido") ps = recogidasListas().includes(q) ? "recogidas" : sinEtiqueta().includes(q) ? "sin_etiqueta" : hechosHoy().includes(q) ? "hechos" : null;
+    if (!ps) return { ok: false, txt: q._estado === "producido" ? "Ya ha salido." : "Todavía está en Producción: aún no se puede empaquetar." };
+  } else {
+    if (q._estado === "estampar") ps = "estampar";
+    if (!ps) return { ok: false, txt: q._estado === "cortar" || q._estado === "sin_stock" ? "En Producción se trabaja por prendas: búscalas en la Hoja." : "Ya no está en Producción." };
+  }
+  return pasos.includes(ps) ? { ok: true, txt: "Ir al pedido", paso: ps } : { ok: false, txt: "" };
+}
+function irAPedidoBuscado(id){
+  const q = pedidos.find((x) => x.order_id === id);
+  if (!q){ toast("Este pedido ya no está en la lista del taller.", true); return; }
+  const n = numPedido(q);
+  $("#buscaM").classList.add("hidden");
+  if (modoPuesto()){
+    const ir = irBuscado({ taller: q });
+    if (!ir.ok){ toast(ir.txt || "No se puede abrir aquí.", true); return; }
+    paso = ir.paso; buscaPuesto = n; $("#buscaPIn").value = n;
+    pintar(); window.scrollTo(0, 0);
+  } else {
+    vista = "pedidos"; tab = "todos"; $("#buscar").value = n;
+    pintar(); window.scrollTo(0, 0);
+  }
 }
 async function buscarPedido(q){
   q = q.trim(); if (q.length < 2){ $("#buscaRes").innerHTML = `<p class="vacio">Escribe al menos 2 letras o el número del pedido.</p>`; return; }
@@ -3310,7 +3350,12 @@ function cerrarClave(){
 $("#bClave").onclick = () => abrirClave(false);
 $("#bBusca").onclick = abrirBusca;
 $("#buscaCerrar").onclick = () => $("#buscaM").classList.add("hidden");
-$("#buscaM").addEventListener("click", (e) => { if (e.target.id === "buscaM") $("#buscaM").classList.add("hidden"); });
+$("#buscaM").addEventListener("click", (e) => {
+  if (e.target.id === "buscaM"){ $("#buscaM").classList.add("hidden"); return; }
+  if (e.target.closest("a")) return;
+  const c = e.target.closest("[data-irbusca]");
+  if (c){ e.stopPropagation(); irAPedidoBuscado(Number(c.dataset.irbusca)); }
+});
 $("#buscaForm").onsubmit = (e) => { e.preventDefault(); $("#buscaIn").blur(); buscarPedido($("#buscaIn").value); };
 $("#bImp").onclick = abrirImp; $("#bImp").title = TXT_IMP[MODO_IMP];
 $("#impCerrar").onclick = () => $("#impM").classList.add("hidden");
